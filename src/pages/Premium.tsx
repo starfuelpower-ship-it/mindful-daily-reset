@@ -1,26 +1,55 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Crown, Check, ArrowLeft, Sparkles, BarChart3, Palette, Users, Infinity, BookOpen } from 'lucide-react';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Crown, Check, Loader2, BarChart3, Palette, Bell } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-const features = [
+// ============================================
+// PREMIUM FEATURES
+// ============================================
+// Customize: Add or modify premium features here
+
+const PREMIUM_FEATURES = [
+  { icon: Infinity, label: 'Unlimited habits', description: 'Track as many habits as you want' },
+  { icon: BarChart3, label: 'Advanced statistics', description: 'Full history and detailed insights' },
+  { icon: BookOpen, label: 'Journal history', description: 'Access all past journal entries' },
+  { icon: Users, label: 'Group habits', description: 'Share and compete with friends' },
+  { icon: Palette, label: 'Custom themes', description: 'Personalize your app experience' },
+  { icon: Sparkles, label: 'Widgets & more', description: 'Home screen widgets and extras' },
+];
+
+// ============================================
+// PRICING PLANS
+// ============================================
+// Customize: Change prices and billing periods
+
+const PRICING_PLANS = [
   {
-    icon: BarChart3,
-    title: 'Weekly Stats',
-    description: 'Track your completion rate and streak history over time',
+    id: 'monthly',
+    name: 'Monthly',
+    price: '$4.99',
+    period: '/month',
+    description: 'Billed monthly',
+    popular: false,
   },
   {
-    icon: Palette,
-    title: 'Custom Colors',
-    description: 'Personalize your habits with custom themes and colors',
+    id: 'annual',
+    name: 'Annual',
+    price: '$29.99',
+    period: '/year',
+    description: 'Save 50% • 3-day free trial',
+    popular: true,
   },
   {
-    icon: Bell,
-    title: 'Unlimited Reminders',
-    description: 'Set multiple reminders for each habit',
+    id: 'lifetime',
+    name: 'Lifetime',
+    price: '$79.99',
+    period: 'one-time',
+    description: 'Pay once, own forever',
+    popular: false,
   },
 ];
 
@@ -28,6 +57,7 @@ export default function Premium() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isPremium, upgradeToPremium } = usePremium();
+  const [selectedPlan, setSelectedPlan] = useState('annual');
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   const handleUpgrade = async () => {
@@ -41,7 +71,7 @@ export default function Premium() {
     try {
       await upgradeToPremium();
       toast.success('Welcome to Premium! 🎉');
-      navigate('/settings');
+      navigate('/');
     } catch (error) {
       toast.error('Failed to upgrade. Please try again.');
     } finally {
@@ -50,103 +80,132 @@ export default function Premium() {
   };
 
   if (isPremium) {
-    navigate('/settings');
+    navigate('/');
     return null;
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-lg mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg">
+        <div className="max-w-lg mx-auto px-4 py-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="shrink-0"
+            className="rounded-xl"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
         </div>
+      </header>
 
-        <div className="space-y-8 animate-fade-in">
-          {/* Hero */}
-          <div className="text-center space-y-4">
-            <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
-              <Crown className="w-10 h-10 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Go Premium</h1>
-              <p className="text-muted-foreground mt-2">
-                Unlock powerful features to supercharge your habits
-              </p>
-            </div>
+      <main className="max-w-lg mx-auto px-4 py-6 space-y-8">
+        {/* Hero */}
+        <div className="text-center space-y-4 animate-fade-in">
+          <div className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/30">
+            <Crown className="w-12 h-12 text-primary-foreground" />
           </div>
-
-          {/* Features */}
-          <div className="space-y-4">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="bg-card rounded-2xl p-4 border border-border/50 flex items-start gap-4"
-              >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <feature.icon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {feature.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Pricing */}
-          <div className="bg-gradient-to-br from-primary/20 to-accent rounded-2xl p-6 border border-primary/30 text-center space-y-4">
-            <div>
-              <span className="text-4xl font-bold text-foreground">$4.99</span>
-              <span className="text-muted-foreground">/month</span>
-            </div>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center justify-center gap-2 text-foreground">
-                <Check className="w-4 h-4 text-primary" />
-                All premium features
-              </li>
-              <li className="flex items-center justify-center gap-2 text-foreground">
-                <Check className="w-4 h-4 text-primary" />
-                Cancel anytime
-              </li>
-              <li className="flex items-center justify-center gap-2 text-foreground">
-                <Check className="w-4 h-4 text-primary" />
-                Priority support
-              </li>
-            </ul>
-          </div>
-
-          {/* CTA */}
-          <div className="space-y-3">
-            <Button
-              onClick={handleUpgrade}
-              disabled={isUpgrading}
-              className="w-full h-12 text-base font-semibold"
-            >
-              {isUpgrading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  <Crown className="w-5 h-5 mr-2" />
-                  Upgrade to Premium
-                </>
-              )}
-            </Button>
-            <p className="text-xs text-center text-muted-foreground">
-              For demo purposes, this activates premium instantly
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Unlock Pro</h1>
+            <p className="text-muted-foreground mt-2 text-lg">
+              Become better every day
             </p>
           </div>
         </div>
-      </div>
+
+        {/* Features */}
+        <div className="space-y-3">
+          {PREMIUM_FEATURES.map((feature, index) => (
+            <div
+              key={feature.label}
+              className={cn(
+                'ios-card p-4 flex items-center gap-4 animate-slide-up',
+                `stagger-${Math.min(index + 1, 5)}`
+              )}
+              style={{ opacity: 0 }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <feature.icon className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">{feature.label}</p>
+                <p className="text-sm text-muted-foreground">{feature.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Pricing Plans */}
+        <div className="space-y-3">
+          {PRICING_PLANS.map((plan) => (
+            <button
+              key={plan.id}
+              onClick={() => setSelectedPlan(plan.id)}
+              className={cn(
+                'w-full ios-card p-4 text-left transition-all relative overflow-hidden',
+                selectedPlan === plan.id
+                  ? 'ring-2 ring-primary shadow-lg'
+                  : 'hover:shadow-md'
+              )}
+            >
+              {plan.popular && (
+                <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-bl-xl">
+                  BEST VALUE
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-foreground">{plan.name}</p>
+                  <p className="text-xs text-muted-foreground">{plan.description}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-bold text-foreground">{plan.price}</span>
+                  <span className="text-sm text-muted-foreground">{plan.period}</span>
+                </div>
+              </div>
+              {selectedPlan === plan.id && (
+                <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="space-y-4 pt-4">
+          <Button
+            onClick={handleUpgrade}
+            disabled={isUpgrading}
+            className="w-full h-14 text-lg font-semibold rounded-2xl shadow-lg shadow-primary/30"
+          >
+            {isUpgrading ? (
+              'Processing...'
+            ) : (
+              <>
+                <Crown className="w-5 h-5 mr-2" />
+                Continue
+              </>
+            )}
+          </Button>
+          
+          {/* Legal text */}
+          <p className="text-xs text-center text-muted-foreground px-4">
+            This is a demo screen. In production, this would connect to real in-app purchases via App Store or Google Play.
+          </p>
+          
+          <div className="flex justify-center gap-4 text-xs text-muted-foreground">
+            <button className="hover:text-foreground">Terms of Service</button>
+            <span>•</span>
+            <button className="hover:text-foreground">Privacy Policy</button>
+            <span>•</span>
+            <button className="hover:text-foreground">Restore Purchase</button>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
