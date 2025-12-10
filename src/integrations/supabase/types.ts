@@ -14,7 +14,110 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      habit_completions: {
+        Row: {
+          completed_at: string
+          created_at: string | null
+          habit_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string | null
+          habit_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string | null
+          habit_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_completions_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habits: {
+        Row: {
+          category: string
+          color: string | null
+          completed_today: boolean | null
+          created_at: string | null
+          id: string
+          last_completed_date: string | null
+          last_reset_date: string | null
+          name: string
+          notes: string | null
+          streak: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          color?: string | null
+          completed_today?: boolean | null
+          created_at?: string | null
+          id?: string
+          last_completed_date?: string | null
+          last_reset_date?: string | null
+          name: string
+          notes?: string | null
+          streak?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          color?: string | null
+          completed_today?: boolean | null
+          created_at?: string | null
+          id?: string
+          last_completed_date?: string | null
+          last_reset_date?: string | null
+          name?: string
+          notes?: string | null
+          streak?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          is_premium: boolean | null
+          premium_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+          is_premium?: boolean | null
+          premium_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_premium?: boolean | null
+          premium_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
