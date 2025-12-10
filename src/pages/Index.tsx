@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -8,6 +8,7 @@ import { useUserSettings } from '@/hooks/useUserSettings';
 import { CloudHabitCard } from '@/components/CloudHabitCard';
 import { HabitCard } from '@/components/HabitCard';
 import { ProgressRing } from '@/components/ProgressRing';
+import { PlantGrowth } from '@/components/PlantGrowth';
 import { DaySelector } from '@/components/DaySelector';
 import { AddHabitDialog } from '@/components/AddHabitDialog';
 import { EditHabitDialog } from '@/components/EditHabitDialog';
@@ -43,6 +44,13 @@ const Index = () => {
   const completedCount = isLoggedIn ? cloudHabits.completedCount : localHabits.completedCount;
   const totalCount = isLoggedIn ? cloudHabits.totalCount : localHabits.totalCount;
   const progressPercent = isLoggedIn ? cloudHabits.progressPercent : localHabits.progressPercent;
+
+  // Calculate best streak for plant growth
+  const bestStreak = useMemo(() => {
+    const currentHabits = isLoggedIn ? cloudHabits.habits : localHabits.habits;
+    if (currentHabits.length === 0) return 0;
+    return Math.max(...currentHabits.map(h => (h as any).streak || 0), 0);
+  }, [isLoggedIn, cloudHabits.habits, localHabits.habits]);
 
   // Migrate local habits to cloud after login
   useEffect(() => {
@@ -149,30 +157,41 @@ const Index = () => {
           />
         </div>
 
-        {/* Progress Section */}
-        {totalCount > 0 && (
-          <div className="ios-card p-5 mb-5 animate-slide-up">
-            <div className="flex items-center gap-5">
-              <ProgressRing
-                progress={progressPercent}
-                size={80}
-                strokeWidth={8}
-              />
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-1">Today's Progress</p>
-                <p className="text-xl font-semibold text-foreground">
-                  {completedCount} of {totalCount} habits
-                </p>
+        {/* Progress Section with Plant */}
+        <div className="ios-card p-5 mb-5 animate-slide-up">
+          <div className="flex items-center gap-4">
+            {/* Plant Growth */}
+            <PlantGrowth streak={bestStreak} size="sm" showLabel={false} />
+            
+            {/* Progress Ring */}
+            <ProgressRing
+              progress={progressPercent}
+              size={60}
+              strokeWidth={6}
+            />
+            
+            {/* Stats */}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-muted-foreground mb-0.5">Today's Progress</p>
+              <p className="text-lg font-semibold text-foreground">
+                {completedCount} of {totalCount} habits
+              </p>
+              <div className="flex items-center gap-3 mt-1.5">
+                {bestStreak > 0 && (
+                  <span className="text-xs text-primary font-medium">
+                    🔥 {bestStreak} day best
+                  </span>
+                )}
                 {isLoggedIn && (
-                  <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Cloud className="w-3 h-3" />
-                    <span>Synced</span>
-                  </div>
+                    Synced
+                  </span>
                 )}
               </div>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Habits List */}
         <section className="mb-6">
