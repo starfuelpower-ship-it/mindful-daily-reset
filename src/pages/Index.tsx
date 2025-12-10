@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCloudHabits, CloudHabit } from '@/hooks/useCloudHabits';
 import { useHabits } from '@/hooks/useHabits';
+import { useUserSettings } from '@/hooks/useUserSettings';
 import { CloudHabitCard } from '@/components/CloudHabitCard';
 import { HabitCard } from '@/components/HabitCard';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -20,9 +21,14 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const { settings } = useUserSettings();
   const [editingHabit, setEditingHabit] = useState<CloudHabit | null>(null);
   const [hasMigrated, setHasMigrated] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // User preferences (with defaults for guests)
+  const confettiEnabled = settings?.confetti_enabled ?? true;
+  const soundEnabled = settings?.sound_enabled ?? true;
 
   // Cloud habits (for logged-in users)
   const cloudHabits = useCloudHabits();
@@ -193,6 +199,8 @@ const Index = () => {
                       onToggle={handleToggleHabit}
                       onEdit={setEditingHabit}
                       index={index}
+                      confettiEnabled={confettiEnabled}
+                      soundEnabled={soundEnabled}
                     />
                   </div>
                 ))
@@ -208,6 +216,8 @@ const Index = () => {
                       onToggle={handleToggleHabit}
                       onDelete={handleDeleteHabit}
                       index={index}
+                      confettiEnabled={confettiEnabled}
+                      soundEnabled={soundEnabled}
                     />
                   </div>
                 ))
