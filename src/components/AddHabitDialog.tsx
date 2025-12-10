@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Category } from '@/types/habit';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,10 +18,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const categories: Category[] = ['Health', 'Productivity', 'Fitness', 'Mindset', 'Custom'];
+const categories = ['Health', 'Productivity', 'Fitness', 'Mindset', 'Custom'] as const;
+type Category = typeof categories[number];
 
 interface AddHabitDialogProps {
-  onAdd: (name: string, category: Category, notes: string) => void;
+  onAdd: (name: string, category: string, notes: string) => void;
 }
 
 export function AddHabitDialog({ onAdd }: AddHabitDialogProps) {
