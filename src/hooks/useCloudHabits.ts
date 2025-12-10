@@ -41,23 +41,36 @@ export function useCloudHabits() {
       if (error) throw error;
 
       const today = getTodayDate();
-      const habitsToUpdate: string[] = [];
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      const habitsToUpdate: { id: string; streak: number }[] = [];
       
       const processedHabits = (data || []).map(habit => {
         // Check if habit needs midnight reset
         if (habit.last_reset_date !== today && habit.completed_today) {
-          habitsToUpdate.push(habit.id);
-          return { ...habit, completed_today: false, last_reset_date: today };
+          // Calculate if streak should break (missed yesterday)
+          const streakBroken = habit.last_completed_date !== yesterdayStr && habit.last_completed_date !== today;
+          const newStreak = streakBroken ? 0 : habit.streak;
+          
+          habitsToUpdate.push({ id: habit.id, streak: newStreak });
+          return { ...habit, completed_today: false, last_reset_date: today, streak: newStreak };
+        }
+        // Check if streak should break even if not completed today
+        if (habit.last_completed_date && habit.last_completed_date !== yesterdayStr && habit.last_completed_date !== today && habit.streak > 0) {
+          habitsToUpdate.push({ id: habit.id, streak: 0 });
+          return { ...habit, streak: 0, last_reset_date: today };
         }
         return habit;
       });
 
       // Batch update habits that need reset
-      if (habitsToUpdate.length > 0) {
+      for (const update of habitsToUpdate) {
         await supabase
           .from('habits')
-          .update({ completed_today: false, last_reset_date: today })
-          .in('id', habitsToUpdate);
+          .update({ completed_today: false, last_reset_date: today, streak: update.streak })
+          .eq('id', update.id);
       }
 
       setHabits(processedHabits);
@@ -118,6 +131,25 @@ export function useCloudHabits() {
     }
   };
 
+  const calculateStreak = (habit: CloudHabit, completingToday: boolean): number => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    if (completingToday) {
+      // If completing today, check if we completed yesterday to continue streak
+      if (habit.last_completed_date === yesterdayStr) {
+        return habit.streak + 1;
+      }
+      // Starting fresh streak
+      return 1;
+    } else {
+      // Uncompleting - decrease streak but not below 0
+      return Math.max(0, habit.streak - 1);
+    }
+  };
+
   const toggleHabit = async (id: string) => {
     if (!user) return;
 
@@ -128,12 +160,7 @@ export function useCloudHabits() {
     const wasCompleted = habit.completed_today;
     const newCompleted = !wasCompleted;
     
-    let newStreak = habit.streak;
-    if (newCompleted && !wasCompleted) {
-      newStreak = habit.streak + 1;
-    } else if (!newCompleted && wasCompleted) {
-      newStreak = Math.max(0, habit.streak - 1);
-    }
+    const newStreak = calculateStreak(habit, newCompleted);
 
     // Optimistic update
     setHabits(prev => prev.map(h => 

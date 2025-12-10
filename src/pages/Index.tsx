@@ -1,23 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useCloudHabits, CloudHabit } from '@/hooks/useCloudHabits';
 import { useHabits } from '@/hooks/useHabits';
 import { CloudHabitCard } from '@/components/CloudHabitCard';
 import { HabitCard } from '@/components/HabitCard';
-import { ProgressBar } from '@/components/ProgressBar';
+import { ProgressRing } from '@/components/ProgressRing';
+import { DaySelector } from '@/components/DaySelector';
 import { AddHabitDialog } from '@/components/AddHabitDialog';
 import { EditHabitDialog } from '@/components/EditHabitDialog';
 import { EmptyState } from '@/components/EmptyState';
+import { BottomTabBar } from '@/components/BottomTabBar';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Settings, User, Cloud } from 'lucide-react';
-import { toast } from 'sonner';
+import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
+import { format } from 'date-fns';
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [editingHabit, setEditingHabit] = useState<CloudHabit | null>(null);
   const [hasMigrated, setHasMigrated] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Cloud habits (for logged-in users)
   const cloudHabits = useCloudHabits();
@@ -71,11 +76,9 @@ const Index = () => {
     }
   };
 
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
   if (isLoading) {
     return (
@@ -87,20 +90,34 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-lg mx-auto px-4 py-6 pb-32">
+      <div className="max-w-lg mx-auto px-4 pt-6 pb-40">
         {/* Header */}
-        <header className="flex items-start justify-between mb-6 animate-fade-in">
+        <header className="flex items-start justify-between mb-4 animate-fade-in">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Daily Reset</h1>
-            <p className="text-muted-foreground mt-1">{today}</p>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              {format(new Date(), 'EEEE, MMMM d')}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {resolvedTheme === 'dark' ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </Button>
             {isLoggedIn ? (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/settings')}
-                className="text-muted-foreground"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Settings className="w-5 h-5" />
               </Button>
@@ -111,41 +128,66 @@ const Index = () => {
                 onClick={() => navigate('/auth')}
                 className="text-muted-foreground"
               >
-                <User className="w-4 h-4 mr-2" />
+                <User className="w-4 h-4 mr-1.5" />
                 Sign In
               </Button>
             )}
           </div>
         </header>
 
-        {/* Sync indicator */}
-        {isLoggedIn && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4 animate-fade-in">
-            <Cloud className="w-3.5 h-3.5" />
-            <span>Synced to cloud</span>
-          </div>
-        )}
+        {/* Day Selector */}
+        <div className="mb-4 -mx-1 animate-fade-in">
+          <DaySelector
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+          />
+        </div>
 
-        {/* Progress */}
+        {/* Progress Section */}
         {totalCount > 0 && (
-          <div className="mb-6 animate-slide-up">
-            <ProgressBar
-              completed={completedCount}
-              total={totalCount}
-              percent={progressPercent}
-            />
+          <div className="ios-card p-5 mb-5 animate-slide-up">
+            <div className="flex items-center gap-5">
+              <ProgressRing
+                progress={progressPercent}
+                size={80}
+                strokeWidth={8}
+              />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-1">Today's Progress</p>
+                <p className="text-xl font-semibold text-foreground">
+                  {completedCount} of {totalCount} habits
+                </p>
+                {isLoggedIn && (
+                  <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                    <Cloud className="w-3 h-3" />
+                    <span>Synced</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
         {/* Habits List */}
         <section className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-foreground">Habits</h2>
+            <span className="text-sm text-muted-foreground">
+              {completedCount}/{totalCount} done
+            </span>
+          </div>
+          
           {habits.length === 0 ? (
             <EmptyState />
           ) : (
             <div className="space-y-3">
               {isLoggedIn ? (
                 cloudHabits.habits.map((habit, index) => (
-                  <div key={habit.id} className="animate-slide-up">
+                  <div 
+                    key={habit.id} 
+                    className="animate-slide-up"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
                     <CloudHabitCard
                       habit={habit}
                       onToggle={handleToggleHabit}
@@ -156,7 +198,11 @@ const Index = () => {
                 ))
               ) : (
                 localHabits.habits.map((habit, index) => (
-                  <div key={habit.id} className="animate-slide-up">
+                  <div 
+                    key={habit.id} 
+                    className="animate-slide-up"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
                     <HabitCard
                       habit={habit}
                       onToggle={handleToggleHabit}
@@ -171,12 +217,15 @@ const Index = () => {
         </section>
 
         {/* Fixed Add Button */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent">
-          <div className="max-w-lg mx-auto">
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+          <div className="max-w-lg mx-auto pointer-events-auto">
             <AddHabitDialog onAdd={handleAddHabit} />
           </div>
         </div>
       </div>
+
+      {/* Bottom Tab Bar */}
+      <BottomTabBar />
 
       {/* Edit Dialog */}
       {isLoggedIn && (
