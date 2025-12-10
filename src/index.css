@@ -167,4 +167,45 @@
   .shadow-soft-lg {
     box-shadow: var(--shadow-lg);
   }
+
+  @keyframes check-bounce {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  @keyframes streak-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-check-bounce {
+    animation: check-bounce 0.3s ease-in-out;
+  }
+
+  .animate-streak-pulse {
+    animation: streak-pulse 1.5s ease-in-out infinite;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out forwards;
+  }
 }
