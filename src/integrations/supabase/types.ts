@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       habit_completions: {
         Row: {
+          completed: boolean | null
           completed_at: string
           created_at: string | null
           habit_id: string
@@ -23,6 +24,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          completed?: boolean | null
           completed_at?: string
           created_at?: string | null
           habit_id: string
@@ -30,6 +32,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          completed?: boolean | null
           completed_at?: string
           created_at?: string | null
           habit_id?: string
@@ -48,10 +51,12 @@ export type Database = {
       }
       habits: {
         Row: {
+          archived: boolean | null
           category: string
           color: string | null
           completed_today: boolean | null
           created_at: string | null
+          icon: string | null
           id: string
           last_completed_date: string | null
           last_reset_date: string | null
@@ -62,10 +67,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived?: boolean | null
           category?: string
           color?: string | null
           completed_today?: boolean | null
           created_at?: string | null
+          icon?: string | null
           id?: string
           last_completed_date?: string | null
           last_reset_date?: string | null
@@ -76,10 +83,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived?: boolean | null
           category?: string
           color?: string | null
           completed_today?: boolean | null
           created_at?: string | null
+          icon?: string | null
           id?: string
           last_completed_date?: string | null
           last_reset_date?: string | null
@@ -91,9 +100,38 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
+      moods: {
         Row: {
           created_at: string | null
+          date: string
+          id: string
+          mood_score: number
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          mood_score: number
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          mood_score?: number
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          display_name: string | null
           email: string | null
           id: string
           is_premium: boolean | null
@@ -101,7 +139,9 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string | null
+          display_name?: string | null
           email?: string | null
           id: string
           is_premium?: boolean | null
@@ -109,12 +149,59 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string | null
+          display_name?: string | null
           email?: string | null
           id?: string
           is_premium?: boolean | null
           premium_expires_at?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          confetti_enabled: boolean | null
+          created_at: string | null
+          daily_notification: boolean | null
+          daily_reset_time: string | null
+          done_habit_position: string | null
+          id: string
+          sound_enabled: boolean | null
+          start_of_week: string | null
+          theme: string | null
+          updated_at: string | null
+          user_id: string
+          vacation_mode: boolean | null
+        }
+        Insert: {
+          confetti_enabled?: boolean | null
+          created_at?: string | null
+          daily_notification?: boolean | null
+          daily_reset_time?: string | null
+          done_habit_position?: string | null
+          id?: string
+          sound_enabled?: boolean | null
+          start_of_week?: string | null
+          theme?: string | null
+          updated_at?: string | null
+          user_id: string
+          vacation_mode?: boolean | null
+        }
+        Update: {
+          confetti_enabled?: boolean | null
+          created_at?: string | null
+          daily_notification?: boolean | null
+          daily_reset_time?: string | null
+          done_habit_position?: string | null
+          id?: string
+          sound_enabled?: boolean | null
+          start_of_week?: string | null
+          theme?: string | null
+          updated_at?: string | null
+          user_id?: string
+          vacation_mode?: boolean | null
         }
         Relationships: []
       }
