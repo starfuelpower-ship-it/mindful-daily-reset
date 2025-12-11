@@ -1,9 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 interface QuotesContextType {
   currentQuote: string;
   refreshQuote: () => void;
+  goBack: () => void;
+  canGoBack: boolean;
 }
 
 const QuotesContext = createContext<QuotesContextType | undefined>(undefined);
@@ -424,7 +426,10 @@ const COZY_QUOTES = [
 export function QuotesProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [currentQuote, setCurrentQuote] = useState('');
+  const [quoteHistory, setQuoteHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   const [usedIndices, setUsedIndices] = useState<Set<number>>(new Set());
+  const autoRotateTimer = useRef<NodeJS.Timeout>();
 
   const getRandomQuote = useCallback(() => {
     let availableIndices = Array.from(
@@ -444,23 +449,57 @@ export function QuotesProvider({ children }: { children: React.ReactNode }) {
   }, [usedIndices]);
 
   const refreshQuote = useCallback(() => {
-    setCurrentQuote(getRandomQuote());
+    const newQuote = getRandomQuote();
+    setCurrentQuote(newQuote);
+    setQuoteHistory((prev) => [...prev, newQuote]);
+    setHistoryIndex((prev) => prev + 1);
+  }, [getRandomQuote]);
+
+  const goBack = useCallback(() => {
+    if (historyIndex > 0) {
+      setHistoryIndex((prev) => prev - 1);
+      setCurrentQuote(quoteHistory[historyIndex - 1]);
+    }
+  }, [historyIndex, quoteHistory]);
+
+  const canGoBack = historyIndex > 0;
+
+  // Auto-rotate quotes every 15 seconds
+  useEffect(() => {
+    autoRotateTimer.current = setInterval(() => {
+      const newQuote = getRandomQuote();
+      setCurrentQuote(newQuote);
+      setQuoteHistory((prev) => [...prev, newQuote]);
+      setHistoryIndex((prev) => prev + 1);
+    }, 15000);
+
+    return () => {
+      if (autoRotateTimer.current) {
+        clearInterval(autoRotateTimer.current);
+      }
+    };
   }, [getRandomQuote]);
 
   // Change quote on route change
   useEffect(() => {
-    setCurrentQuote(getRandomQuote());
+    const newQuote = getRandomQuote();
+    setCurrentQuote(newQuote);
+    setQuoteHistory([newQuote]);
+    setHistoryIndex(0);
   }, [location.pathname]);
 
   // Initial quote
   useEffect(() => {
     if (!currentQuote) {
-      setCurrentQuote(getRandomQuote());
+      const initialQuote = getRandomQuote();
+      setCurrentQuote(initialQuote);
+      setQuoteHistory([initialQuote]);
+      setHistoryIndex(0);
     }
   }, []);
 
   return (
-    <QuotesContext.Provider value={{ currentQuote, refreshQuote }}>
+    <QuotesContext.Provider value={{ currentQuote, refreshQuote, goBack, canGoBack }}>
       {children}
     </QuotesContext.Provider>
   );
