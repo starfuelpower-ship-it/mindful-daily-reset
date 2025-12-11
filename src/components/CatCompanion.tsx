@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo } from 'react';
+import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { useCompanion } from '@/contexts/CompanionContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -18,15 +18,29 @@ const ANIMATION_DURATIONS: Record<CatAnimation, number> = {
   roll: 2000,
 };
 
+const MIN_SCALE = 0.6;
+const MAX_SCALE = 1.5;
+const DEFAULT_SCALE = 1;
+
 export const CatCompanion = memo(() => {
   const { showCompanion, companionType, currentReaction } = useCompanion();
   const { resolvedTheme } = useTheme();
   const [animation, setAnimation] = useState<CatAnimation>('idle');
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(DEFAULT_SCALE);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isPinching, setIsPinching] = useState(false);
   const [isWalking, setIsWalking] = useState(false);
   const [facingLeft, setFacingLeft] = useState(false);
+  
   const animationTimeout = useRef<NodeJS.Timeout>();
   const walkTimeout = useRef<NodeJS.Timeout>();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const initialPinchDistance = useRef<number>(0);
+  const initialScale = useRef<number>(DEFAULT_SCALE);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const catStartPos = useRef({ x: 0, y: 0 });
 
   const isDark = resolvedTheme === 'dark';
 
@@ -42,7 +56,7 @@ export const CatCompanion = memo(() => {
   // Cycle through idle animations
   useEffect(() => {
     if (!showCompanion || companionType !== 'cat') return;
-    if (currentReaction) return; // Don't interrupt reaction animations
+    if (currentReaction) return;
 
     const cycleAnimation = () => {
       const randomAnim = IDLE_ANIMATIONS[Math.floor(Math.random() * IDLE_ANIMATIONS.length)];
@@ -58,17 +72,18 @@ export const CatCompanion = memo(() => {
     };
   }, [showCompanion, companionType, currentReaction]);
 
-  // Occasional walking
+  // Occasional walking (only when not dragged)
   useEffect(() => {
     if (!showCompanion || companionType !== 'cat') return;
+    if (dragPosition.x !== 0 || dragPosition.y !== 0) return; // Don't walk if user moved the cat
 
     const startWalk = () => {
-      if (currentReaction) return;
+      if (currentReaction || isDragging) return;
       
       setIsWalking(true);
       setAnimation('walk');
       
-      const newX = Math.random() * 60 - 30; // -30 to 30px
+      const newX = Math.random() * 60 - 30;
       setFacingLeft(newX < position.x);
       setPosition({ x: newX, y: 0 });
       
@@ -78,7 +93,6 @@ export const CatCompanion = memo(() => {
       }, ANIMATION_DURATIONS.walk);
     };
 
-    // Walk every 30-60 seconds
     const scheduleWalk = () => {
       const delay = 30000 + Math.random() * 30000;
       walkTimeout.current = setTimeout(() => {
@@ -92,17 +106,130 @@ export const CatCompanion = memo(() => {
     return () => {
       if (walkTimeout.current) clearTimeout(walkTimeout.current);
     };
-  }, [showCompanion, companionType, currentReaction, position.x]);
+  }, [showCompanion, companionType, currentReaction, position.x, isDragging, dragPosition]);
+
+  // Touch handlers for dragging
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      // Pinch gesture
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      initialPinchDistance.current = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      initialScale.current = scale;
+      setIsPinching(true);
+    } else if (e.touches.length === 1) {
+      // Drag gesture
+      setIsDragging(true);
+      dragStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      catStartPos.current = { ...dragPosition };
+    }
+  }, [scale, dragPosition]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (isPinching && e.touches.length === 2) {
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const currentDistance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      const scaleChange = currentDistance / initialPinchDistance.current;
+      const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, initialScale.current * scaleChange));
+      setScale(newScale);
+    } else if (isDragging && e.touches.length === 1) {
+      const deltaX = e.touches[0].clientX - dragStartPos.current.x;
+      const deltaY = e.touches[0].clientY - dragStartPos.current.y;
+      
+      // Constrain to screen bounds
+      const maxX = window.innerWidth - 60;
+      const maxY = window.innerHeight - 140;
+      
+      const newX = Math.min(maxX, Math.max(-maxX + 120, catStartPos.current.x + deltaX));
+      const newY = Math.min(0, Math.max(-maxY, catStartPos.current.y + deltaY));
+      
+      setDragPosition({ x: newX, y: newY });
+      
+      // Face direction of movement
+      if (Math.abs(deltaX) > 5) {
+        setFacingLeft(deltaX < 0);
+      }
+    }
+  }, [isPinching, isDragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+    setIsPinching(false);
+  }, []);
+
+  // Mouse handlers for desktop
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsDragging(true);
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    catStartPos.current = { ...dragPosition };
+  }, [dragPosition]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging) return;
+    
+    const deltaX = e.clientX - dragStartPos.current.x;
+    const deltaY = e.clientY - dragStartPos.current.y;
+    
+    const maxX = window.innerWidth - 60;
+    const maxY = window.innerHeight - 140;
+    
+    const newX = Math.min(maxX, Math.max(-maxX + 120, catStartPos.current.x + deltaX));
+    const newY = Math.min(0, Math.max(-maxY, catStartPos.current.y + deltaY));
+    
+    setDragPosition({ x: newX, y: newY });
+    
+    if (Math.abs(deltaX) > 5) {
+      setFacingLeft(deltaX < 0);
+    }
+  }, [isDragging]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Mouse wheel for scaling on desktop
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    setScale((prev) => Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev + delta)));
+  }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   if (!showCompanion || companionType !== 'cat') return null;
 
   return (
     <div
-      className="fixed bottom-20 right-4 z-35 pointer-events-none select-none"
+      ref={containerRef}
+      className={cn(
+        'fixed bottom-20 right-4 z-35 select-none touch-none',
+        isDragging ? 'cursor-grabbing' : 'cursor-grab'
+      )}
       style={{
-        transform: `translateX(${position.x}px)`,
-        transition: isWalking ? 'transform 3s ease-in-out' : 'none',
+        transform: `translate(${position.x + dragPosition.x}px, ${dragPosition.y}px) scale(${scale})`,
+        transition: isDragging || isPinching ? 'none' : isWalking ? 'transform 3s ease-in-out' : 'transform 0.2s ease-out',
       }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onWheel={handleWheel}
     >
       <div
         className={cn(
