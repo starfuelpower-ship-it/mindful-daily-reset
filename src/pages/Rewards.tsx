@@ -177,11 +177,31 @@ const Rewards = () => {
             <h1 className="text-2xl font-bold text-foreground">Rewards Store</h1>
             <p className="text-sm text-muted-foreground">Unlock adorable costumes for your cat!</p>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30">
+          <button
+            onClick={() => navigate('/points-shop')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-800/40 transition-colors"
+          >
             <Coins className="w-4 h-4 text-amber-600" />
             <span className="font-bold text-amber-700 dark:text-amber-300">{balance}</span>
-          </div>
+          </button>
         </header>
+
+        {/* Get More Points Banner */}
+        <button
+          onClick={() => navigate('/points-shop')}
+          className="w-full mb-6 p-4 rounded-2xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-between hover:from-primary/15 hover:to-primary/10 transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Coins className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-foreground">Need more points?</p>
+              <p className="text-xs text-muted-foreground">Visit the Points Shop</p>
+            </div>
+          </div>
+          <Sparkles className="w-5 h-5 text-primary" />
+        </button>
 
         {/* Category Filter */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">

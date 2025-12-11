@@ -27,6 +27,7 @@ import HabitManager from "./pages/HabitManager";
 import Widgets from "./pages/Widgets";
 import Rewards from "./pages/Rewards";
 import CatCustomize from "./pages/CatCustomize";
+import PointsShop from "./pages/PointsShop";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const App = () => (
                             <Route path="/widgets" element={<Widgets />} />
                             <Route path="/rewards" element={<Rewards />} />
                             <Route path="/cat" element={<CatCustomize />} />
+                            <Route path="/points-shop" element={<PointsShop />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </QuotesProvider>
