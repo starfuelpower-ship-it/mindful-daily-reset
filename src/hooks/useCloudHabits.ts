@@ -9,6 +9,7 @@ export interface CloudHabit {
   category: string;
   notes: string | null;
   color: string | null;
+  icon: string | null;
   completed_today: boolean;
   streak: number;
   last_completed_date: string | null;
@@ -86,7 +87,7 @@ export function useCloudHabits() {
     fetchHabits();
   }, [fetchHabits]);
 
-  const addHabit = async (name: string, category: string, notes: string, color?: string) => {
+  const addHabit = async (name: string, category: string, notes: string, icon?: string, color?: string) => {
     if (!user) return;
 
     try {
@@ -97,6 +98,7 @@ export function useCloudHabits() {
           name,
           category,
           notes: notes || null,
+          icon: icon || 'check-circle',
           color: color || null,
           last_reset_date: getTodayDate(),
         })
@@ -112,7 +114,7 @@ export function useCloudHabits() {
     }
   };
 
-  const updateHabit = async (id: string, updates: Partial<Pick<CloudHabit, 'name' | 'category' | 'notes' | 'color'>>) => {
+  const updateHabit = async (id: string, updates: Partial<Pick<CloudHabit, 'name' | 'category' | 'notes' | 'color' | 'icon'>>) => {
     if (!user) return;
 
     try {
