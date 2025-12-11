@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Check, ArrowLeft, Sparkles, BarChart3, Palette, Users, Infinity, BookOpen } from 'lucide-react';
+import { Crown, Check, ArrowLeft, Sparkles, BarChart3, Palette, Users, Infinity, BookOpen, RotateCcw } from 'lucide-react';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAppleIAP } from '@/hooks/useAppleIAP';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -10,7 +11,6 @@ import { toast } from 'sonner';
 // ============================================
 // PREMIUM FEATURES
 // ============================================
-// Customize: Add or modify premium features here
 
 const PREMIUM_FEATURES = [
   { icon: Infinity, label: 'Unlimited habits', description: 'Track as many habits as you want' },
@@ -24,11 +24,11 @@ const PREMIUM_FEATURES = [
 // ============================================
 // PRICING PLANS
 // ============================================
-// Customize: Change prices and billing periods
+// Prices are fetched from App Store via IAP
 
 const PRICING_PLANS = [
   {
-    id: 'monthly',
+    id: 'monthly' as const,
     name: 'Monthly',
     price: '$4.99',
     period: '/month',
@@ -36,7 +36,7 @@ const PRICING_PLANS = [
     popular: false,
   },
   {
-    id: 'annual',
+    id: 'annual' as const,
     name: 'Annual',
     price: '$29.99',
     period: '/year',
@@ -44,7 +44,7 @@ const PRICING_PLANS = [
     popular: true,
   },
   {
-    id: 'lifetime',
+    id: 'lifetime' as const,
     name: 'Lifetime',
     price: '$79.99',
     period: 'one-time',
@@ -56,9 +56,9 @@ const PRICING_PLANS = [
 export default function Premium() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isPremium, upgradeToPremium } = usePremium();
-  const [selectedPlan, setSelectedPlan] = useState('annual');
-  const [isUpgrading, setIsUpgrading] = useState(false);
+  const { isPremium } = usePremium();
+  const { purchaseSubscription, restorePurchases, isLoading, isNativePlatform } = useAppleIAP();
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual' | 'lifetime'>('annual');
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -67,16 +67,14 @@ export default function Premium() {
       return;
     }
 
-    setIsUpgrading(true);
-    try {
-      await upgradeToPremium();
-      toast.success('Welcome to Premium! 🎉');
+    const success = await purchaseSubscription(selectedPlan);
+    if (success) {
       navigate('/');
-    } catch (error) {
-      toast.error('Failed to upgrade. Please try again.');
-    } finally {
-      setIsUpgrading(false);
     }
+  };
+
+  const handleRestore = async () => {
+    await restorePurchases();
   };
 
   if (isPremium) {
@@ -155,7 +153,7 @@ export default function Premium() {
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <div>
+                <div className={cn(selectedPlan === plan.id && 'pl-8')}>
                   <p className="font-semibold text-foreground">{plan.name}</p>
                   <p className="text-xs text-muted-foreground">{plan.description}</p>
                 </div>
@@ -179,10 +177,10 @@ export default function Premium() {
         <div className="space-y-4 pt-4">
           <Button
             onClick={handleUpgrade}
-            disabled={isUpgrading}
+            disabled={isLoading}
             className="w-full h-14 text-lg font-semibold rounded-2xl shadow-lg shadow-primary/30"
           >
-            {isUpgrading ? (
+            {isLoading ? (
               'Processing...'
             ) : (
               <>
@@ -192,9 +190,16 @@ export default function Premium() {
             )}
           </Button>
           
-          {/* Legal text */}
+          {/* Legal text - Apple required */}
           <p className="text-xs text-center text-muted-foreground px-4">
-            This is a demo screen. In production, this would connect to real in-app purchases via App Store or Google Play.
+            {isNativePlatform ? (
+              <>
+                Payment will be charged to your Apple ID account at confirmation of purchase.
+                Subscription automatically renews unless canceled at least 24 hours before the end of the current period.
+              </>
+            ) : (
+              'Purchase via the iOS app to unlock Premium features.'
+            )}
           </p>
           
           <div className="flex justify-center gap-4 text-xs text-muted-foreground">
@@ -202,7 +207,14 @@ export default function Premium() {
             <span>•</span>
             <button className="hover:text-foreground">Privacy Policy</button>
             <span>•</span>
-            <button className="hover:text-foreground">Restore Purchase</button>
+            <button 
+              onClick={handleRestore}
+              disabled={isLoading}
+              className="hover:text-foreground flex items-center gap-1"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Restore Purchase
+            </button>
           </div>
         </div>
       </main>

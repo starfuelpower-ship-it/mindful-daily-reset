@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePoints } from '@/contexts/PointsContext';
 import { usePremium } from '@/contexts/PremiumContext';
+import { useAppleIAP } from '@/hooks/useAppleIAP';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { ArrowLeft, Coins, Crown, Sparkles, Gift, Zap, Star, Package } from 'luc
 import { cn } from '@/lib/utils';
 
 // Point bundle definitions
+// Prices are fetched from App Store via IAP
 const POINT_BUNDLES = [
   {
     id: 'small',
@@ -57,15 +59,12 @@ const POINT_BUNDLES = [
 const PointsShop = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { balance, earnPoints } = usePoints();
+  const { balance } = usePoints();
   const { isPremium } = usePremium();
+  const { purchasePointBundle, isLoading: iapLoading, isNativePlatform } = useAppleIAP();
   const { playSound, triggerHaptic } = useSoundEffects();
   const [purchasing, setPurchasing] = useState<string | null>(null);
 
-  // TODO: Replace this with real in-app purchase integration
-  // For iOS: Use StoreKit / react-native-iap
-  // For Android: Use Google Play Billing
-  // For Web: Use Stripe or similar payment processor
   const handlePurchase = async (bundle: typeof POINT_BUNDLES[0]) => {
     if (!user) {
       navigate('/auth');
@@ -76,25 +75,13 @@ const PointsShop = () => {
     playSound('click');
     triggerHaptic('light');
 
-    // Simulate purchase delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // TODO: IMPORTANT - This is where real payment integration goes
-    // 1. Initiate payment flow with payment provider
-    // 2. Wait for payment confirmation
-    // 3. Verify receipt on backend
-    // 4. Only then award points
-
-    // For demo: immediately award points
-    await earnPoints(bundle.points, 'purchase', `Purchased ${bundle.name}`);
+    const success = await purchasePointBundle(bundle.id);
     
-    toast.success(`You received ${bundle.points.toLocaleString()} points!`, {
-      icon: '🎉',
-      description: 'Thank you for your purchase!',
-    });
+    if (success) {
+      playSound('achievement');
+      triggerHaptic('success');
+    }
 
-    playSound('achievement');
-    triggerHaptic('success');
     setPurchasing(null);
   };
 
@@ -144,7 +131,7 @@ const PointsShop = () => {
           <div className="space-y-3">
             {POINT_BUNDLES.map((bundle) => {
               const Icon = bundle.icon;
-              const isProcessing = purchasing === bundle.id;
+              const isProcessing = purchasing === bundle.id || iapLoading;
 
               return (
                 <div
@@ -196,7 +183,7 @@ const PointsShop = () => {
                         bundle.popular && 'bg-primary hover:bg-primary/90'
                       )}
                     >
-                      {isProcessing ? (
+                      {isProcessing && purchasing === bundle.id ? (
                         <span className="animate-pulse">...</span>
                       ) : (
                         bundle.price
@@ -245,13 +232,22 @@ const PointsShop = () => {
           </Button>
         </section>
 
-        {/* Demo Notice */}
+        {/* Apple IAP Notice */}
         <div className="text-center text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl">
-          <p className="font-medium mb-1">🧪 Demo Mode</p>
-          <p>
-            Purchases are simulated. In the production app, this will use real
-            in-app purchases via StoreKit (iOS) or Google Play Billing (Android).
-          </p>
+          {isNativePlatform ? (
+            <p>
+              Payment will be charged to your Apple ID account.
+              All purchases are processed securely through the App Store.
+            </p>
+          ) : (
+            <>
+              <p className="font-medium mb-1">📱 iOS App Required</p>
+              <p>
+                Point bundles can only be purchased through the iOS app.
+                Download the app to unlock this feature.
+              </p>
+            </>
+          )}
         </div>
       </div>
 
