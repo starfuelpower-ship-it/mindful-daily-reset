@@ -530,3 +530,17 @@
 .animate-sparkle {
   animation: sparkle 0.8s ease-out forwards;
 }
+
+/* Shimmer animation for card completion */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 0.8s ease-out forwards;
+}
