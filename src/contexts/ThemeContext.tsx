@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 
 type BaseTheme = 'light' | 'dark' | 'system';
 type PremiumTheme = 'pastel' | 'neon' | 'forest' | 'sunset';
@@ -78,14 +77,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [colorTheme, previewTheme]);
 
-  // Reset preview theme when navigating away (for non-premium users)
-  const location = useLocation();
-  useEffect(() => {
-    if (previewTheme) {
-      setPreviewTheme(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
 
   // Persist theme choices
   useEffect(() => {
