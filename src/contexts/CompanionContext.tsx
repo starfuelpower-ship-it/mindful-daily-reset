@@ -95,13 +95,18 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
             const costumeMap: Record<string, CostumeType> = {
               'Cozy Scarf': 'scarf',
               'Wizard Hat': 'wizard_hat',
-              'Raincoat': 'raincoat',
-              'Sleep Cap': 'sleep_cap',
+              'Raincoat & Boots': 'raincoat',
+              'Sleepy Nightcap': 'sleep_cap',
               'Headphones': 'headphones',
               'Flower Crown': 'flower_crown',
               'Bow Tie': 'bow_tie',
               'Santa Hat': 'santa_hat',
               'Royal Crown': 'crown',
+              'Winter Beanie': 'winter_beanie',
+              'Summer Sunhat': 'sunhat',
+              'Cozy Sweater': 'sweater',
+              'Hero Cape': 'cape',
+              'Party Hat': 'party_hat',
             };
             const costumeType = costumeMap[costumeDetails.name] || 'none';
             setEquippedCostumeState(costumeType);
@@ -176,13 +181,18 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
           none: null,
           scarf: 'Cozy Scarf',
           wizard_hat: 'Wizard Hat',
-          raincoat: 'Raincoat',
-          sleep_cap: 'Sleep Cap',
+          raincoat: 'Raincoat & Boots',
+          sleep_cap: 'Sleepy Nightcap',
           headphones: 'Headphones',
           flower_crown: 'Flower Crown',
           bow_tie: 'Bow Tie',
           santa_hat: 'Santa Hat',
           crown: 'Royal Crown',
+          winter_beanie: 'Winter Beanie',
+          sunhat: 'Summer Sunhat',
+          sweater: 'Cozy Sweater',
+          cape: 'Hero Cape',
+          party_hat: 'Party Hat',
         };
 
         const costumeName = costumeNameMap[costume];

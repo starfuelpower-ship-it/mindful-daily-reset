@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { ArrowLeft, Coins, Crown, Sparkles, Check, Lock, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CatCostume, COSTUME_DATA, type CostumeType } from '@/components/CatCostume';
+import { CatCostume, getCostumeTypeFromDB, type CostumeType } from '@/components/CatCostume';
 
 interface Costume {
   id: string;
@@ -23,22 +23,6 @@ interface Costume {
   is_premium_only: boolean;
   category: string;
 }
-
-// Map database costume names to our CostumeType
-const getCostumeType = (name: string): CostumeType => {
-  const map: Record<string, CostumeType> = {
-    'Cozy Scarf': 'scarf',
-    'Wizard Hat': 'wizard_hat',
-    'Raincoat': 'raincoat',
-    'Sleep Cap': 'sleep_cap',
-    'Headphones': 'headphones',
-    'Flower Crown': 'flower_crown',
-    'Bow Tie': 'bow_tie',
-    'Santa Hat': 'santa_hat',
-    'Royal Crown': 'crown',
-  };
-  return map[name] || 'none';
-};
 
 // Cat preview with costume for store display
 const CatPreviewSmall = ({ costume, isDark }: { costume: CostumeType; isDark: boolean }) => (
@@ -227,7 +211,7 @@ const Rewards = () => {
             {regularCostumes.map((costume) => {
               const owned = ownedCostumes.has(costume.id);
               const canAfford = balance >= costume.price;
-              const costumeType = getCostumeType(costume.name);
+              const costumeType = getCostumeTypeFromDB(costume.name);
 
               return (
                 <div
@@ -288,7 +272,7 @@ const Rewards = () => {
                 const owned = ownedCostumes.has(costume.id);
                 const canAfford = balance >= costume.price;
                 const canPurchase = isPremium && canAfford && !owned;
-                const costumeType = getCostumeType(costume.name);
+                const costumeType = getCostumeTypeFromDB(costume.name);
 
                 return (
                   <div
