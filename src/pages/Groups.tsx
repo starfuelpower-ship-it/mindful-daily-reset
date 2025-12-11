@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Plus, UserPlus, LogOut, Copy, Crown, Sparkles } from 'lucide-react';
+import { Users, Plus, UserPlus, LogOut, Copy, Crown, Sparkles, Share2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useGroups } from '@/hooks/useGroups';
@@ -101,7 +101,30 @@ export default function Groups() {
   const copyInviteCode = () => {
     if (currentGroup) {
       navigator.clipboard.writeText(currentGroup.invite_code);
+      triggerHaptic('light');
       toast.success('Invite code copied!');
+    }
+  };
+
+  const shareInviteCode = async () => {
+    if (!currentGroup) return;
+    
+    const shareText = `Join my group "${currentGroup.name}" on Daily Reset!\n\nInvite Code: ${currentGroup.invite_code}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Join my Daily Reset group!',
+          text: shareText,
+        });
+        triggerHaptic('success');
+      } catch (err) {
+        // User cancelled or share failed, fallback to copy
+        copyInviteCode();
+      }
+    } else {
+      // Fallback to clipboard
+      copyInviteCode();
     }
   };
 
@@ -167,14 +190,24 @@ export default function Groups() {
               <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-xl">
                 <span className="text-sm text-muted-foreground">Invite Code:</span>
                 <span className="font-mono font-semibold text-foreground">{currentGroup.invite_code}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 ml-auto"
-                  onClick={copyInviteCode}
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
+                <div className="ml-auto flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={copyInviteCode}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={shareInviteCode}
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
 
