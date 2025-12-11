@@ -117,6 +117,7 @@ export const CatCompanion = memo(() => {
   }, [scale, dragPosition, handleCatTap]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent scrolling while dragging/pinching
     if (isPinching && e.touches.length === 2) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
@@ -218,7 +219,7 @@ export const CatCompanion = memo(() => {
         <div
           ref={containerRef}
           className={cn(
-            'absolute bottom-24 right-4 select-none touch-none pointer-events-auto',
+            'absolute bottom-24 right-4 select-none pointer-events-auto',
             isDragging ? 'cursor-grabbing' : 'cursor-grab'
           )}
           style={{
