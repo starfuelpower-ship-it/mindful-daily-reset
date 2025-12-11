@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PremiumProvider } from "@/contexts/PremiumContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AmbientProvider } from "@/contexts/AmbientContext";
+import { AmbientLayer } from "@/components/AmbientLayer";
+import { AmbientAudioPlayer } from "@/components/AmbientAudioPlayer";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
@@ -29,19 +32,23 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <PremiumProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/premium" element={<Premium />} />
-                <Route path="/stats" element={<Stats />} />
-                <Route path="/groups" element={<Groups />} />
-                <Route path="/journal" element={<Journal />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/habit-manager" element={<HabitManager />} />
-                <Route path="/widgets" element={<Widgets />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AmbientProvider>
+                <AmbientLayer />
+                <AmbientAudioPlayer />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/premium" element={<Premium />} />
+                  <Route path="/stats" element={<Stats />} />
+                  <Route path="/groups" element={<Groups />} />
+                  <Route path="/journal" element={<Journal />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/habit-manager" element={<HabitManager />} />
+                  <Route path="/widgets" element={<Widgets />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AmbientProvider>
             </PremiumProvider>
           </AuthProvider>
         </BrowserRouter>

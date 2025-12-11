@@ -3,7 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Button } from '@/components/ui/button';
 import { ThemePicker } from '@/components/ThemePicker';
-import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid } from 'lucide-react';
+import { AmbientSettings } from '@/components/AmbientSettings';
+import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -18,7 +19,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background/80 backdrop-blur-sm relative z-10">
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -104,6 +105,17 @@ export default function Settings() {
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </button>
               )}
+            </div>
+          </div>
+
+          {/* Cozy Atmosphere Section */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground px-1 flex items-center gap-2">
+              <Coffee className="w-4 h-4" />
+              Cozy Atmosphere
+            </h2>
+            <div className="bg-card rounded-2xl border border-border/50 p-4">
+              <AmbientSettings />
             </div>
           </div>
 

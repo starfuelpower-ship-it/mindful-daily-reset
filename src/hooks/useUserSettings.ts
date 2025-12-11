@@ -14,6 +14,9 @@ export interface UserSettings {
   daily_notification: boolean;
   vacation_mode: boolean;
   sound_enabled: boolean;
+  ambient_mode: 'off' | 'rain' | 'sun_rays' | 'snow';
+  ambient_visuals_enabled: boolean;
+  ambient_sounds_enabled: boolean;
 }
 
 const DEFAULT_SETTINGS: Omit<UserSettings, 'id' | 'user_id'> = {
@@ -25,6 +28,9 @@ const DEFAULT_SETTINGS: Omit<UserSettings, 'id' | 'user_id'> = {
   daily_notification: false,
   vacation_mode: false,
   sound_enabled: true,
+  ambient_mode: 'sun_rays',
+  ambient_visuals_enabled: true,
+  ambient_sounds_enabled: false,
 };
 
 export function useUserSettings() {
@@ -60,6 +66,9 @@ export function useUserSettings() {
           daily_notification: data.daily_notification ?? false,
           vacation_mode: data.vacation_mode ?? false,
           sound_enabled: data.sound_enabled ?? true,
+          ambient_mode: ((data as any).ambient_mode as 'off' | 'rain' | 'sun_rays' | 'snow') || 'sun_rays',
+          ambient_visuals_enabled: (data as any).ambient_visuals_enabled ?? true,
+          ambient_sounds_enabled: (data as any).ambient_sounds_enabled ?? false,
         });
       } else {
         // Create default settings for new user
@@ -84,6 +93,9 @@ export function useUserSettings() {
           daily_notification: newSettings.daily_notification ?? false,
           vacation_mode: newSettings.vacation_mode ?? false,
           sound_enabled: newSettings.sound_enabled ?? true,
+          ambient_mode: ((newSettings as any).ambient_mode as 'off' | 'rain' | 'sun_rays' | 'snow') || 'sun_rays',
+          ambient_visuals_enabled: (newSettings as any).ambient_visuals_enabled ?? true,
+          ambient_sounds_enabled: (newSettings as any).ambient_sounds_enabled ?? false,
         });
       }
     } catch (error) {
