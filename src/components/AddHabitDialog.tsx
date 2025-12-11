@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,35 +18,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Category, HABIT_ICONS, OLD_CATEGORY_CONFIG } from '@/types/habit';
-import { cn } from '@/lib/utils';
-
-// ============================================
-// ADD HABIT DIALOG
-// ============================================
-// Modal for creating new habits
-// Customize: Add more fields or change the layout
+import { Category, OLD_CATEGORY_CONFIG } from '@/types/habit';
+import { HabitIconPicker } from './HabitIconPicker';
+import { HabitColorPicker } from './HabitColorPicker';
+import { usePremium } from '@/contexts/PremiumContext';
 
 const categories: Category[] = ['Health', 'Productivity', 'Fitness', 'Mindset', 'Custom'];
 
 interface AddHabitDialogProps {
-  onAdd?: (name: string, category: string, notes: string) => void;
-  // New props for cloud mode
+  onAdd?: (name: string, category: string, notes: string, icon?: string, color?: string) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onSave?: (
     name: string,
     category: Category,
     icon: string,
-    notes?: string
+    notes?: string,
+    color?: string
   ) => Promise<boolean>;
 }
 
 export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSave }: AddHabitDialogProps) {
+  const { isPremium } = usePremium();
   const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState('');
   const [category, setCategory] = useState<Category>('Health');
-  const [icon, setIcon] = useState('✅');
+  const [icon, setIcon] = useState('check-circle');
+  const [color, setColor] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -57,7 +55,8 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
   const resetForm = () => {
     setName('');
     setCategory('Health');
-    setIcon('✅');
+    setIcon('check-circle');
+    setColor('');
     setNotes('');
   };
 
@@ -65,18 +64,18 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
     e.preventDefault();
     if (!name.trim()) return;
 
+    const finalColor = isPremium ? color : '';
+
     if (onSave) {
-      // Cloud mode
       setSaving(true);
-      const success = await onSave(name.trim(), category, icon, notes.trim() || undefined);
+      const success = await onSave(name.trim(), category, icon, notes.trim() || undefined, finalColor || undefined);
       setSaving(false);
       if (success) {
         resetForm();
         setOpen(false);
       }
     } else if (onAdd) {
-      // Local mode (legacy)
-      onAdd(name.trim(), category, notes.trim());
+      onAdd(name.trim(), category, notes.trim(), icon, finalColor);
       resetForm();
       setOpen(false);
     }
@@ -89,7 +88,89 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
     }
   };
 
-  // If controlled, don't render trigger
+  const DialogBody = () => (
+    <form onSubmit={handleSubmit} className="space-y-5 pt-2">
+      {/* Icon and Color pickers */}
+      <div className="flex items-start gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs">Icon</Label>
+          <HabitIconPicker 
+            value={icon} 
+            onChange={setIcon} 
+            color={color || undefined}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs flex items-center gap-1">
+            Color
+          </Label>
+          <HabitColorPicker 
+            value={color} 
+            onChange={setColor}
+            isPremium={isPremium}
+            showPremiumLock={true}
+          />
+        </div>
+        <div className="flex-1 space-y-1.5">
+          <Label htmlFor="name" className="text-xs">Habit Name</Label>
+          <Input
+            id="name"
+            placeholder="e.g., Morning workout"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="h-14 rounded-xl text-base"
+            autoFocus
+          />
+        </div>
+      </div>
+
+      {/* Category */}
+      <div className="space-y-2">
+        <Label>Category</Label>
+        <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
+          <SelectTrigger className="h-12 rounded-xl">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-border z-50">
+            {categories.map((cat) => (
+              <SelectItem key={cat} value={cat}>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: OLD_CATEGORY_CONFIG[cat].color }}
+                  />
+                  {cat}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Notes */}
+      <div className="space-y-2">
+        <Label htmlFor="notes">Notes (optional)</Label>
+        <Textarea
+          id="notes"
+          placeholder="Add any notes or details..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="rounded-xl resize-none"
+          rows={3}
+        />
+      </div>
+
+      {/* Save button */}
+      <Button
+        type="submit"
+        disabled={!name.trim() || saving}
+        className="w-full h-12 rounded-xl text-base font-semibold"
+      >
+        {saving ? 'Creating...' : 'Create Habit'}
+      </Button>
+    </form>
+  );
+
   if (isControlled) {
     return (
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -99,94 +180,12 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
               Add New Habit
             </DialogTitle>
           </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-5 pt-2">
-            {/* Habit name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Habit Name</Label>
-              <Input
-                id="name"
-                placeholder="e.g., Morning workout"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-12 rounded-xl"
-                autoFocus
-              />
-            </div>
-
-            {/* Category */}
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
-                <SelectTrigger className="h-12 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: OLD_CATEGORY_CONFIG[cat].color }}
-                        />
-                        {cat}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Icon picker */}
-            <div className="space-y-2">
-              <Label>Icon</Label>
-              <div className="grid grid-cols-8 gap-2 p-3 bg-muted rounded-xl max-h-32 overflow-y-auto">
-                {HABIT_ICONS.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => setIcon(emoji)}
-                    className={cn(
-                      'w-9 h-9 rounded-lg flex items-center justify-center text-xl transition-all',
-                      icon === emoji
-                        ? 'bg-primary text-primary-foreground scale-110'
-                        : 'hover:bg-card'
-                    )}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
-              <Textarea
-                id="notes"
-                placeholder="Add any notes or details..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="rounded-xl resize-none"
-                rows={3}
-              />
-            </div>
-
-            {/* Save button */}
-            <Button
-              type="submit"
-              disabled={!name.trim() || saving}
-              className="w-full h-12 rounded-xl text-base font-semibold"
-            >
-              {saving ? 'Creating...' : 'Create Habit'}
-            </Button>
-          </form>
+          <DialogBody />
         </DialogContent>
       </Dialog>
     );
   }
 
-  // Uncontrolled with trigger (legacy)
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -199,60 +198,7 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
         <DialogHeader>
           <DialogTitle className="text-xl">Add New Habit</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          <div className="space-y-2">
-            <label htmlFor="habit-name" className="text-sm font-medium text-foreground">
-              Habit Name
-            </label>
-            <Input
-              id="habit-name"
-              placeholder="e.g., Morning meditation"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-11 rounded-xl"
-              autoFocus
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="category" className="text-sm font-medium text-foreground">
-              Category
-            </label>
-            <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
-              <SelectTrigger className="h-11 rounded-xl">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat} className="rounded-lg">
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="notes" className="text-sm font-medium text-foreground">
-              Notes (optional)
-            </label>
-            <Textarea
-              id="notes"
-              placeholder="Add any notes or reminders..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="min-h-[80px] rounded-xl resize-none"
-            />
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full h-12 text-base rounded-xl"
-            disabled={!name.trim()}
-          >
-            Save Habit
-          </Button>
-        </form>
+        <DialogBody />
       </DialogContent>
     </Dialog>
   );

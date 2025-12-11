@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CloudHabit } from '@/hooks/useCloudHabits';
 import { usePremium } from '@/contexts/PremiumContext';
 import {
@@ -18,25 +18,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Crown, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import { HabitIconPicker } from './HabitIconPicker';
+import { HabitColorPicker } from './HabitColorPicker';
+import { OLD_CATEGORY_CONFIG, Category } from '@/types/habit';
 
-const categories = ['Health', 'Productivity', 'Fitness', 'Mindset', 'Custom'] as const;
-
-const habitColors = [
-  { name: 'Default', value: '' },
-  { name: 'Rose', value: 'hsl(350, 60%, 55%)' },
-  { name: 'Orange', value: 'hsl(25, 80%, 55%)' },
-  { name: 'Yellow', value: 'hsl(45, 80%, 50%)' },
-  { name: 'Teal', value: 'hsl(175, 60%, 45%)' },
-  { name: 'Blue', value: 'hsl(220, 70%, 55%)' },
-  { name: 'Purple', value: 'hsl(280, 60%, 55%)' },
-];
+const categories: Category[] = ['Health', 'Productivity', 'Fitness', 'Mindset', 'Custom'];
 
 interface EditHabitDialogProps {
   habit: CloudHabit | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdate: (id: string, updates: Partial<Pick<CloudHabit, 'name' | 'category' | 'notes' | 'color'>>) => void;
+  onUpdate: (id: string, updates: Partial<Pick<CloudHabit, 'name' | 'category' | 'notes' | 'color' | 'icon'>>) => void;
   onDelete: (id: string) => void;
 }
 
@@ -48,20 +41,22 @@ export function EditHabitDialog({
   onDelete 
 }: EditHabitDialogProps) {
   const { isPremium } = usePremium();
-  const [name, setName] = useState(habit?.name || '');
-  const [category, setCategory] = useState(habit?.category || 'Custom');
-  const [notes, setNotes] = useState(habit?.notes || '');
-  const [color, setColor] = useState(habit?.color || '');
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState<string>('Custom');
+  const [notes, setNotes] = useState('');
+  const [color, setColor] = useState('');
+  const [icon, setIcon] = useState('check-circle');
 
   // Reset form when habit changes
-  useState(() => {
+  useEffect(() => {
     if (habit) {
       setName(habit.name);
       setCategory(habit.category);
       setNotes(habit.notes || '');
       setColor(habit.color || '');
+      setIcon(habit.icon || 'check-circle');
     }
-  });
+  }, [habit]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +66,8 @@ export function EditHabitDialog({
       name: name.trim(), 
       category, 
       notes: notes.trim(),
-      color: isPremium ? color : null,
+      color: isPremium ? color : undefined,
+      icon,
     });
     onOpenChange(false);
   };
@@ -86,32 +82,59 @@ export function EditHabitDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md rounded-2xl">
         <DialogHeader>
           <DialogTitle>Edit Habit</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="edit-name">Habit Name</Label>
-            <Input
-              id="edit-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Morning meditation"
-            />
+          {/* Icon, Color, and Name row */}
+          <div className="flex items-start gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Icon</Label>
+              <HabitIconPicker 
+                value={icon} 
+                onChange={setIcon}
+                color={color || undefined}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Color</Label>
+              <HabitColorPicker 
+                value={color} 
+                onChange={setColor}
+                isPremium={isPremium}
+                showPremiumLock={true}
+              />
+            </div>
+            <div className="flex-1 space-y-1.5">
+              <Label htmlFor="edit-name" className="text-xs">Habit Name</Label>
+              <Input
+                id="edit-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Morning meditation"
+                className="h-14 rounded-xl"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="edit-category">Category</Label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="edit-category">
+              <SelectTrigger id="edit-category" className="rounded-xl">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border z-50">
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat}>
-                    {cat}
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: OLD_CATEGORY_CONFIG[cat].color }}
+                      />
+                      {cat}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -126,37 +149,8 @@ export function EditHabitDialog({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any notes..."
               rows={3}
+              className="rounded-xl resize-none"
             />
-          </div>
-
-          {/* Color Selection - Premium Only */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label>Color</Label>
-              {!isPremium && <Crown className="w-3.5 h-3.5 text-primary" />}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {habitColors.map((c) => (
-                <button
-                  key={c.name}
-                  type="button"
-                  disabled={!isPremium && c.value !== ''}
-                  onClick={() => setColor(c.value)}
-                  className={`w-8 h-8 rounded-full border-2 transition-all ${
-                    color === c.value ? 'border-foreground scale-110' : 'border-transparent'
-                  } ${!isPremium && c.value !== '' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  style={{ 
-                    backgroundColor: c.value || 'hsl(var(--primary))',
-                  }}
-                  title={c.name}
-                />
-              ))}
-            </div>
-            {!isPremium && (
-              <p className="text-xs text-muted-foreground">
-                Upgrade to Premium to use custom colors
-              </p>
-            )}
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -164,12 +158,12 @@ export function EditHabitDialog({
               type="button"
               variant="destructive"
               onClick={handleDelete}
-              className="flex-1"
+              className="flex-1 rounded-xl"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete
             </Button>
-            <Button type="submit" className="flex-1" disabled={!name.trim()}>
+            <Button type="submit" className="flex-1 rounded-xl" disabled={!name.trim()}>
               Save Changes
             </Button>
           </div>

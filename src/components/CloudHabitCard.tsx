@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import { CloudHabit } from '@/hooks/useCloudHabits';
-import { Check, Flame, Heart, Zap, Dumbbell, Brain, Sparkles } from 'lucide-react';
+import { Check, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CelebrationAnimation } from './CelebrationAnimation';
+import { getHabitIcon } from './HabitIconPicker';
 
 interface CloudHabitCardProps {
   habit: CloudHabit;
@@ -12,14 +13,6 @@ interface CloudHabitCardProps {
   confettiEnabled?: boolean;
   soundEnabled?: boolean;
 }
-
-const categoryIcons: Record<string, React.ElementType> = {
-  Health: Heart,
-  Productivity: Zap,
-  Fitness: Dumbbell,
-  Mindset: Brain,
-  Custom: Sparkles,
-};
 
 const categoryClass: Record<string, string> = {
   Health: 'category-health',
@@ -61,7 +54,9 @@ export function CloudHabitCard({
   const [showRipple, setShowRipple] = useState(false);
   const checkboxRef = useRef<HTMLButtonElement>(null);
   
-  const CategoryIcon = categoryIcons[habit.category] || Sparkles;
+  // Get the Lucide icon component
+  const HabitIcon = getHabitIcon(habit.icon || 'check-circle');
+  const habitColor = habit.color || 'hsl(var(--primary))';
   
   const customStyle = habit.color ? {
     borderColor: `${habit.color}33`,
@@ -154,9 +149,22 @@ export function CloudHabitCard({
           )}
         </div>
 
+        {/* Icon */}
+        <div 
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ 
+            backgroundColor: `${habitColor}15`,
+          }}
+        >
+          <HabitIcon 
+            className="w-5 h-5" 
+            style={{ color: habitColor }}
+          />
+        </div>
+
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-0.5">
             <h3
               className={cn(
                 'font-medium text-foreground transition-all duration-300',
@@ -165,24 +173,23 @@ export function CloudHabitCard({
             >
               {habit.name}
             </h3>
-            <span className={cn('category-badge flex items-center gap-1', categoryClass[habit.category])}>
-              <CategoryIcon className="w-3 h-3" />
+            <span className={cn('category-badge text-[10px]', categoryClass[habit.category])}>
               {habit.category}
             </span>
           </div>
 
           {habit.notes && (
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+            <p className="text-xs text-muted-foreground line-clamp-1 mb-1">
               {habit.notes}
             </p>
           )}
 
           {/* Streak */}
           {habit.streak > 0 && (
-            <div className="flex items-center gap-1.5 text-sm">
+            <div className="flex items-center gap-1.5 text-xs">
               <Flame
                 className={cn(
-                  'w-4 h-4 transition-all duration-300',
+                  'w-3.5 h-3.5 transition-all duration-300',
                   habit.streak >= 30 && 'animate-streak-pulse text-destructive',
                   habit.streak >= 7 && habit.streak < 30 && 'animate-streak-pulse'
                 )}
@@ -193,7 +200,7 @@ export function CloudHabitCard({
                 habit.streak >= 7 && 'font-medium',
                 habit.streak >= 30 && 'text-primary font-semibold'
               )}>
-                {habit.streak} day{habit.streak !== 1 ? 's' : ''} streak
+                {habit.streak} day{habit.streak !== 1 ? 's' : ''}
                 {habit.streak >= 30 && ' 🔥'}
                 {habit.streak >= 7 && habit.streak < 30 && ' ⭐'}
               </span>

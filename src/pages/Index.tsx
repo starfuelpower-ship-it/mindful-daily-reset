@@ -66,9 +66,9 @@ const Index = () => {
     }
   }, [user, hasMigrated, cloudHabits.isLoading]);
 
-  const handleAddHabit = (name: string, category: string, notes: string) => {
+  const handleAddHabit = (name: string, category: string, notes: string, icon?: string, color?: string) => {
     if (isLoggedIn) {
-      cloudHabits.addHabit(name, category, notes);
+      cloudHabits.addHabit(name, category, notes, icon, color);
     } else {
       localHabits.addHabit(name, category as any, notes);
     }
