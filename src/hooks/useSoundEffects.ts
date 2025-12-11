@@ -1,6 +1,6 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef } from 'react';
 
-type SoundType = 'click' | 'success' | 'complete' | 'pop';
+type SoundType = 'click' | 'success' | 'complete' | 'pop' | 'purr' | 'achievement';
 
 // Create audio context lazily to avoid autoplay restrictions
 let audioContext: AudioContext | null = null;
@@ -58,6 +58,20 @@ const SOUNDS: Record<SoundType, () => void> = {
     setTimeout(() => playTone(659, 0.12, 'triangle', 0.1), 160);
     setTimeout(() => playTone(880, 0.2, 'triangle', 0.08), 240);
   },
+  purr: () => {
+    // Low rumbling purr sound
+    playTone(80, 0.3, 'sine', 0.06);
+    setTimeout(() => playTone(90, 0.3, 'sine', 0.05), 100);
+    setTimeout(() => playTone(75, 0.3, 'sine', 0.06), 200);
+    setTimeout(() => playTone(85, 0.4, 'sine', 0.04), 300);
+  },
+  achievement: () => {
+    // Triumphant fanfare
+    playTone(523, 0.1, 'triangle', 0.12);
+    setTimeout(() => playTone(659, 0.1, 'triangle', 0.12), 80);
+    setTimeout(() => playTone(784, 0.1, 'triangle', 0.12), 160);
+    setTimeout(() => playTone(1047, 0.3, 'triangle', 0.15), 240);
+  },
 };
 
 export function useSoundEffects() {
@@ -76,13 +90,16 @@ export function useSoundEffects() {
   return { playSound, setEnabled };
 }
 
-// Haptic feedback utility
-export function triggerHaptic(type: 'light' | 'medium' | 'heavy' = 'medium') {
+// Haptic feedback utility with more types
+export function triggerHaptic(type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error' = 'medium') {
   if ('vibrate' in navigator) {
     const patterns: Record<string, number | number[]> = {
       light: 10,
       medium: 25,
       heavy: [50, 30, 50],
+      success: [10, 50, 20],
+      warning: [30, 20, 30],
+      error: [50, 30, 50, 30, 50],
     };
     navigator.vibrate(patterns[type]);
   }

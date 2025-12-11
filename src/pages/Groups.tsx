@@ -5,6 +5,7 @@ import { usePremium } from '@/contexts/PremiumContext';
 import { useGroups } from '@/hooks/useGroups';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { PremiumLock } from '@/components/PremiumLock';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { GroupLeaderboard } from '@/components/GroupLeaderboard';
 import { GroupActivityFeed } from '@/components/GroupActivityFeed';
 import { ShareableStreakCard } from '@/components/ShareableStreakCard';
@@ -19,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { triggerHaptic } from '@/hooks/useSoundEffects';
 
 export default function Groups() {
   const navigate = useNavigate();
@@ -45,6 +47,7 @@ export default function Groups() {
   
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,9 +85,16 @@ export default function Groups() {
     }
   };
 
-  const handleLeaveGroup = async () => {
+  const handleLeaveClick = () => {
+    triggerHaptic('warning');
+    setLeaveDialogOpen(true);
+  };
+
+  const handleLeaveConfirm = async () => {
     if (currentGroup) {
+      triggerHaptic('heavy');
       await leaveGroup(currentGroup.id);
+      setLeaveDialogOpen(false);
     }
   };
 
@@ -237,11 +247,23 @@ export default function Groups() {
             <Button
               variant="outline"
               className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
-              onClick={handleLeaveGroup}
+              onClick={handleLeaveClick}
             >
               <LogOut className="w-4 h-4" />
               Leave Group
             </Button>
+
+            {/* Leave Confirmation Dialog */}
+            <ConfirmDialog
+              open={leaveDialogOpen}
+              onOpenChange={setLeaveDialogOpen}
+              title="Leave Group"
+              description={`Are you sure you want to leave "${currentGroup.name}"? You'll need the invite code to rejoin.`}
+              confirmLabel="Leave Group"
+              cancelLabel="Stay"
+              onConfirm={handleLeaveConfirm}
+              variant="destructive"
+            />
           </div>
         ) : (
           /* Empty State */

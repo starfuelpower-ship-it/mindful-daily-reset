@@ -18,10 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Trash2 } from 'lucide-react';
 import { HabitIconPicker } from './HabitIconPicker';
 import { HabitColorPicker } from './HabitColorPicker';
 import { OLD_CATEGORY_CONFIG, Category } from '@/types/habit';
+import { triggerHaptic } from '@/hooks/useSoundEffects';
 
 const categories: Category[] = ['Health', 'Productivity', 'Fitness', 'Mindset', 'Custom'];
 
@@ -46,6 +48,7 @@ export function EditHabitDialog({
   const [notes, setNotes] = useState('');
   const [color, setColor] = useState('');
   const [icon, setIcon] = useState('check-circle');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Reset form when habit changes
   useEffect(() => {
@@ -72,9 +75,16 @@ export function EditHabitDialog({
     onOpenChange(false);
   };
 
-  const handleDelete = () => {
+  const handleDeleteClick = () => {
+    triggerHaptic('warning');
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = () => {
     if (!habit) return;
+    triggerHaptic('heavy');
     onDelete(habit.id);
+    setShowDeleteConfirm(false);
     onOpenChange(false);
   };
 
@@ -157,7 +167,7 @@ export function EditHabitDialog({
             <Button
               type="button"
               variant="destructive"
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
               className="flex-1 rounded-xl"
             >
               <Trash2 className="w-4 h-4 mr-2" />
@@ -168,6 +178,18 @@ export function EditHabitDialog({
             </Button>
           </div>
         </form>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          open={showDeleteConfirm}
+          onOpenChange={setShowDeleteConfirm}
+          title="Delete Habit"
+          description={`Are you sure you want to delete "${habit?.name}"? This will also reset your streak and cannot be undone.`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          onConfirm={handleDeleteConfirm}
+          variant="destructive"
+        />
       </DialogContent>
     </Dialog>
   );
