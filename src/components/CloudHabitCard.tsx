@@ -4,6 +4,7 @@ import { Check, Flame, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CelebrationAnimation } from './CelebrationAnimation';
 import { getHabitIcon } from './HabitIconPicker';
+import { useCompanion } from '@/contexts/CompanionContext';
 
 interface CloudHabitCardProps {
   habit: CloudHabit;
@@ -13,6 +14,7 @@ interface CloudHabitCardProps {
   index: number;
   confettiEnabled?: boolean;
   soundEnabled?: boolean;
+  onComplete?: () => void; // Called when habit is completed
 }
 
 // Completion sound
@@ -78,10 +80,12 @@ export function CloudHabitCard({
   index,
   confettiEnabled = true,
   soundEnabled = true,
+  onComplete,
 }: CloudHabitCardProps) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationStreak, setCelebrationStreak] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { triggerReaction } = useCompanion();
   
   const HabitIcon = getHabitIcon(habit.icon || 'check-circle');
   const habitColor = habit.color || 'hsl(var(--primary))';
@@ -105,6 +109,12 @@ export function CloudHabitCard({
         setCelebrationStreak(newStreak);
         setShowCelebration(true);
       }
+      
+      // Trigger cat companion reaction
+      triggerReaction('habit_complete');
+      
+      // Notify parent of completion
+      onComplete?.();
     }
     
     onToggle(habit.id);
