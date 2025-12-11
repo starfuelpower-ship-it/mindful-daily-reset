@@ -1,7 +1,7 @@
 import { useAmbient, AmbientMode } from '@/contexts/AmbientContext';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { CloudRain, Sun, Snowflake, XCircle, Eye, Volume2 } from 'lucide-react';
+import { CloudRain, Sun, Snowflake, XCircle, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const AMBIENT_OPTIONS: { id: AmbientMode; label: string; icon: React.ComponentType<any>; description: string }[] = [
@@ -17,8 +17,6 @@ export function AmbientSettings() {
     setAmbientMode,
     visualsEnabled,
     setVisualsEnabled,
-    soundsEnabled,
-    setSoundsEnabled,
     turnOffAllAmbience,
   } = useAmbient();
 
@@ -55,7 +53,7 @@ export function AmbientSettings() {
         </div>
       </div>
 
-      {/* Toggles */}
+      {/* Visuals Toggle */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -70,24 +68,10 @@ export function AmbientSettings() {
             onCheckedChange={setVisualsEnabled}
           />
         </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Volume2 className="w-4 h-4 text-muted-foreground" />
-            <Label htmlFor="ambient-sounds" className="text-sm">
-              Ambient Sounds
-            </Label>
-          </div>
-          <Switch
-            id="ambient-sounds"
-            checked={soundsEnabled}
-            onCheckedChange={setSoundsEnabled}
-          />
-        </div>
       </div>
 
       {/* Quick disable button */}
-      {(visualsEnabled || soundsEnabled || ambientMode !== 'off') && (
+      {(visualsEnabled || ambientMode !== 'off') && (
         <button
           onClick={turnOffAllAmbience}
           className="w-full mt-2 py-2 px-3 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg border border-border/50 hover:bg-muted/30"
