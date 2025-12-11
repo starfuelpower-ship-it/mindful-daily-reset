@@ -65,7 +65,17 @@ const Index = () => {
   const totalCount = isLoggedIn ? cloudHabits.totalCount : localHabits.totalCount;
   const progressPercent = isLoggedIn ? cloudHabits.progressPercent : localHabits.progressPercent;
 
-  // Calculate best streak for plant growth
+  // Calculate total completions for plant growth (cumulative progress)
+  const totalCompletions = useMemo(() => {
+    // Use completed count as a base, in real implementation this would come from database
+    // For now, simulate with sum of streaks + today's completions
+    const currentHabits = isLoggedIn ? cloudHabits.habits : localHabits.habits;
+    if (currentHabits.length === 0) return 0;
+    const streakSum = currentHabits.reduce((sum, h) => sum + ((h as any).streak || 0), 0);
+    return streakSum + completedCount;
+  }, [isLoggedIn, cloudHabits.habits, localHabits.habits, completedCount]);
+
+  // Calculate best streak for display
   const bestStreak = useMemo(() => {
     const currentHabits = isLoggedIn ? cloudHabits.habits : localHabits.habits;
     if (currentHabits.length === 0) return 0;
@@ -255,24 +265,39 @@ const Index = () => {
 
         {/* Progress Section with Plant */}
         <div className="ios-card p-5 mb-5 animate-slide-up">
-          <div className="flex items-center gap-4">
-            {/* Plant Growth */}
-            <PlantGrowth streak={bestStreak} size="sm" showLabel={false} />
+          <div className="flex items-start gap-4">
+            {/* Plant Growth with full info */}
+            <div className="flex-shrink-0">
+              <PlantGrowth 
+                totalCompletions={totalCompletions} 
+                size="sm" 
+                showLabel={true}
+                showProgress={true}
+                onLevelUp={(stage, name) => {
+                  playSound('achievement');
+                  triggerReaction('all_complete');
+                }}
+              />
+            </div>
             
-            {/* Progress Ring */}
-            <ProgressRing
-              progress={progressPercent}
-              size={60}
-              strokeWidth={6}
-            />
-            
-            {/* Stats */}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-muted-foreground mb-0.5">Today's Progress</p>
-              <p className="text-lg font-semibold text-foreground">
-                {completedCount} of {totalCount} habits
-              </p>
-              <div className="flex items-center gap-3 mt-1.5">
+            {/* Progress and Stats */}
+            <div className="flex-1 min-w-0 pt-1">
+              <div className="flex items-center gap-3 mb-2">
+                {/* Progress Ring */}
+                <ProgressRing
+                  progress={progressPercent}
+                  size={48}
+                  strokeWidth={5}
+                />
+                <div>
+                  <p className="text-sm text-muted-foreground">Today</p>
+                  <p className="text-base font-semibold text-foreground">
+                    {completedCount}/{totalCount} done
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
                 {bestStreak > 0 && (
                   <span className="text-xs text-primary font-medium">
                     🔥 {bestStreak} day best
