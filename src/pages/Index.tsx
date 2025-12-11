@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCompanion } from '@/contexts/CompanionContext';
+import { usePoints, POINTS } from '@/contexts/PointsContext';
 import { useCloudHabits, CloudHabit } from '@/hooks/useCloudHabits';
 import { useHabits } from '@/hooks/useHabits';
 import { useUserSettings } from '@/hooks/useUserSettings';
@@ -20,6 +21,7 @@ import { MotivationalMessage } from '@/components/MotivationalMessage';
 import { QuoteDisplay } from '@/components/QuoteDisplay';
 import { ShareMilestone, useShareMilestone } from '@/components/ShareMilestone';
 import { CatCompanionIntro } from '@/components/CatCompanionIntro';
+import { PointsDisplay } from '@/components/PointsDisplay';
 import { Button } from '@/components/ui/button';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
@@ -41,6 +43,8 @@ const Index = () => {
   const { shareData, openShare, closeShare, isOpen: isShareOpen } = useShareMilestone();
   const { triggerReaction } = useCompanion();
   const { playSound } = useSoundEffects();
+  const { earnPoints, checkDailyBonus, checkWeeklyBonus } = usePoints();
+  const dailyBonusChecked = useRef(false);
 
   // User preferences (with defaults for guests)
   const confettiEnabled = settings?.confetti_enabled ?? true;
@@ -94,7 +98,16 @@ const Index = () => {
     }
   }, [user, hasMigrated, cloudHabits.isLoading]);
 
-  // Show daily reflection when all habits are completed (for logged-in users only)
+  // Check for daily and weekly bonus on load
+  useEffect(() => {
+    if (isLoggedIn && !dailyBonusChecked.current && !isLoading) {
+      dailyBonusChecked.current = true;
+      checkDailyBonus();
+      checkWeeklyBonus();
+    }
+  }, [isLoggedIn, isLoading, checkDailyBonus, checkWeeklyBonus]);
+
+  // Show daily reflection and earn bonus points when all habits are completed
   useEffect(() => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const reflectionKey = `reflection-shown-${today}`;
@@ -108,6 +121,9 @@ const Index = () => {
       !alreadyShown &&
       !isLoading
     ) {
+      // Earn bonus for completing all habits
+      earnPoints(POINTS.ALL_HABITS_COMPLETE, 'all_complete', 'Completed all habits today');
+      
       // Small delay to let celebration animation play first
       const timer = setTimeout(() => {
         setShowReflection(true);
@@ -116,7 +132,7 @@ const Index = () => {
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [completedCount, totalCount, isLoggedIn, isLoading]);
+  }, [completedCount, totalCount, isLoggedIn, isLoading, earnPoints]);
 
   const handleAddHabit = (name: string, category: string, notes: string, icon?: string, color?: string) => {
     if (isLoggedIn) {
@@ -189,7 +205,10 @@ const Index = () => {
               {format(new Date(), 'EEEE, MMMM d')}
             </p>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            {/* Points Display */}
+            <PointsDisplay />
+            
             <Button
               variant="ghost"
               size="icon"

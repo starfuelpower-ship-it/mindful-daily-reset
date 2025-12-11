@@ -10,6 +10,7 @@ import { AmbientProvider } from "@/contexts/AmbientContext";
 import { CompanionProvider } from "@/contexts/CompanionContext";
 import { MusicProvider } from "@/contexts/MusicContext";
 import { QuotesProvider } from "@/contexts/QuotesContext";
+import { PointsProvider } from "@/contexts/PointsContext";
 import { AmbientLayer } from "@/components/AmbientLayer";
 import { CatCompanion } from "@/components/CatCompanion";
 import Index from "./pages/Index";
@@ -22,6 +23,8 @@ import Journal from "./pages/Journal";
 import Onboarding from "./pages/Onboarding";
 import HabitManager from "./pages/HabitManager";
 import Widgets from "./pages/Widgets";
+import Rewards from "./pages/Rewards";
+import CatCustomize from "./pages/CatCustomize";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,29 +38,33 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <PremiumProvider>
-              <AmbientProvider>
-                <CompanionProvider>
-                  <MusicProvider>
-                    <QuotesProvider>
-                      <AmbientLayer />
-                      <CatCompanion />
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/auth" element={<Auth />} />
-                        <Route path="/settings" element={<Settings />} />
-                        <Route path="/premium" element={<Premium />} />
-                        <Route path="/stats" element={<Stats />} />
-                        <Route path="/groups" element={<Groups />} />
-                        <Route path="/journal" element={<Journal />} />
-                        <Route path="/onboarding" element={<Onboarding />} />
-                        <Route path="/habit-manager" element={<HabitManager />} />
-                        <Route path="/widgets" element={<Widgets />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </QuotesProvider>
-                  </MusicProvider>
-                </CompanionProvider>
-              </AmbientProvider>
+              <PointsProvider>
+                <AmbientProvider>
+                  <CompanionProvider>
+                    <MusicProvider>
+                      <QuotesProvider>
+                        <AmbientLayer />
+                        <CatCompanion />
+                        <Routes>
+                          <Route path="/" element={<Index />} />
+                          <Route path="/auth" element={<Auth />} />
+                          <Route path="/settings" element={<Settings />} />
+                          <Route path="/premium" element={<Premium />} />
+                          <Route path="/stats" element={<Stats />} />
+                          <Route path="/groups" element={<Groups />} />
+                          <Route path="/journal" element={<Journal />} />
+                          <Route path="/onboarding" element={<Onboarding />} />
+                          <Route path="/habit-manager" element={<HabitManager />} />
+                          <Route path="/widgets" element={<Widgets />} />
+                          <Route path="/rewards" element={<Rewards />} />
+                          <Route path="/cat" element={<CatCustomize />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </QuotesProvider>
+                    </MusicProvider>
+                  </CompanionProvider>
+                </AmbientProvider>
+              </PointsProvider>
             </PremiumProvider>
           </AuthProvider>
         </BrowserRouter>

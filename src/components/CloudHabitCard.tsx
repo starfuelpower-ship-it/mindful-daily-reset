@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 import { CelebrationAnimation } from './CelebrationAnimation';
 import { getHabitIcon } from './HabitIconPicker';
 import { useCompanion } from '@/contexts/CompanionContext';
+import { usePoints, POINTS } from '@/contexts/PointsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { triggerHaptic } from '@/hooks/useSoundEffects';
 
 interface CloudHabitCardProps {
@@ -15,7 +17,7 @@ interface CloudHabitCardProps {
   index: number;
   confettiEnabled?: boolean;
   soundEnabled?: boolean;
-  onComplete?: () => void; // Called when habit is completed
+  onComplete?: () => void;
 }
 
 // Completion sound
@@ -87,6 +89,8 @@ export function CloudHabitCard({
   const [celebrationStreak, setCelebrationStreak] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const { triggerReaction } = useCompanion();
+  const { earnPoints } = usePoints();
+  const { user } = useAuth();
   
   const HabitIcon = getHabitIcon(habit.icon || 'check-circle');
   const habitColor = habit.color || 'hsl(var(--primary))';
@@ -116,6 +120,22 @@ export function CloudHabitCard({
       
       // Trigger cat companion reaction
       triggerReaction('habit_complete');
+      
+      // Earn points for completing habit (logged-in users only)
+      if (user) {
+        earnPoints(POINTS.HABIT_COMPLETE, 'habit_complete', `Completed ${habit.name}`);
+        
+        // Streak bonus points
+        if (newStreak === 3) {
+          earnPoints(POINTS.STREAK_BONUS_3, 'streak_bonus', '3-day streak bonus!');
+        } else if (newStreak === 7) {
+          earnPoints(POINTS.STREAK_BONUS_7, 'streak_bonus', '7-day streak bonus!');
+        } else if (newStreak === 14) {
+          earnPoints(POINTS.STREAK_BONUS_14, 'streak_bonus', '14-day streak bonus!');
+        } else if (newStreak === 30) {
+          earnPoints(POINTS.STREAK_BONUS_30, 'streak_bonus', '30-day streak bonus!');
+        }
+      }
       
       // Notify parent of completion
       onComplete?.();
