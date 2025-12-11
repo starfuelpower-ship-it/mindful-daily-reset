@@ -22,6 +22,7 @@ import { QuoteDisplay } from '@/components/QuoteDisplay';
 import { ShareMilestone, useShareMilestone } from '@/components/ShareMilestone';
 import { CatCompanionIntro } from '@/components/CatCompanionIntro';
 import { PointsDisplay } from '@/components/PointsDisplay';
+import { PointsEarnedAnimation } from '@/components/PointsEarnedAnimation';
 import { Button } from '@/components/ui/button';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
@@ -43,7 +44,7 @@ const Index = () => {
   const { shareData, openShare, closeShare, isOpen: isShareOpen } = useShareMilestone();
   const { triggerReaction } = useCompanion();
   const { playSound } = useSoundEffects();
-  const { earnPoints, checkDailyBonus, checkWeeklyBonus } = usePoints();
+  const { earnPoints, checkDailyBonus, checkWeeklyBonus, currentAnimation, clearAnimation } = usePoints();
   const dailyBonusChecked = useRef(false);
 
   // User preferences (with defaults for guests)
@@ -399,6 +400,16 @@ const Index = () => {
 
       {/* Cat Companion Intro */}
       <CatCompanionIntro />
+
+      {/* Points Earned Animation */}
+      {currentAnimation && (
+        <PointsEarnedAnimation
+          key={currentAnimation.id}
+          amount={currentAnimation.amount}
+          type={currentAnimation.type}
+          onComplete={clearAnimation}
+        />
+      )}
     </div>
   );
 };

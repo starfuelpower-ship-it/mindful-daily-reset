@@ -41,13 +41,13 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
   const { settings, updateSettings, loading } = useUserSettings();
   const { resolvedTheme } = useTheme();
   
-  // Local state for immediate UI updates - default to seasonal mode
+  // Local state for immediate UI updates - default to autumn leaves
   const [localMode, setLocalMode] = useState<AmbientMode>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(AMBIENT_MODE_KEY);
-      return (stored as AmbientMode) || getSeasonalMode();
+      return (stored as AmbientMode) || 'autumn_leaves';
     }
-    return getSeasonalMode();
+    return 'autumn_leaves';
   });
   
   const [localVisualsEnabled, setLocalVisualsEnabled] = useState(() => {
@@ -71,7 +71,7 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
   // Sync local state with settings from database (for logged-in users)
   useEffect(() => {
     if (user && settings && !initialized.current) {
-      const mode = (settings as any).ambient_mode as AmbientMode || 'snow';
+      const mode = (settings as any).ambient_mode as AmbientMode || 'autumn_leaves';
       const visuals = (settings as any).ambient_visuals_enabled ?? true;
       
       setLocalMode(mode);
