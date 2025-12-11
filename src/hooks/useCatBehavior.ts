@@ -8,7 +8,14 @@ export type CatState =
   | 'walking' 
   | 'sleeping' 
   | 'playful' 
-  | 'tap_reaction';
+  | 'tap_reaction'
+  | 'tap_meow'
+  | 'tap_spin'
+  | 'tap_bounce'
+  | 'tap_curious';
+
+// All tap reaction states for random selection
+const TAP_REACTIONS: CatState[] = ['tap_reaction', 'tap_meow', 'tap_spin', 'tap_bounce', 'tap_curious'];
 
 interface CatBehaviorConfig {
   isDarkMode: boolean;
@@ -33,6 +40,10 @@ const STATE_DURATIONS: Record<CatState, { min: number; max: number }> = {
   sleeping: { min: 6000, max: 12000 },
   playful: { min: 1500, max: 2500 },
   tap_reaction: { min: 800, max: 1200 },
+  tap_meow: { min: 1000, max: 1400 },
+  tap_spin: { min: 600, max: 900 },
+  tap_bounce: { min: 700, max: 1000 },
+  tap_curious: { min: 1200, max: 1600 },
 };
 
 // States that can transition to from idle during day
@@ -51,6 +62,10 @@ const STATE_WEIGHTS: Record<CatState, number> = {
   sleeping: 3,
   playful: 2,
   tap_reaction: 0, // Only triggered by tap
+  tap_meow: 0,
+  tap_spin: 0,
+  tap_bounce: 0,
+  tap_curious: 0,
 };
 
 function getRandomDuration(state: CatState): number {
@@ -184,15 +199,17 @@ export function useCatBehavior(config: CatBehaviorConfig) {
     return () => clearInterval(blinkInterval);
   }, [isEnabled, state.currentState, hasReaction]);
   
-  // Tap reaction handler
+  // Tap reaction handler - randomly selects from available tap animations
   const triggerTapReaction = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     
-    setState(s => ({ ...s, currentState: 'tap_reaction' }));
+    // Pick a random tap reaction
+    const randomTapState = TAP_REACTIONS[Math.floor(Math.random() * TAP_REACTIONS.length)];
+    setState(s => ({ ...s, currentState: randomTapState }));
     
     timeoutRef.current = setTimeout(() => {
       setState(s => ({ ...s, currentState: 'idle' }));
-    }, getRandomDuration('tap_reaction'));
+    }, getRandomDuration(randomTapState));
   }, []);
   
   return {
