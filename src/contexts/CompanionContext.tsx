@@ -107,6 +107,11 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
               'Cozy Sweater': 'sweater',
               'Hero Cape': 'cape',
               'Party Hat': 'party_hat',
+              'Bunny Ears': 'bunny_ears',
+              'Pirate Hat': 'pirate_hat',
+              'Chef Hat': 'chef_hat',
+              'Detective Hat': 'detective_hat',
+              'Angel Halo': 'angel_halo',
             };
             const costumeType = costumeMap[costumeDetails.name] || 'none';
             setEquippedCostumeState(costumeType);
@@ -193,6 +198,11 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
           sweater: 'Cozy Sweater',
           cape: 'Hero Cape',
           party_hat: 'Party Hat',
+          bunny_ears: 'Bunny Ears',
+          pirate_hat: 'Pirate Hat',
+          chef_hat: 'Chef Hat',
+          detective_hat: 'Detective Hat',
+          angel_halo: 'Angel Halo',
         };
 
         const costumeName = costumeNameMap[costume];

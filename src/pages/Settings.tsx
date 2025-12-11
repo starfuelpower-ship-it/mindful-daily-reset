@@ -8,13 +8,15 @@ import { CompanionSettings } from '@/components/CompanionSettings';
 import { MusicSettings } from '@/components/MusicSettings';
 import { NotificationSettings } from '@/components/NotificationSettings';
 import { AchievementsUI } from '@/components/AchievementsUI';
-import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music, Bell, Trophy, MessageCircle, Mail } from 'lucide-react';
+import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music, Bell, Trophy, MessageCircle, Mail, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTutorial } from '@/components/AppTutorial';
 
 export default function Settings() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isPremium } = usePremium();
+  const { resetTutorial } = useTutorial();
 
   const handleSignOut = async () => {
     await signOut();
@@ -227,6 +229,20 @@ export default function Settings() {
           <div className="space-y-2">
             <h2 className="text-sm font-medium text-muted-foreground px-1">Support</h2>
             <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+              <button
+                onClick={() => {
+                  resetTutorial();
+                  navigate('/');
+                  toast.success('Tutorial restarted!');
+                }}
+                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-b border-border/50"
+              >
+                <div className="flex items-center gap-3">
+                  <HelpCircle className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-foreground">View App Tutorial</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
               <button
                 onClick={handleSendFeedback}
                 className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"

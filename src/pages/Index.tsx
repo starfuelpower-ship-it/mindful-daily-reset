@@ -23,6 +23,7 @@ import { ShareMilestone, useShareMilestone } from '@/components/ShareMilestone';
 import { CatCompanionIntro } from '@/components/CatCompanionIntro';
 import { PointsDisplay } from '@/components/PointsDisplay';
 import { PointsEarnedAnimation } from '@/components/PointsEarnedAnimation';
+import { AppTutorial, useTutorial } from '@/components/AppTutorial';
 import { Button } from '@/components/ui/button';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
@@ -45,6 +46,7 @@ const Index = () => {
   const { triggerReaction } = useCompanion();
   const { playSound } = useSoundEffects();
   const { earnPoints, checkDailyBonus, checkWeeklyBonus, currentAnimation, clearAnimation } = usePoints();
+  const { showTutorial, completeTutorial } = useTutorial();
   const dailyBonusChecked = useRef(false);
 
   // User preferences (with defaults for guests)
@@ -206,6 +208,10 @@ const Index = () => {
   }
 
   return (
+    <>
+      {/* Tutorial overlay */}
+      {showTutorial && <AppTutorial onComplete={completeTutorial} />}
+      
     <div className="min-h-screen bg-background">
       <div className="max-w-lg mx-auto px-4 pt-6 pb-40">
         {/* Header */}
@@ -436,6 +442,7 @@ const Index = () => {
         />
       )}
     </div>
+    </>
   );
 };
 
