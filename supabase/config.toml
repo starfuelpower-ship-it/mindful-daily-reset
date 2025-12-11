@@ -1,1 +1,4 @@
 project_id = "gpplrmlhqhsfdnbjggns"
+
+[functions.verify-premium-purchase]
+verify_jwt = true

@@ -31,7 +31,7 @@ export function useAppleIAP() {
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState<Map<ProductId, IAPProduct>>(new Map());
   const { earnPoints } = usePoints();
-  const { upgradeToPremium } = usePremium();
+  const { activatePremium } = usePremium();
 
   // Initialize IAP on mount
   useEffect(() => {
@@ -68,10 +68,17 @@ export function useAppleIAP() {
       const result = await appleIAP.purchase(productId);
       
       if (result.success) {
-        // Upgrade user to premium in backend
-        await upgradeToPremium();
-        toast.success('Welcome to Premium! 🎉');
-        return true;
+        // Activate premium via secure server-side verification
+        const transactionId = result.transactionId || '';
+        const activated = await activatePremium(planId, transactionId);
+        
+        if (activated) {
+          toast.success('Welcome to Premium! 🎉');
+          return true;
+        } else {
+          toast.error('Failed to activate premium. Please contact support.');
+          return false;
+        }
       } else {
         if (result.error !== 'Purchase cancelled') {
           toast.error(result.error || 'Purchase failed');
@@ -85,7 +92,7 @@ export function useAppleIAP() {
     } finally {
       setIsLoading(false);
     }
-  }, [upgradeToPremium]);
+  }, [activatePremium]);
 
   /**
    * Purchase a points bundle
@@ -145,7 +152,9 @@ export function useAppleIAP() {
         );
         
         if (hasPremium) {
-          await upgradeToPremium();
+          // For restores, we use a special transaction ID to indicate a restore
+          // The server should verify this with Apple's restore API
+          await activatePremium('restored', 'restore_' + Date.now());
         }
         
         toast.success(`Restored ${result.restored.length} purchase(s)`);
@@ -161,7 +170,7 @@ export function useAppleIAP() {
     } finally {
       setIsLoading(false);
     }
-  }, [upgradeToPremium]);
+  }, [activatePremium]);
 
   /**
    * Get product info by ID

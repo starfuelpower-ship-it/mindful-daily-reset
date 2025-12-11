@@ -1,11 +1,12 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 
 interface PremiumContextType {
   isPremium: boolean;
   isLoading: boolean;
-  upgradeToPremium: () => Promise<void>;
+  activatePremium: (planId: string, transactionId: string, receipt?: string) => Promise<boolean>;
+  refreshPremiumStatus: () => Promise<void>;
 }
 
 const PremiumContext = createContext<PremiumContextType | undefined>(undefined);
@@ -15,17 +16,12 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchPremiumStatus();
-    } else {
+  const fetchPremiumStatus = useCallback(async () => {
+    if (!user) {
       setIsPremium(false);
       setIsLoading(false);
+      return;
     }
-  }, [user]);
-
-  const fetchPremiumStatus = async () => {
-    if (!user) return;
     
     try {
       const { data, error } = await supabase
@@ -46,34 +42,56 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
-  const upgradeToPremium = async () => {
-    if (!user) return;
+  useEffect(() => {
+    fetchPremiumStatus();
+  }, [fetchPremiumStatus]);
 
-    // For demo purposes, this sets premium for 1 year
-    const expiresAt = new Date();
-    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+  /**
+   * Activates premium status via secure server-side verification.
+   * This function calls the edge function which verifies the purchase
+   * and updates the database with service role permissions.
+   */
+  const activatePremium = useCallback(async (
+    planId: string, 
+    transactionId: string, 
+    receipt?: string
+  ): Promise<boolean> => {
+    if (!user) {
+      console.error('Cannot activate premium: no user logged in');
+      return false;
+    }
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          is_premium: true, 
-          premium_expires_at: expiresAt.toISOString() 
-        })
-        .eq('id', user.id);
+      const { data, error } = await supabase.functions.invoke('verify-premium-purchase', {
+        body: { planId, transactionId, receipt }
+      });
 
-      if (error) throw error;
-      setIsPremium(true);
+      if (error) {
+        console.error('Premium activation error:', error);
+        return false;
+      }
+
+      if (data?.success) {
+        setIsPremium(true);
+        return true;
+      }
+
+      console.error('Premium activation failed:', data?.error);
+      return false;
     } catch (error) {
-      console.error('Error upgrading to premium:', error);
-      throw error;
+      console.error('Error activating premium:', error);
+      return false;
     }
-  };
+  }, [user]);
+
+  const refreshPremiumStatus = useCallback(async () => {
+    await fetchPremiumStatus();
+  }, [fetchPremiumStatus]);
 
   return (
-    <PremiumContext.Provider value={{ isPremium, isLoading, upgradeToPremium }}>
+    <PremiumContext.Provider value={{ isPremium, isLoading, activatePremium, refreshPremiumStatus }}>
       {children}
     </PremiumContext.Provider>
   );
