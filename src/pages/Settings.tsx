@@ -28,9 +28,6 @@ export default function Settings() {
     const body = encodeURIComponent('Hi Daily Reset team,\n\nI wanted to share some feedback:\n\n');
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
   };
-    toast.success('Signed out');
-    navigate('/');
-  };
 
   return (
     <div className="min-h-screen bg-background">
