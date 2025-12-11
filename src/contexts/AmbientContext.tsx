@@ -23,18 +23,31 @@ const AMBIENT_MODE_KEY = 'daily-reset-ambient-mode';
 const AMBIENT_VISUALS_KEY = 'daily-reset-ambient-visuals';
 const AMBIENT_INTENSITY_KEY = 'daily-reset-ambient-intensity';
 
+// Get seasonal ambient mode based on current month
+const getSeasonalMode = (): AmbientMode => {
+  const month = new Date().getMonth();
+  // Dec, Jan, Feb = Winter (snow)
+  if (month === 11 || month === 0 || month === 1) return 'snow';
+  // Mar, Apr, May = Spring (cherry blossoms)
+  if (month >= 2 && month <= 4) return 'cherry_blossoms';
+  // Jun, Jul, Aug = Summer (fireflies)
+  if (month >= 5 && month <= 7) return 'fireflies';
+  // Sep, Oct, Nov = Autumn (autumn leaves)
+  return 'autumn_leaves';
+};
+
 export function AmbientProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const { settings, updateSettings, loading } = useUserSettings();
   const { resolvedTheme } = useTheme();
   
-  // Local state for immediate UI updates
+  // Local state for immediate UI updates - default to seasonal mode
   const [localMode, setLocalMode] = useState<AmbientMode>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(AMBIENT_MODE_KEY);
-      return (stored as AmbientMode) || 'snow';
+      return (stored as AmbientMode) || getSeasonalMode();
     }
-    return 'snow';
+    return getSeasonalMode();
   });
   
   const [localVisualsEnabled, setLocalVisualsEnabled] = useState(() => {

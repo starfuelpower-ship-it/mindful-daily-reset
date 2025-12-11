@@ -68,6 +68,26 @@ export const CatCompanion = memo(() => {
   const [isWalking, setIsWalking] = useState(false);
   const [facingLeft, setFacingLeft] = useState(false);
   const [mouthOpen, setMouthOpen] = useState(false);
+  const [isTouched, setIsTouched] = useState(false);
+  const touchReactionTimeout = useRef<NodeJS.Timeout>();
+
+  // Touch reaction animations
+  const TOUCH_REACTIONS: CatAnimation[] = ['happy', 'curious', 'meow', 'pounce', 'stretch', 'yawn'];
+  
+  const triggerTouchReaction = () => {
+    if (touchReactionTimeout.current) clearTimeout(touchReactionTimeout.current);
+    const reaction = TOUCH_REACTIONS[Math.floor(Math.random() * TOUCH_REACTIONS.length)];
+    setAnimation(reaction);
+    setIsTouched(true);
+    if (reaction === 'meow') {
+      setMouthOpen(true);
+      setTimeout(() => setMouthOpen(false), 600);
+    }
+    touchReactionTimeout.current = setTimeout(() => {
+      setIsTouched(false);
+      setAnimation('idle');
+    }, 1500);
+  };
   
   const animationTimeout = useRef<NodeJS.Timeout>();
   const walkTimeout = useRef<NodeJS.Timeout>();
@@ -165,8 +185,9 @@ export const CatCompanion = memo(() => {
       setIsDragging(true);
       dragStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       catStartPos.current = { ...dragPosition };
+      triggerTouchReaction();
     }
-  }, [scale, dragPosition]);
+  }, [scale, dragPosition, triggerTouchReaction]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (isPinching && e.touches.length === 2) {
@@ -210,7 +231,8 @@ export const CatCompanion = memo(() => {
     setIsDragging(true);
     dragStartPos.current = { x: e.clientX, y: e.clientY };
     catStartPos.current = { ...dragPosition };
-  }, [dragPosition]);
+    triggerTouchReaction();
+  }, [dragPosition, triggerTouchReaction]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging) return;
