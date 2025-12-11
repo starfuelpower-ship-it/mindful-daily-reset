@@ -28,13 +28,41 @@ const MIN_SCALE = 0.6;
 const MAX_SCALE = 1.5;
 const DEFAULT_SCALE = 1;
 
+const CAT_POSITION_KEY = 'daily-reset-cat-position';
+const CAT_SCALE_KEY = 'daily-reset-cat-scale';
+
+const loadSavedPosition = () => {
+  if (typeof window === 'undefined') return { x: 0, y: 0 };
+  const saved = localStorage.getItem(CAT_POSITION_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return { x: 0, y: 0 };
+    }
+  }
+  return { x: 0, y: 0 };
+};
+
+const loadSavedScale = () => {
+  if (typeof window === 'undefined') return DEFAULT_SCALE;
+  const saved = localStorage.getItem(CAT_SCALE_KEY);
+  if (saved) {
+    const scale = parseFloat(saved);
+    if (!isNaN(scale) && scale >= MIN_SCALE && scale <= MAX_SCALE) {
+      return scale;
+    }
+  }
+  return DEFAULT_SCALE;
+};
+
 export const CatCompanion = memo(() => {
   const { showCompanion, companionType, currentReaction } = useCompanion();
   const { resolvedTheme } = useTheme();
   const [animation, setAnimation] = useState<CatAnimation>('idle');
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
-  const [scale, setScale] = useState(DEFAULT_SCALE);
+  const [dragPosition, setDragPosition] = useState(loadSavedPosition);
+  const [scale, setScale] = useState(loadSavedScale);
   const [isDragging, setIsDragging] = useState(false);
   const [isPinching, setIsPinching] = useState(false);
   const [isWalking, setIsWalking] = useState(false);
@@ -172,7 +200,10 @@ export const CatCompanion = memo(() => {
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
     setIsPinching(false);
-  }, []);
+    // Save position and scale when touch ends
+    localStorage.setItem(CAT_POSITION_KEY, JSON.stringify(dragPosition));
+    localStorage.setItem(CAT_SCALE_KEY, String(scale));
+  }, [dragPosition, scale]);
 
   // Mouse handlers for desktop
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -202,14 +233,18 @@ export const CatCompanion = memo(() => {
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  }, []);
+    // Save position when mouse up
+    localStorage.setItem(CAT_POSITION_KEY, JSON.stringify(dragPosition));
+  }, [dragPosition]);
 
   // Mouse wheel for scaling on desktop
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    setScale((prev) => Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev + delta)));
-  }, []);
+    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale + delta));
+    setScale(newScale);
+    localStorage.setItem(CAT_SCALE_KEY, String(newScale));
+  }, [scale]);
 
   useEffect(() => {
     if (isDragging) {
