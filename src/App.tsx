@@ -28,6 +28,7 @@ import Widgets from "./pages/Widgets";
 import Rewards from "./pages/Rewards";
 import CatCustomize from "./pages/CatCustomize";
 import PointsShop from "./pages/PointsShop";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
                             <Route path="/rewards" element={<Rewards />} />
                             <Route path="/cat" element={<CatCustomize />} />
                             <Route path="/points-shop" element={<PointsShop />} />
+                            <Route path="/install" element={<Install />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </QuotesProvider>
