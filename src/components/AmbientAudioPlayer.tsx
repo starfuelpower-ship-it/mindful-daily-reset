@@ -4,9 +4,9 @@ import { useUserSettings } from '@/hooks/useUserSettings';
 
 // Audio URLs - using free ambient sounds from reliable sources
 const AMBIENT_AUDIO_URLS: Record<Exclude<AmbientMode, 'off'>, string> = {
-  rain: 'https://cdn.pixabay.com/audio/2022/05/16/audio_4bea1effb6.mp3', // Light rain
-  sun_rays: 'https://cdn.pixabay.com/audio/2022/03/10/audio_b93ca9e12c.mp3', // Soft wind
-  snow: 'https://cdn.pixabay.com/audio/2021/08/04/audio_bb630cc098.mp3', // Winter ambience
+  rain: 'https://cdn.pixabay.com/audio/2022/02/22/audio_d1718ab41b.mp3', // Calming rain
+  sun_rays: 'https://cdn.pixabay.com/audio/2022/03/15/audio_115f93c188.mp3', // Birds chirping
+  snow: 'https://cdn.pixabay.com/audio/2024/11/08/audio_4956b96183.mp3', // Gentle winter wind
 };
 
 export function AmbientAudioPlayer() {

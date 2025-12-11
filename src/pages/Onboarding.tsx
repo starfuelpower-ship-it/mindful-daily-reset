@@ -137,14 +137,14 @@ export default function Onboarding() {
 
   if (checkingStatus) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background/80 backdrop-blur-sm relative z-10 flex items-center justify-center">
         <div className="animate-pulse text-primary">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background/90 to-background/90 backdrop-blur-sm relative z-10 flex flex-col">
       {/* Progress dots */}
       <div className="p-6 pt-8">
         <div className="flex justify-center gap-2">

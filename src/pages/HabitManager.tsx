@@ -48,7 +48,7 @@ export default function HabitManager() {
   const displayedHabits = showArchived ? archivedHabits : habits;
 
   return (
-    <div className="min-h-screen pb-8">
+    <div className="min-h-screen pb-8 bg-background/80 backdrop-blur-sm relative z-10">
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} className="rounded-xl">

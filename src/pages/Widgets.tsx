@@ -8,7 +8,7 @@ export default function Widgets() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background/80 backdrop-blur-sm relative z-10">
       <div className="max-w-lg mx-auto px-4 py-6 pb-32">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
