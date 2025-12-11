@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Button } from '@/components/ui/button';
 import { ThemePicker } from '@/components/ThemePicker';
-import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -126,6 +126,18 @@ export default function Settings() {
                 <div className="flex items-center gap-3">
                   <BarChart3 className="w-5 h-5 text-muted-foreground" />
                   <span className="text-foreground">Weekly Stats</span>
+                </div>
+                {!isPremium && <Crown className="w-4 h-4 text-primary" />}
+                {isPremium && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
+              </button>
+
+              <button
+                onClick={() => navigate('/widgets')}
+                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-b border-border/50"
+              >
+                <div className="flex items-center gap-3">
+                  <LayoutGrid className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-foreground">Home Screen Widgets</span>
                 </div>
                 {!isPremium && <Crown className="w-4 h-4 text-primary" />}
                 {isPremium && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
