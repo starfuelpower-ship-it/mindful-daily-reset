@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { CloudHabit } from '@/hooks/useCloudHabits';
 import { Check, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,32 +14,60 @@ interface CloudHabitCardProps {
   soundEnabled?: boolean;
 }
 
-const categoryClass: Record<string, string> = {
-  Health: 'category-health',
-  Productivity: 'category-productivity',
-  Fitness: 'category-fitness',
-  Mindset: 'category-mindset',
-  Custom: 'category-custom',
+// Completion sound
+const playCompletionSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(1100, audioContext.currentTime + 0.1);
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch (e) {}
 };
 
-// Completion sound as a small base64 encoded success sound
-const playCompletionSound = () => {
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-  const oscillator = audioContext.createOscillator();
-  const gainNode = audioContext.createGain();
-  
-  oscillator.connect(gainNode);
-  gainNode.connect(audioContext.destination);
-  
-  oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-  oscillator.frequency.setValueAtTime(1100, audioContext.currentTime + 0.1);
-  
-  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-  
-  oscillator.start(audioContext.currentTime);
-  oscillator.stop(audioContext.currentTime + 0.3);
-};
+// Mini progress ring component
+function MiniProgressRing({ progress, size = 32, color }: { progress: number; size?: number; color: string }) {
+  const strokeWidth = 3;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <svg width={size} height={size} className="transform -rotate-90">
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className="text-muted/30"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        className="transition-all duration-500 ease-out"
+      />
+    </svg>
+  );
+}
 
 export function CloudHabitCard({ 
   habit, 
@@ -51,17 +79,13 @@ export function CloudHabitCard({
 }: CloudHabitCardProps) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationStreak, setCelebrationStreak] = useState(0);
-  const [showRipple, setShowRipple] = useState(false);
-  const checkboxRef = useRef<HTMLButtonElement>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
   
-  // Get the Lucide icon component
   const HabitIcon = getHabitIcon(habit.icon || 'check-circle');
   const habitColor = habit.color || 'hsl(var(--primary))';
   
-  const customStyle = habit.color ? {
-    borderColor: `${habit.color}33`,
-    backgroundColor: habit.completed_today ? `${habit.color}15` : undefined,
-  } : {};
+  // Calculate a "weekly progress" - simplified as streak % 7
+  const weeklyProgress = habit.completed_today ? Math.min(100, ((habit.streak % 7) + 1) * (100 / 7)) : (habit.streak % 7) * (100 / 7);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -69,22 +93,12 @@ export function CloudHabitCard({
     const wasCompleted = habit.completed_today;
     const newStreak = wasCompleted ? habit.streak - 1 : habit.streak + 1;
     
-    // Only celebrate when completing (not uncompleting)
     if (!wasCompleted) {
-      // Show ripple effect
-      setShowRipple(true);
-      setTimeout(() => setShowRipple(false), 600);
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 400);
       
-      // Play sound if enabled
-      if (soundEnabled) {
-        try {
-          playCompletionSound();
-        } catch (e) {
-          // Audio context might not be available
-        }
-      }
+      if (soundEnabled) playCompletionSound();
       
-      // Show confetti if enabled
       if (confettiEnabled) {
         setCelebrationStreak(newStreak);
         setShowCelebration(true);
@@ -99,12 +113,18 @@ export function CloudHabitCard({
   return (
     <div
       className={cn(
-        'habit-card group cursor-pointer relative overflow-hidden',
-        habit.completed_today && 'completed'
+        'group relative overflow-hidden cursor-pointer',
+        'bg-card rounded-2xl p-4',
+        'border border-border/50',
+        'shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)]',
+        'hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)]',
+        'transition-all duration-300 ease-out',
+        isAnimating && 'scale-[1.02]',
+        habit.completed_today && 'bg-accent/40 border-primary/20'
       )}
       style={{ 
         animationDelay: `${index * 50}ms`,
-        ...customStyle,
+        borderColor: habit.color ? `${habit.color}30` : undefined,
       }}
       onClick={() => onEdit(habit)}
     >
@@ -116,96 +136,120 @@ export function CloudHabitCard({
           onComplete={() => setShowCelebration(false)}
         />
       )}
+
+      {/* Completion shimmer effect */}
+      {isAnimating && (
+        <div 
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"
+          style={{ backgroundSize: '200% 100%' }}
+        />
+      )}
       
-      <div className="flex items-start gap-3">
-        {/* Checkbox with ripple */}
-        <div className="relative">
+      <div className="flex items-center gap-4">
+        {/* Left: Icon with progress ring */}
+        <div className="relative flex-shrink-0">
+          <div 
+            className={cn(
+              'w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300',
+              habit.completed_today ? 'scale-95' : 'scale-100'
+            )}
+            style={{ 
+              backgroundColor: `${habitColor}15`,
+            }}
+          >
+            <HabitIcon 
+              className={cn(
+                'w-6 h-6 transition-all duration-300',
+                habit.completed_today && 'opacity-60'
+              )}
+              style={{ color: habitColor }}
+            />
+          </div>
+          
+          {/* Mini progress ring overlay */}
+          <div className="absolute -bottom-1 -right-1">
+            <div className="bg-card rounded-full p-0.5 shadow-sm">
+              <MiniProgressRing 
+                progress={weeklyProgress} 
+                size={20} 
+                color={habitColor}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Center: Content */}
+        <div className="flex-1 min-w-0">
+          <h3
+            className={cn(
+              'font-semibold text-foreground transition-all duration-300 truncate',
+              habit.completed_today && 'line-through text-muted-foreground'
+            )}
+          >
+            {habit.name}
+          </h3>
+          
+          {habit.notes ? (
+            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+              {habit.notes}
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {habit.category}
+            </p>
+          )}
+        </div>
+
+        {/* Right: Streak + Checkbox */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Streak badge */}
+          {habit.streak > 0 && (
+            <div 
+              className={cn(
+                'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-300',
+                habit.streak >= 7 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+              )}
+              style={habit.streak >= 7 && habit.color ? {
+                backgroundColor: `${habit.color}15`,
+                color: habit.color,
+              } : undefined}
+            >
+              <Flame 
+                className={cn(
+                  'w-3 h-3',
+                  habit.streak >= 7 && 'animate-pulse'
+                )} 
+              />
+              <span>{habit.streak}</span>
+            </div>
+          )}
+
+          {/* Checkbox */}
           <button
-            ref={checkboxRef}
             onClick={handleToggle}
             className={cn(
-              'mt-0.5 flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300',
+              'w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300',
+              'hover:scale-110 active:scale-95',
               habit.completed_today
-                ? 'bg-primary border-primary animate-check-bounce'
-                : 'border-muted-foreground/30 hover:border-primary/50 hover:scale-110'
+                ? 'border-transparent shadow-md'
+                : 'border-muted-foreground/30 hover:border-primary/50 bg-transparent'
             )}
-            style={habit.color && habit.completed_today ? {
-              backgroundColor: habit.color,
-              borderColor: habit.color,
+            style={habit.completed_today ? {
+              backgroundColor: habitColor,
+              boxShadow: `0 4px 12px -2px ${habitColor}40`,
             } : undefined}
             aria-label={habit.completed_today ? 'Mark incomplete' : 'Mark complete'}
           >
-            {habit.completed_today && (
-              <Check className="w-4 h-4 text-primary-foreground" strokeWidth={3} />
-            )}
-          </button>
-          
-          {/* Ripple effect */}
-          {showRipple && (
-            <div 
-              className="absolute inset-0 rounded-full bg-primary/30 animate-ripple"
-              style={habit.color ? { backgroundColor: `${habit.color}40` } : undefined}
-            />
-          )}
-        </div>
-
-        {/* Icon */}
-        <div 
-          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ 
-            backgroundColor: `${habitColor}15`,
-          }}
-        >
-          <HabitIcon 
-            className="w-5 h-5" 
-            style={{ color: habitColor }}
-          />
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <h3
+            <Check 
               className={cn(
-                'font-medium text-foreground transition-all duration-300',
-                habit.completed_today && 'line-through text-muted-foreground'
+                'w-4 h-4 transition-all duration-300',
+                habit.completed_today 
+                  ? 'text-white scale-100 opacity-100' 
+                  : 'scale-0 opacity-0'
               )}
-            >
-              {habit.name}
-            </h3>
-            <span className={cn('category-badge text-[10px]', categoryClass[habit.category])}>
-              {habit.category}
-            </span>
-          </div>
-
-          {habit.notes && (
-            <p className="text-xs text-muted-foreground line-clamp-1 mb-1">
-              {habit.notes}
-            </p>
-          )}
-
-          {/* Streak */}
-          {habit.streak > 0 && (
-            <div className="flex items-center gap-1.5 text-xs">
-              <Flame
-                className={cn(
-                  'w-3.5 h-3.5 transition-all duration-300',
-                  habit.streak >= 30 && 'animate-streak-pulse text-destructive',
-                  habit.streak >= 7 && habit.streak < 30 && 'animate-streak-pulse'
-                )}
-                style={{ color: habit.color || 'hsl(var(--category-fitness))' }}
-              />
-              <span className={cn(
-                'text-muted-foreground transition-all duration-300',
-                habit.streak >= 7 && 'font-medium',
-                habit.streak >= 30 && 'text-primary font-semibold'
-              )}>
-                {habit.streak} day{habit.streak !== 1 ? 's' : ''}
-                {habit.streak >= 30 && ' 🔥'}
-                {habit.streak >= 7 && habit.streak < 30 && ' ⭐'}
-              </span>
-            </div>
-          )}
+              strokeWidth={3}
+            />
+          </button>
         </div>
       </div>
     </div>
