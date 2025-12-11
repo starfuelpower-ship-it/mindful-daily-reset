@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CloudHabit } from '@/hooks/useCloudHabits';
-import { Check, Flame } from 'lucide-react';
+import { Check, Flame, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CelebrationAnimation } from './CelebrationAnimation';
 import { getHabitIcon } from './HabitIconPicker';
@@ -9,6 +9,7 @@ interface CloudHabitCardProps {
   habit: CloudHabit;
   onToggle: (id: string) => void;
   onEdit: (habit: CloudHabit) => void;
+  onShare?: (habit: CloudHabit) => void;
   index: number;
   confettiEnabled?: boolean;
   soundEnabled?: boolean;
@@ -72,7 +73,8 @@ function MiniProgressRing({ progress, size = 32, color }: { progress: number; si
 export function CloudHabitCard({ 
   habit, 
   onToggle, 
-  onEdit, 
+  onEdit,
+  onShare,
   index,
   confettiEnabled = true,
   soundEnabled = true,
@@ -201,7 +203,25 @@ export function CloudHabitCard({
         </div>
 
         {/* Right: Streak + Checkbox */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Share button for streaks >= 3 */}
+          {habit.streak >= 3 && onShare && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onShare(habit);
+              }}
+              className={cn(
+                'w-7 h-7 rounded-full flex items-center justify-center transition-all',
+                'bg-muted/50 hover:bg-primary/10 text-muted-foreground hover:text-primary',
+                'opacity-0 group-hover:opacity-100'
+              )}
+              aria-label="Share milestone"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+
           {/* Streak badge */}
           {habit.streak > 0 && (
             <div 
