@@ -33,23 +33,24 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize audio element
   useEffect(() => {
-    audioRef.current = new Audio();
-    audioRef.current.loop = false;
-    audioRef.current.volume = volume / 100;
-    
-    const handleEnded = () => {
-      setCurrentTrack((prev) => (prev + 1) % TRACKS.length);
-    };
-    
-    audioRef.current.addEventListener('ended', handleEnded);
-    
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.removeEventListener('ended', handleEnded);
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.loop = false;
+      
+      const handleEnded = () => {
+        setCurrentTrack((prev) => (prev + 1) % TRACKS.length);
+      };
+      
+      audioRef.current.addEventListener('ended', handleEnded);
+      
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.removeEventListener('ended', handleEnded);
+          audioRef.current.pause();
+          audioRef.current = null;
+        }
+      };
+    }
   }, []);
 
   // Load settings from localStorage or database
