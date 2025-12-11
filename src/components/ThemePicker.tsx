@@ -153,8 +153,8 @@ export const ThemePicker = () => {
                   </div>
                 )}
 
-                {/* Lock / Preview Button for non-premium */}
-                {isLocked && (
+                {/* Lock / Preview Button for non-premium (hide when this theme is being previewed) */}
+                {isLocked && previewTheme !== theme.id && (
                   <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px] rounded-xl flex flex-col items-center justify-center gap-1">
                     <Lock className="w-4 h-4 text-muted-foreground" />
                     <Button
