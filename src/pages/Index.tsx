@@ -48,6 +48,8 @@ const Index = () => {
   const { earnPoints, checkDailyBonus, checkWeeklyBonus, currentAnimation, clearAnimation } = usePoints();
   const { showTutorial, completeTutorial } = useTutorial();
   const dailyBonusChecked = useRef(false);
+  const initialLoadComplete = useRef(false);
+  const prevCompletedCount = useRef<number | null>(null);
 
   // User preferences (with defaults for guests)
   const confettiEnabled = settings?.confetti_enabled ?? true;
@@ -120,16 +122,41 @@ const Index = () => {
     }
   }, [isLoggedIn, isLoading, checkDailyBonus, checkWeeklyBonus]);
 
+  // Track initial load to prevent bonus on page load with already-completed habits
+  useEffect(() => {
+    if (!isLoading && !initialLoadComplete.current) {
+      // Mark initial load complete after a short delay to let state settle
+      const timer = setTimeout(() => {
+        initialLoadComplete.current = true;
+        prevCompletedCount.current = completedCount;
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, completedCount]);
+
   // Show daily reflection and earn bonus points when all habits are completed
+  // Only trigger when user actively completes the last habit, not on initial load
   useEffect(() => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const reflectionKey = `reflection-shown-${today}`;
     const alreadyShown = localStorage.getItem(reflectionKey) === 'true';
     
+    // Only trigger if:
+    // 1. Initial load is complete
+    // 2. User is logged in
+    // 3. There are habits
+    // 4. All habits are now complete
+    // 5. The completed count actually increased (user just completed something)
+    // 6. We haven't shown reflection today
+    const completedCountIncreased = prevCompletedCount.current !== null && 
+                                     completedCount > prevCompletedCount.current;
+    
     if (
+      initialLoadComplete.current &&
       isLoggedIn && 
       totalCount > 0 && 
       completedCount === totalCount && 
+      completedCountIncreased &&
       !hasShownReflectionToday.current &&
       !alreadyShown &&
       !isLoading
@@ -143,7 +170,14 @@ const Index = () => {
         hasShownReflectionToday.current = true;
         localStorage.setItem(reflectionKey, 'true');
       }, 1500);
+      
+      prevCompletedCount.current = completedCount;
       return () => clearTimeout(timer);
+    }
+    
+    // Update prev count for next comparison
+    if (initialLoadComplete.current) {
+      prevCompletedCount.current = completedCount;
     }
   }, [completedCount, totalCount, isLoggedIn, isLoading, earnPoints]);
 
