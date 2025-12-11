@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, Palette } from 'lucide-react';
+import { ThemePicker } from '@/components/ThemePicker';
+import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -106,6 +107,14 @@ export default function Settings() {
             </div>
           </div>
 
+          {/* Theme Section */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground px-1">Appearance</h2>
+            <div className="bg-card rounded-2xl border border-border/50 p-4">
+              <ThemePicker />
+            </div>
+          </div>
+
           {/* Premium Features Section */}
           <div className="space-y-2">
             <h2 className="text-sm font-medium text-muted-foreground px-1">Premium Features</h2>
@@ -120,17 +129,6 @@ export default function Settings() {
                 </div>
                 {!isPremium && <Crown className="w-4 h-4 text-primary" />}
                 {isPremium && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
-              </button>
-              
-              <button
-                onClick={() => !isPremium && navigate('/premium')}
-                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-b border-border/50"
-              >
-                <div className="flex items-center gap-3">
-                  <Palette className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-foreground">Custom Colors</span>
-                </div>
-                {!isPremium && <Crown className="w-4 h-4 text-primary" />}
               </button>
 
               <button
