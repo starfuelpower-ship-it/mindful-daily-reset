@@ -11,6 +11,7 @@ import { CompanionProvider } from "@/contexts/CompanionContext";
 import { MusicProvider } from "@/contexts/MusicContext";
 import { QuotesProvider } from "@/contexts/QuotesContext";
 import { PointsProvider } from "@/contexts/PointsContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AmbientLayer } from "@/components/AmbientLayer";
 import { CatCompanion } from "@/components/CatCompanion";
 import Index from "./pages/Index";
@@ -31,45 +32,47 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <PremiumProvider>
-              <PointsProvider>
-                <AmbientProvider>
-                  <CompanionProvider>
-                    <MusicProvider>
-                      <QuotesProvider>
-                        <AmbientLayer />
-                        <CatCompanion />
-                        <Routes>
-                          <Route path="/" element={<Index />} />
-                          <Route path="/auth" element={<Auth />} />
-                          <Route path="/settings" element={<Settings />} />
-                          <Route path="/premium" element={<Premium />} />
-                          <Route path="/stats" element={<Stats />} />
-                          <Route path="/groups" element={<Groups />} />
-                          <Route path="/journal" element={<Journal />} />
-                          <Route path="/onboarding" element={<Onboarding />} />
-                          <Route path="/habit-manager" element={<HabitManager />} />
-                          <Route path="/widgets" element={<Widgets />} />
-                          <Route path="/rewards" element={<Rewards />} />
-                          <Route path="/cat" element={<CatCustomize />} />
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
-                      </QuotesProvider>
-                    </MusicProvider>
-                  </CompanionProvider>
-                </AmbientProvider>
-              </PointsProvider>
-            </PremiumProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <PremiumProvider>
+                <PointsProvider>
+                  <AmbientProvider>
+                    <CompanionProvider>
+                      <MusicProvider>
+                        <QuotesProvider>
+                          <AmbientLayer />
+                          <CatCompanion />
+                          <Routes>
+                            <Route path="/" element={<Index />} />
+                            <Route path="/auth" element={<Auth />} />
+                            <Route path="/settings" element={<Settings />} />
+                            <Route path="/premium" element={<Premium />} />
+                            <Route path="/stats" element={<Stats />} />
+                            <Route path="/groups" element={<Groups />} />
+                            <Route path="/journal" element={<Journal />} />
+                            <Route path="/onboarding" element={<Onboarding />} />
+                            <Route path="/habit-manager" element={<HabitManager />} />
+                            <Route path="/widgets" element={<Widgets />} />
+                            <Route path="/rewards" element={<Rewards />} />
+                            <Route path="/cat" element={<CatCustomize />} />
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
+                        </QuotesProvider>
+                      </MusicProvider>
+                    </CompanionProvider>
+                  </AmbientProvider>
+                </PointsProvider>
+              </PremiumProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </QueryClientProvider>
 );
 

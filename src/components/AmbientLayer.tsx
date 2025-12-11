@@ -651,7 +651,7 @@ export function AmbientLayer() {
       {/* Subtle darkening overlay for Light Mode only */}
       <div
         className={cn(
-          'fixed inset-0 pointer-events-none z-30 transition-opacity duration-500 ease-in-out',
+          'fixed inset-0 pointer-events-none z-10 transition-opacity duration-500 ease-in-out',
           showOverlay ? 'opacity-100' : 'opacity-0'
         )}
         style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity})` }}
@@ -661,7 +661,7 @@ export function AmbientLayer() {
       {/* Ambient effects layer */}
       <div
         className={cn(
-          'fixed inset-0 pointer-events-none z-40 transition-opacity duration-700 ease-in-out',
+          'fixed inset-0 pointer-events-none z-20 transition-opacity duration-700 ease-in-out',
           isVisible && EffectComponent ? 'opacity-100' : 'opacity-0'
         )}
         aria-hidden="true"

@@ -285,7 +285,7 @@ export const CatCompanion = memo(() => {
     <div
       ref={containerRef}
       className={cn(
-        'fixed bottom-20 right-4 z-35 select-none touch-none',
+        'fixed bottom-24 right-4 z-30 select-none touch-none',
         isDragging ? 'cursor-grabbing' : 'cursor-grab'
       )}
       style={{
