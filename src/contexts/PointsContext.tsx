@@ -15,6 +15,12 @@ export const POINTS = {
   WEEKLY_BONUS: 50,
 };
 
+interface PointsAnimation {
+  amount: number;
+  type: string;
+  id: number;
+}
+
 interface PointsContextType {
   balance: number;
   totalEarned: number;
@@ -25,6 +31,8 @@ interface PointsContextType {
   checkWeeklyBonus: () => Promise<void>;
   recentEarning: { amount: number; type: string } | null;
   clearRecentEarning: () => void;
+  currentAnimation: PointsAnimation | null;
+  clearAnimation: () => void;
 }
 
 const PointsContext = createContext<PointsContextType | undefined>(undefined);
@@ -35,6 +43,8 @@ export function PointsProvider({ children }: { children: React.ReactNode }) {
   const [totalEarned, setTotalEarned] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [recentEarning, setRecentEarning] = useState<{ amount: number; type: string } | null>(null);
+  const [currentAnimation, setCurrentAnimation] = useState<PointsAnimation | null>(null);
+  const animationIdRef = useRef(0);
   const initialized = useRef(false);
 
   // Fetch user points
@@ -118,6 +128,10 @@ export function PointsProvider({ children }: { children: React.ReactNode }) {
       setBalance((prev) => prev + amount);
       setTotalEarned((prev) => prev + amount);
       setRecentEarning({ amount, type });
+      
+      // Trigger animation
+      animationIdRef.current += 1;
+      setCurrentAnimation({ amount, type, id: animationIdRef.current });
 
       // Clear the recent earning after animation
       setTimeout(() => setRecentEarning(null), 3000);
@@ -224,6 +238,10 @@ export function PointsProvider({ children }: { children: React.ReactNode }) {
     setRecentEarning(null);
   }, []);
 
+  const clearAnimation = useCallback(() => {
+    setCurrentAnimation(null);
+  }, []);
+
   return (
     <PointsContext.Provider
       value={{
@@ -236,6 +254,8 @@ export function PointsProvider({ children }: { children: React.ReactNode }) {
         checkWeeklyBonus,
         recentEarning,
         clearRecentEarning,
+        currentAnimation,
+        clearAnimation,
       }}
     >
       {children}
