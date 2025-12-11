@@ -20,6 +20,8 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
 import { format } from 'date-fns';
 
+const ONBOARDING_KEY = 'daily-reset-onboarding-complete';
+
 const Index = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
@@ -30,6 +32,7 @@ const Index = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showReflection, setShowReflection] = useState(false);
   const hasShownReflectionToday = useRef(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   // User preferences (with defaults for guests)
   const confettiEnabled = settings?.confetti_enabled ?? true;
@@ -55,6 +58,19 @@ const Index = () => {
     if (currentHabits.length === 0) return 0;
     return Math.max(...currentHabits.map(h => (h as any).streak || 0), 0);
   }, [isLoggedIn, cloudHabits.habits, localHabits.habits]);
+
+  // Check if new user needs onboarding (guests only - logged in users checked in Onboarding)
+  useEffect(() => {
+    const hasCompletedOnboarding = localStorage.getItem(ONBOARDING_KEY) === 'true';
+    if (!hasCompletedOnboarding && !authLoading) {
+      // Give a tiny delay to prevent flash
+      const timer = setTimeout(() => {
+        navigate('/onboarding', { replace: true });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+    setOnboardingChecked(true);
+  }, [authLoading, navigate]);
 
   // Migrate local habits to cloud after login
   useEffect(() => {
@@ -122,7 +138,7 @@ const Index = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
-  if (isLoading) {
+  if (isLoading || !onboardingChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <RefreshCw className="w-6 h-6 text-primary animate-spin" />
