@@ -4,7 +4,8 @@ import { usePremium } from '@/contexts/PremiumContext';
 import { Button } from '@/components/ui/button';
 import { ThemePicker } from '@/components/ThemePicker';
 import { AmbientSettings } from '@/components/AmbientSettings';
-import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee } from 'lucide-react';
+import { CompanionSettings } from '@/components/CompanionSettings';
+import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -119,7 +120,16 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* Theme Section */}
+          {/* Companion Section */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground px-1 flex items-center gap-2">
+              <Cat className="w-4 h-4" />
+              Companion
+            </h2>
+            <div className="bg-card rounded-2xl border border-border/50 p-4">
+              <CompanionSettings />
+            </div>
+          </div>
           <div className="space-y-2">
             <h2 className="text-sm font-medium text-muted-foreground px-1">Appearance</h2>
             <div className="bg-card rounded-2xl border border-border/50 p-4">

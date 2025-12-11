@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useCompanion } from '@/contexts/CompanionContext';
 import { useCloudHabits, CloudHabit } from '@/hooks/useCloudHabits';
 import { useHabits } from '@/hooks/useHabits';
 import { useUserSettings } from '@/hooks/useUserSettings';
@@ -35,6 +36,7 @@ const Index = () => {
   const hasShownReflectionToday = useRef(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const { shareData, openShare, closeShare, isOpen: isShareOpen } = useShareMilestone();
+  const { triggerReaction } = useCompanion();
 
   // User preferences (with defaults for guests)
   const confettiEnabled = settings?.confetti_enabled ?? true;
@@ -127,6 +129,19 @@ const Index = () => {
       localHabits.toggleHabit(id);
     }
   };
+
+  // Check if all habits will be complete after this toggle
+  const checkAllComplete = useCallback(() => {
+    // After toggling, check if all habits are now completed
+    // We need to count current completed + 1 (the one just completed)
+    const newCompletedCount = completedCount + 1;
+    if (newCompletedCount >= totalCount && totalCount > 0) {
+      // Small delay to let the habit completion animation play first
+      setTimeout(() => {
+        triggerReaction('all_complete');
+      }, 500);
+    }
+  }, [completedCount, totalCount, triggerReaction]);
 
   const handleDeleteHabit = (id: string) => {
     if (isLoggedIn) {
@@ -276,6 +291,7 @@ const Index = () => {
                       index={index}
                       confettiEnabled={confettiEnabled}
                       soundEnabled={soundEnabled}
+                      onComplete={checkAllComplete}
                     />
                   </div>
                 ))

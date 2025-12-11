@@ -515,12 +515,14 @@ export type Database = {
           ambient_mode: string | null
           ambient_sounds_enabled: boolean | null
           ambient_visuals_enabled: boolean | null
+          companion_type: string | null
           confetti_enabled: boolean | null
           created_at: string | null
           daily_notification: boolean | null
           daily_reset_time: string | null
           done_habit_position: string | null
           id: string
+          show_companion: boolean | null
           sound_enabled: boolean | null
           start_of_week: string | null
           theme: string | null
@@ -532,12 +534,14 @@ export type Database = {
           ambient_mode?: string | null
           ambient_sounds_enabled?: boolean | null
           ambient_visuals_enabled?: boolean | null
+          companion_type?: string | null
           confetti_enabled?: boolean | null
           created_at?: string | null
           daily_notification?: boolean | null
           daily_reset_time?: string | null
           done_habit_position?: string | null
           id?: string
+          show_companion?: boolean | null
           sound_enabled?: boolean | null
           start_of_week?: string | null
           theme?: string | null
@@ -549,12 +553,14 @@ export type Database = {
           ambient_mode?: string | null
           ambient_sounds_enabled?: boolean | null
           ambient_visuals_enabled?: boolean | null
+          companion_type?: string | null
           confetti_enabled?: boolean | null
           created_at?: string | null
           daily_notification?: boolean | null
           daily_reset_time?: string | null
           done_habit_position?: string | null
           id?: string
+          show_companion?: boolean | null
           sound_enabled?: boolean | null
           start_of_week?: string | null
           theme?: string | null
