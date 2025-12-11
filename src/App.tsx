@@ -8,7 +8,6 @@ import { PremiumProvider } from "@/contexts/PremiumContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AmbientProvider } from "@/contexts/AmbientContext";
 import { AmbientLayer } from "@/components/AmbientLayer";
-import { AmbientAudioPlayer } from "@/components/AmbientAudioPlayer";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
@@ -34,7 +33,6 @@ const App = () => (
             <PremiumProvider>
               <AmbientProvider>
                 <AmbientLayer />
-                <AmbientAudioPlayer />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
