@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ThemePicker } from '@/components/ThemePicker';
 import { AmbientSettings } from '@/components/AmbientSettings';
 import { CompanionSettings } from '@/components/CompanionSettings';
-import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat } from 'lucide-react';
+import { MusicSettings } from '@/components/MusicSettings';
+import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -117,6 +118,17 @@ export default function Settings() {
             </h2>
             <div className="bg-card rounded-2xl border border-border/50 p-4">
               <AmbientSettings />
+            </div>
+          </div>
+
+          {/* Background Music Section */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground px-1 flex items-center gap-2">
+              <Music className="w-4 h-4" />
+              Background Music
+            </h2>
+            <div className="bg-card rounded-2xl border border-border/50 p-4">
+              <MusicSettings />
             </div>
           </div>
 
