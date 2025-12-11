@@ -116,7 +116,7 @@ export default function Groups() {
   const userName = currentMember?.profile?.display_name || currentMember?.profile?.email?.split('@')[0] || 'You';
 
   return (
-    <div className="min-h-screen pb-24 relative z-10 bg-background/80 backdrop-blur-sm">
+    <div className="min-h-screen pb-24 bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 py-4">
