@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          badge_type: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          xp_required: number | null
+        }
+        Insert: {
+          badge_type?: string
+          description?: string | null
+          icon: string
+          id?: string
+          name: string
+          xp_required?: number | null
+        }
+        Update: {
+          badge_type?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          xp_required?: number | null
+        }
+        Relationships: []
+      }
+      group_achievements: {
+        Row: {
+          achieved_at: string
+          achievement_type: string
+          description: string | null
+          group_id: string
+          id: string
+          title: string
+        }
+        Insert: {
+          achieved_at?: string
+          achievement_type: string
+          description?: string | null
+          group_id: string
+          id?: string
+          title: string
+        }
+        Update: {
+          achieved_at?: string
+          achievement_type?: string
+          description?: string | null
+          group_id?: string
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_achievements_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_activities: {
         Row: {
           activity_type: string
@@ -45,6 +107,123 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "group_activities_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_challenge_progress: {
+        Row: {
+          challenge_id: string
+          completed: boolean | null
+          id: string
+          progress_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed?: boolean | null
+          id?: string
+          progress_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed?: boolean | null
+          id?: string
+          progress_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "group_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_challenges: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string
+          group_id: string
+          habit_category: string | null
+          id: string
+          is_active: boolean | null
+          start_date: string
+          target_count: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date: string
+          group_id: string
+          habit_category?: string | null
+          id?: string
+          is_active?: boolean | null
+          start_date?: string
+          target_count?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string
+          group_id?: string
+          habit_category?: string | null
+          id?: string
+          is_active?: boolean | null
+          start_date?: string
+          target_count?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_challenges_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_chat: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_chat_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
@@ -122,21 +301,27 @@ export type Database = {
           created_by: string
           id: string
           invite_code: string
+          level: number | null
           name: string
+          total_xp: number | null
         }
         Insert: {
           created_at?: string
           created_by: string
           id?: string
           invite_code: string
+          level?: number | null
           name: string
+          total_xp?: number | null
         }
         Update: {
           created_at?: string
           created_by?: string
           id?: string
           invite_code?: string
+          level?: number | null
           name?: string
+          total_xp?: number | null
         }
         Relationships: []
       }
@@ -285,6 +470,45 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          group_id: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          group_id?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          group_id?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_settings: {
         Row: {

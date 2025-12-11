@@ -9,6 +9,8 @@ export interface Group {
   created_by: string;
   invite_code: string;
   created_at: string;
+  total_xp: number;
+  level: number;
 }
 
 export interface GroupMember {
@@ -38,11 +40,63 @@ export interface GroupActivity {
   reactions: { emoji: string; count: number; hasReacted: boolean }[];
 }
 
+export interface Challenge {
+  id: string;
+  group_id: string;
+  title: string;
+  description: string | null;
+  target_count: number;
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+  created_by: string;
+  progress?: { user_id: string; progress_count: number; completed: boolean }[];
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string;
+  xp_required: number;
+  badge_type: string;
+}
+
+export interface UserBadge {
+  badge_id: string;
+  earned_at: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  user_id: string;
+  message: string;
+  created_at: string;
+  profiles?: {
+    display_name: string | null;
+    email: string | null;
+  };
+}
+
+export interface GroupAchievement {
+  id: string;
+  group_id: string;
+  achievement_type: string;
+  title: string;
+  description: string | null;
+  achieved_at: string;
+}
+
 export function useGroups() {
   const { user } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [activities, setActivities] = useState<GroupActivity[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [achievements, setAchievements] = useState<GroupAchievement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
 
@@ -132,14 +186,12 @@ export function useGroups() {
       if (activitiesError) throw activitiesError;
 
       if (activitiesData && activitiesData.length > 0) {
-        // Fetch profiles
         const userIds = [...new Set(activitiesData.map(a => a.user_id))];
         const { data: profilesData } = await supabase
           .from('profiles')
           .select('id, display_name, email')
           .in('id', userIds);
 
-        // Fetch reactions
         const activityIds = activitiesData.map(a => a.id);
         const { data: reactionsData } = await supabase
           .from('group_reactions')
@@ -180,6 +232,106 @@ export function useGroups() {
     }
   }, [user]);
 
+  const fetchChallenges = useCallback(async (groupId: string) => {
+    if (!user) return;
+
+    try {
+      const { data: challengesData, error } = await supabase
+        .from('group_challenges')
+        .select('*')
+        .eq('group_id', groupId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (challengesData && challengesData.length > 0) {
+        const challengeIds = challengesData.map(c => c.id);
+        const { data: progressData } = await supabase
+          .from('group_challenge_progress')
+          .select('*')
+          .in('challenge_id', challengeIds);
+
+        const challengesWithProgress = challengesData.map(challenge => ({
+          ...challenge,
+          progress: progressData?.filter(p => p.challenge_id === challenge.id) || []
+        }));
+
+        setChallenges(challengesWithProgress);
+      } else {
+        setChallenges([]);
+      }
+    } catch (error) {
+      console.error('Error fetching challenges:', error);
+    }
+  }, [user]);
+
+  const fetchBadges = useCallback(async (groupId: string) => {
+    if (!user) return;
+
+    try {
+      const [badgesResult, userBadgesResult] = await Promise.all([
+        supabase.from('badges').select('*'),
+        supabase.from('user_badges').select('badge_id, earned_at').eq('user_id', user.id)
+      ]);
+
+      if (badgesResult.data) setBadges(badgesResult.data);
+      if (userBadgesResult.data) setUserBadges(userBadgesResult.data);
+    } catch (error) {
+      console.error('Error fetching badges:', error);
+    }
+  }, [user]);
+
+  const fetchChatMessages = useCallback(async (groupId: string) => {
+    if (!user) return;
+
+    try {
+      const { data: messagesData, error } = await supabase
+        .from('group_chat')
+        .select('*')
+        .eq('group_id', groupId)
+        .order('created_at', { ascending: true })
+        .limit(100);
+
+      if (error) throw error;
+
+      if (messagesData && messagesData.length > 0) {
+        const userIds = [...new Set(messagesData.map(m => m.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, display_name, email')
+          .in('id', userIds);
+
+        const messagesWithProfiles = messagesData.map(msg => ({
+          ...msg,
+          profiles: profilesData?.find(p => p.id === msg.user_id) || null
+        }));
+
+        setChatMessages(messagesWithProfiles);
+      } else {
+        setChatMessages([]);
+      }
+    } catch (error) {
+      console.error('Error fetching chat:', error);
+    }
+  }, [user]);
+
+  const fetchAchievements = useCallback(async (groupId: string) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('group_achievements')
+        .select('*')
+        .eq('group_id', groupId)
+        .order('achieved_at', { ascending: false });
+
+      if (error) throw error;
+      setAchievements(data || []);
+    } catch (error) {
+      console.error('Error fetching achievements:', error);
+    }
+  }, [user]);
+
   const createGroup = async (name: string) => {
     if (!user) return null;
 
@@ -191,7 +343,9 @@ export function useGroups() {
         .insert({
           name,
           created_by: user.id,
-          invite_code: inviteCode
+          invite_code: inviteCode,
+          total_xp: 0,
+          level: 1
         })
         .select()
         .single();
@@ -283,6 +437,9 @@ export function useGroups() {
       setCurrentGroup(null);
       setMembers([]);
       setActivities([]);
+      setChallenges([]);
+      setChatMessages([]);
+      setAchievements([]);
       await fetchUserGroups();
       return true;
     } catch (error) {
@@ -311,6 +468,10 @@ export function useGroups() {
           streak_count: streakCount || null
         });
 
+      // Add XP for activity
+      const xpGain = activityType === 'all_completed' ? 25 : 10;
+      await addGroupXP(groupId, xpGain);
+
       if (currentGroup?.id === groupId) {
         fetchGroupActivities(groupId);
       }
@@ -318,6 +479,112 @@ export function useGroups() {
       console.error('Error posting activity:', error);
     }
   };
+
+  const createChallenge = async (
+    groupId: string,
+    title: string,
+    description: string,
+    targetCount: number,
+    endDate: string
+  ) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('group_challenges')
+        .insert({
+          group_id: groupId,
+          title,
+          description: description || null,
+          target_count: targetCount,
+          end_date: endDate,
+          created_by: user.id
+        });
+
+      if (error) throw error;
+
+      toast.success('Challenge created!');
+      fetchChallenges(groupId);
+    } catch (error) {
+      console.error('Error creating challenge:', error);
+      toast.error('Failed to create challenge');
+    }
+  };
+
+  const sendChatMessage = async (groupId: string, message: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('group_chat')
+        .insert({
+          group_id: groupId,
+          user_id: user.id,
+          message
+        });
+
+      if (error) throw error;
+      fetchChatMessages(groupId);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
+
+  const addGroupXP = async (groupId: string, xp: number) => {
+    if (!user || !currentGroup) return;
+
+    try {
+      const newXP = (currentGroup.total_xp || 0) + xp;
+      const newLevel = Math.floor(newXP / 500) + 1;
+
+      const { error } = await supabase
+        .from('groups')
+        .update({ total_xp: newXP, level: newLevel })
+        .eq('id', groupId);
+
+      if (error) throw error;
+
+      // Check for level up achievement
+      if (newLevel > (currentGroup.level || 1)) {
+        await supabase.from('group_achievements').insert({
+          group_id: groupId,
+          achievement_type: 'level_up',
+          title: `Level ${newLevel} Reached!`,
+          description: `The group has reached level ${newLevel}`
+        });
+        fetchAchievements(groupId);
+      }
+
+      setCurrentGroup(prev => prev ? { ...prev, total_xp: newXP, level: newLevel } : null);
+    } catch (error) {
+      console.error('Error adding XP:', error);
+    }
+  };
+
+  // Subscribe to realtime chat
+  useEffect(() => {
+    if (!currentGroup) return;
+
+    const channel = supabase
+      .channel('group-chat')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'group_chat',
+          filter: `group_id=eq.${currentGroup.id}`
+        },
+        () => {
+          fetchChatMessages(currentGroup.id);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentGroup, fetchChatMessages]);
 
   useEffect(() => {
     fetchUserGroups();
@@ -327,19 +594,31 @@ export function useGroups() {
     if (currentGroup) {
       fetchGroupMembers(currentGroup.id);
       fetchGroupActivities(currentGroup.id);
+      fetchChallenges(currentGroup.id);
+      fetchBadges(currentGroup.id);
+      fetchChatMessages(currentGroup.id);
+      fetchAchievements(currentGroup.id);
     }
-  }, [currentGroup, fetchGroupMembers, fetchGroupActivities]);
+  }, [currentGroup, fetchGroupMembers, fetchGroupActivities, fetchChallenges, fetchBadges, fetchChatMessages, fetchAchievements]);
 
   return {
     groups,
     members,
     activities,
+    challenges,
+    badges,
+    userBadges,
+    chatMessages,
+    achievements,
     currentGroup,
     isLoading,
     createGroup,
     joinGroup,
     leaveGroup,
     postActivity,
+    createChallenge,
+    sendChatMessage,
+    addGroupXP,
     setCurrentGroup,
     refetch: fetchUserGroups,
     refetchActivities: () => currentGroup && fetchGroupActivities(currentGroup.id)
