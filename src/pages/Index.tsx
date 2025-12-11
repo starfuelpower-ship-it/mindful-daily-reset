@@ -15,6 +15,7 @@ import { EditHabitDialog } from '@/components/EditHabitDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { DailyReflectionModal } from '@/components/DailyReflectionModal';
+import { MotivationalMessage } from '@/components/MotivationalMessage';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
 import { format } from 'date-fns';
@@ -218,6 +219,15 @@ const Index = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Motivational Message */}
+        <div className="mb-5">
+          <MotivationalMessage 
+            bestStreak={bestStreak} 
+            completedToday={completedCount} 
+            totalHabits={totalCount} 
+          />
         </div>
 
         {/* Habits List */}
