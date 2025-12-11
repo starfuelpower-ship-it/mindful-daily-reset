@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { ArrowLeft, Check, ShoppingBag, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CatCostume, COSTUME_DATA, type CostumeType } from '@/components/CatCostume';
+import { CatCostume, COSTUME_DATA, getCostumeTypeFromDB, ALL_COSTUME_TYPES, type CostumeType } from '@/components/CatCostume';
 
 const CatCustomize = () => {
   const navigate = useNavigate();
@@ -55,22 +55,13 @@ const CatCustomize = () => {
         .eq('user_id', user.id);
 
       if (ownedData) {
-        const costumeMap: Record<string, CostumeType> = {
-          'Cozy Scarf': 'scarf',
-          'Wizard Hat': 'wizard_hat',
-          'Raincoat': 'raincoat',
-          'Sleep Cap': 'sleep_cap',
-          'Headphones': 'headphones',
-          'Flower Crown': 'flower_crown',
-          'Bow Tie': 'bow_tie',
-          'Santa Hat': 'santa_hat',
-          'Royal Crown': 'crown',
-        };
-
         const owned: CostumeType[] = ['none'];
         ownedData.forEach((item: any) => {
-          if (item.cat_costumes?.name && costumeMap[item.cat_costumes.name]) {
-            owned.push(costumeMap[item.cat_costumes.name]);
+          if (item.cat_costumes?.name) {
+            const costumeType = getCostumeTypeFromDB(item.cat_costumes.name);
+            if (costumeType !== 'none') {
+              owned.push(costumeType);
+            }
           }
         });
         setOwnedCostumes(owned);
@@ -98,11 +89,8 @@ const CatCustomize = () => {
     setCatAnimation('happy');
   };
 
-  // All available costumes for display
-  const allCostumes: CostumeType[] = [
-    'none', 'scarf', 'wizard_hat', 'raincoat', 'sleep_cap', 
-    'headphones', 'flower_crown', 'bow_tie', 'santa_hat', 'crown'
-  ];
+  // All available costumes for display (none + all costume types)
+  const allCostumes: CostumeType[] = ['none', ...ALL_COSTUME_TYPES];
 
   return (
     <div className="min-h-screen bg-background pb-24">
