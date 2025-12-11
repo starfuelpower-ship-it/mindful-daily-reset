@@ -278,12 +278,18 @@ const CatBody = memo(({ state, isDark, costume }: CatBodyProps) => {
     stateStr === 'stretching' && 'animate-cat-stretch',
     stateStr === 'playful' && 'animate-cat-playful',
     stateStr === 'tap_reaction' && 'animate-cat-hop',
+    stateStr === 'tap_bounce' && 'animate-cat-bounce',
+    stateStr === 'tap_spin' && 'animate-cat-spin',
+    stateStr === 'tap_meow' && 'animate-cat-meow-body',
+    stateStr === 'tap_curious' && 'animate-cat-curious',
     stateStr === 'sleeping' && 'animate-cat-curl',
   );
   
   const headClass = cn(
     'cat-head',
     stateStr === 'tap_reaction' && 'animate-cat-head-tilt',
+    stateStr === 'tap_curious' && 'animate-cat-head-curious',
+    stateStr === 'tap_meow' && 'animate-cat-head-meow',
     stateStr === 'grooming' && 'animate-cat-head-down',
   );
   
@@ -292,14 +298,19 @@ const CatBody = memo(({ state, isDark, costume }: CatBodyProps) => {
     stateStr === 'idle' && 'animate-cat-tail-idle',
     stateStr === 'playful' && 'animate-cat-tail-wag',
     stateStr === 'tap_reaction' && 'animate-cat-tail-wag',
+    stateStr === 'tap_bounce' && 'animate-cat-tail-wag',
+    stateStr === 'tap_spin' && 'animate-cat-tail-spin',
+    stateStr === 'tap_curious' && 'animate-cat-tail-perk',
     stateStr === 'sleeping' && 'animate-cat-tail-wrap',
   );
   
   const isSleeping = stateStr === 'sleeping';
   const isBlinking = stateStr === 'blinking';
+  const isMeowing = stateStr === 'tap_meow';
   
   const eyesOpen = !isSleeping && !isBlinking;
-  const eyesHappy = stateStr === 'playful' || stateStr === 'tap_reaction';
+  const eyesHappy = stateStr === 'playful' || stateStr === 'tap_reaction' || stateStr === 'tap_bounce';
+  const eyesWide = stateStr === 'tap_curious' || stateStr === 'tap_spin';
 
   return (
     <svg
@@ -401,6 +412,14 @@ const CatBody = memo(({ state, isDark, costume }: CatBodyProps) => {
                   <path d="M25 25 Q27 23 29 25" stroke={eyeColor} strokeWidth="2" fill="none" strokeLinecap="round" />
                   <path d="M35 25 Q37 23 39 25" stroke={eyeColor} strokeWidth="2" fill="none" strokeLinecap="round" />
                 </>
+              ) : eyesWide ? (
+                // Wide curious eyes
+                <>
+                  <ellipse cx="27" cy={isSleeping ? '40' : '26'} rx="3.5" ry="4" fill={eyeColor} />
+                  <ellipse cx="37" cy={isSleeping ? '40' : '26'} rx="3.5" ry="4" fill={eyeColor} />
+                  <circle cx="26" cy={isSleeping ? '39' : '25'} r="1.5" fill="white" opacity="0.9" />
+                  <circle cx="36" cy={isSleeping ? '39' : '25'} r="1.5" fill="white" opacity="0.9" />
+                </>
               ) : (
                 // Normal eyes
                 <>
@@ -438,13 +457,24 @@ const CatBody = memo(({ state, isDark, costume }: CatBodyProps) => {
             fill={noseColor} 
           />
           
-          {/* Mouth */}
-          <path
-            d={isSleeping ? "M30 47 Q32 49 34 47" : "M30 33 Q32 35 34 33"}
-            stroke={isDark ? '#4b5563' : '#92400e'}
-            strokeWidth="1"
-            fill="none"
-          />
+          {/* Mouth - open when meowing */}
+          {isMeowing ? (
+            <ellipse
+              cx="32"
+              cy="34"
+              rx="2.5"
+              ry="2"
+              fill="#1f2937"
+              className="animate-cat-mouth-meow"
+            />
+          ) : (
+            <path
+              d={isSleeping ? "M30 47 Q32 49 34 47" : "M30 33 Q32 35 34 33"}
+              stroke={isDark ? '#4b5563' : '#92400e'}
+              strokeWidth="1"
+              fill="none"
+            />
+          )}
           
           {/* Whiskers */}
           <g stroke={whiskerColor} strokeWidth="0.5" className={stateStr === 'tap_reaction' ? 'animate-cat-whisker-twitch' : ''}>
@@ -617,6 +647,70 @@ const CatStyles = memo(() => (
       50% { opacity: 1; transform: translateY(-8px); }
     }
     .animate-cat-zzz { animation: cat-zzz 2.5s ease-in-out infinite; }
+    
+    /* New tap animations */
+    @keyframes cat-bounce {
+      0%, 100% { transform: translateY(0) scaleY(1); }
+      20% { transform: translateY(-12px) scaleY(1.05); }
+      40% { transform: translateY(0) scaleY(0.9); }
+      60% { transform: translateY(-6px) scaleY(1.02); }
+      80% { transform: translateY(0) scaleY(0.95); }
+    }
+    .animate-cat-bounce { animation: cat-bounce 0.7s ease-out; }
+    
+    @keyframes cat-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .animate-cat-spin { animation: cat-spin 0.6s ease-in-out; }
+    
+    @keyframes cat-meow-body {
+      0%, 100% { transform: translateY(0); }
+      25% { transform: translateY(-2px); }
+      50% { transform: translateY(0); }
+      75% { transform: translateY(-1px); }
+    }
+    .animate-cat-meow-body { animation: cat-meow-body 1s ease-in-out; }
+    
+    @keyframes cat-head-meow {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      30% { transform: translateY(-3px) rotate(-5deg); }
+      60% { transform: translateY(-2px) rotate(3deg); }
+    }
+    .animate-cat-head-meow { animation: cat-head-meow 1s ease-in-out; }
+    
+    @keyframes cat-mouth-meow {
+      0%, 100% { transform: scaleY(1); }
+      25% { transform: scaleY(1.3); }
+      50% { transform: scaleY(0.8); }
+      75% { transform: scaleY(1.2); }
+    }
+    .animate-cat-mouth-meow { animation: cat-mouth-meow 0.8s ease-in-out; transform-origin: center; }
+    
+    @keyframes cat-curious {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    .animate-cat-curious { animation: cat-curious 1.2s ease-in-out; }
+    
+    @keyframes cat-head-curious {
+      0%, 100% { transform: rotate(0deg); }
+      30% { transform: rotate(-15deg); }
+      70% { transform: rotate(10deg); }
+    }
+    .animate-cat-head-curious { animation: cat-head-curious 1.2s ease-in-out; }
+    
+    @keyframes cat-tail-perk {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(20deg); }
+    }
+    .animate-cat-tail-perk { animation: cat-tail-perk 0.4s ease-out; transform-origin: 46px 42px; }
+    
+    @keyframes cat-tail-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(180deg); }
+    }
+    .animate-cat-tail-spin { animation: cat-tail-spin 0.6s ease-in-out; transform-origin: 46px 42px; }
     
     /* Costume entrance */
     @keyframes costume-in {
