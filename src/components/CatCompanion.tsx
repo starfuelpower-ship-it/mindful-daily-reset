@@ -1,11 +1,15 @@
 import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { useCompanion } from '@/contexts/CompanionContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { CatCostume } from './CatCostume';
 import { cn } from '@/lib/utils';
 
 type CatAnimation = 'idle' | 'blink' | 'groom' | 'stretch' | 'sleep' | 'tail' | 'walk' | 'happy' | 'roll' | 'pounce' | 'curious' | 'yawn' | 'pawLick' | 'sit' | 'meow';
 
-const IDLE_ANIMATIONS: CatAnimation[] = ['idle', 'blink', 'groom', 'stretch', 'sleep', 'tail', 'pounce', 'curious', 'yawn', 'pawLick', 'sit', 'meow'];
+const IDLE_ANIMATIONS: CatAnimation[] = ['idle', 'blink', 'groom', 'stretch', 'tail', 'pounce', 'curious', 'yawn', 'pawLick', 'sit', 'meow'];
+const NIGHT_ANIMATIONS: CatAnimation[] = ['idle', 'blink', 'sleep', 'yawn', 'sit'];
+
 const ANIMATION_DURATIONS: Record<CatAnimation, number> = {
   idle: 2000,
   blink: 600,
@@ -57,8 +61,9 @@ const loadSavedScale = () => {
 };
 
 export const CatCompanion = memo(() => {
-  const { showCompanion, companionType, currentReaction } = useCompanion();
+  const { showCompanion, companionType, currentReaction, equippedCostume } = useCompanion();
   const { resolvedTheme } = useTheme();
+  const { playSound, triggerHaptic } = useSoundEffects();
   const [animation, setAnimation] = useState<CatAnimation>('idle');
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragPosition, setDragPosition] = useState(loadSavedPosition);
@@ -68,26 +73,27 @@ export const CatCompanion = memo(() => {
   const [isWalking, setIsWalking] = useState(false);
   const [facingLeft, setFacingLeft] = useState(false);
   const [mouthOpen, setMouthOpen] = useState(false);
-  const [isTouched, setIsTouched] = useState(false);
   const touchReactionTimeout = useRef<NodeJS.Timeout>();
-
-  // Touch reaction animations
+  
   const TOUCH_REACTIONS: CatAnimation[] = ['happy', 'curious', 'meow', 'pounce', 'stretch', 'yawn'];
   
-  const triggerTouchReaction = () => {
+  const triggerTouchReaction = useCallback(() => {
     if (touchReactionTimeout.current) clearTimeout(touchReactionTimeout.current);
     const reaction = TOUCH_REACTIONS[Math.floor(Math.random() * TOUCH_REACTIONS.length)];
     setAnimation(reaction);
-    setIsTouched(true);
+    
+    // Play purr sound when touched
+    playSound('purr');
+    triggerHaptic('light');
+    
     if (reaction === 'meow') {
       setMouthOpen(true);
       setTimeout(() => setMouthOpen(false), 600);
     }
     touchReactionTimeout.current = setTimeout(() => {
-      setIsTouched(false);
       setAnimation('idle');
     }, 1500);
-  };
+  }, [playSound, triggerHaptic]);
   
   const animationTimeout = useRef<NodeJS.Timeout>();
   const walkTimeout = useRef<NodeJS.Timeout>();
@@ -103,28 +109,30 @@ export const CatCompanion = memo(() => {
   useEffect(() => {
     if (currentReaction === 'habit_complete') {
       setAnimation('happy');
+      playSound('success');
     } else if (currentReaction === 'all_complete') {
       setAnimation('roll');
+      playSound('achievement');
     }
-  }, [currentReaction]);
+  }, [currentReaction, playSound]);
 
-  // Cycle through idle animations more frequently
+  // Cycle through idle animations - use night animations when dark mode
   useEffect(() => {
     if (!showCompanion || companionType !== 'cat') return;
     if (currentReaction) return;
 
+    const animations = isDark ? NIGHT_ANIMATIONS : IDLE_ANIMATIONS;
+
     const cycleAnimation = () => {
-      const randomAnim = IDLE_ANIMATIONS[Math.floor(Math.random() * IDLE_ANIMATIONS.length)];
+      const randomAnim = animations[Math.floor(Math.random() * animations.length)];
       setAnimation(randomAnim);
       
-      // Meow animation opens mouth
       if (randomAnim === 'meow') {
         setMouthOpen(true);
         setTimeout(() => setMouthOpen(false), 600);
       }
       
-      // Shorter delay between animations for more activity
-      animationTimeout.current = setTimeout(cycleAnimation, ANIMATION_DURATIONS[randomAnim] + Math.random() * 1000);
+      animationTimeout.current = setTimeout(cycleAnimation, ANIMATION_DURATIONS[randomAnim] + Math.random() * 1500);
     };
 
     animationTimeout.current = setTimeout(cycleAnimation, 1000);
@@ -132,12 +140,13 @@ export const CatCompanion = memo(() => {
     return () => {
       if (animationTimeout.current) clearTimeout(animationTimeout.current);
     };
-  }, [showCompanion, companionType, currentReaction]);
+  }, [showCompanion, companionType, currentReaction, isDark]);
 
   // Occasional walking (only when not dragged)
   useEffect(() => {
     if (!showCompanion || companionType !== 'cat') return;
     if (dragPosition.x !== 0 || dragPosition.y !== 0) return;
+    if (isDark) return; // No walking at night
 
     const startWalk = () => {
       if (currentReaction || isDragging) return;
@@ -156,7 +165,7 @@ export const CatCompanion = memo(() => {
     };
 
     const scheduleWalk = () => {
-      const delay = 20000 + Math.random() * 20000;
+      const delay = 25000 + Math.random() * 25000;
       walkTimeout.current = setTimeout(() => {
         startWalk();
         scheduleWalk();
@@ -168,7 +177,7 @@ export const CatCompanion = memo(() => {
     return () => {
       if (walkTimeout.current) clearTimeout(walkTimeout.current);
     };
-  }, [showCompanion, companionType, currentReaction, position.x, isDragging, dragPosition]);
+  }, [showCompanion, companionType, currentReaction, position.x, isDragging, dragPosition, isDark]);
 
   // Touch handlers for dragging
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -221,7 +230,6 @@ export const CatCompanion = memo(() => {
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
     setIsPinching(false);
-    // Save position and scale when touch ends
     localStorage.setItem(CAT_POSITION_KEY, JSON.stringify(dragPosition));
     localStorage.setItem(CAT_SCALE_KEY, String(scale));
   }, [dragPosition, scale]);
@@ -255,7 +263,6 @@ export const CatCompanion = memo(() => {
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-    // Save position when mouse up
     localStorage.setItem(CAT_POSITION_KEY, JSON.stringify(dragPosition));
   }, [dragPosition]);
 
@@ -300,7 +307,7 @@ export const CatCompanion = memo(() => {
     >
       <div
         className={cn(
-          'relative w-12 h-12 transition-transform',
+          'relative w-16 h-16 transition-transform',
           facingLeft && 'scale-x-[-1]'
         )}
       >
@@ -477,166 +484,151 @@ export const CatCompanion = memo(() => {
               <g className="animate-cat-zzz">
                 <text x="44" y="20" className="text-[8px] fill-primary font-bold">z</text>
                 <text x="48" y="14" className="text-[6px] fill-primary font-bold opacity-70">z</text>
-                <text x="51" y="10" className="text-[4px] fill-primary font-bold opacity-50">z</text>
+                <text x="52" y="10" className="text-[5px] fill-primary font-bold opacity-50">z</text>
               </g>
             )}
-            
-            {/* Meow sound waves */}
-            {mouthOpen && (
-              <g className="animate-cat-meow-waves">
-                <path d="M40 32 Q44 30 44 34" stroke={isDark ? '#9ca3af' : '#fbbf24'} strokeWidth="1" fill="none" opacity="0.6" />
-                <path d="M44 30 Q48 28 48 36" stroke={isDark ? '#9ca3af' : '#fbbf24'} strokeWidth="1" fill="none" opacity="0.4" />
-              </g>
-            )}
+
+            {/* Costume overlay - rendered on top of the cat */}
+            <CatCostume costume={equippedCostume} isDark={isDark} />
           </g>
         </svg>
       </div>
-      
-      {/* CSS Animations */}
+
       <style>{`
-        @keyframes cat-blink {
-          0%, 90%, 100% { transform: scaleY(1); }
-          95% { transform: scaleY(0.1); }
-        }
-        @keyframes cat-breathe {
-          0%, 100% { transform: scaleY(1); }
-          50% { transform: scaleY(1.05); }
-        }
         @keyframes cat-stretch {
           0%, 100% { transform: scaleX(1) scaleY(1); }
           50% { transform: scaleX(1.15) scaleY(0.9); }
         }
-        @keyframes cat-tail {
+        .animate-cat-stretch { animation: cat-stretch 1.8s ease-in-out; }
+        
+        @keyframes cat-roll {
           0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(10deg); }
-          75% { transform: rotate(-10deg); }
+          50% { transform: rotate(360deg); }
         }
+        .animate-cat-roll { animation: cat-roll 1.8s ease-in-out; }
+        
+        @keyframes cat-pounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        .animate-cat-pounce { animation: cat-pounce 1.5s ease-in-out; }
+        
+        @keyframes cat-curious {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(-10deg); }
+        }
+        .animate-cat-curious { animation: cat-curious 2s ease-in-out; }
+        
+        @keyframes cat-breathe {
+          0%, 100% { transform: scaleY(1); }
+          50% { transform: scaleY(1.05); }
+        }
+        .animate-cat-breathe { animation: cat-breathe 2s ease-in-out infinite; }
+        
+        @keyframes cat-head-tilt {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(15deg); }
+        }
+        .animate-cat-head-tilt { animation: cat-head-tilt 2s ease-in-out; }
+        
+        @keyframes cat-head-back {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
+        }
+        .animate-cat-head-back { animation: cat-head-back 2.2s ease-in-out; }
+        
+        @keyframes cat-ear-twitch {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(-10deg); }
+          75% { transform: rotate(5deg); }
+        }
+        .animate-cat-ear-twitch { animation: cat-ear-twitch 0.5s ease-in-out 3; }
+        .animate-cat-ear-twitch-alt { animation: cat-ear-twitch 0.5s ease-in-out 3 0.1s; }
+        
+        @keyframes cat-blink {
+          0%, 100% { transform: scaleY(1); }
+          50% { transform: scaleY(0.1); }
+        }
+        .animate-cat-blink { animation: cat-blink 0.3s ease-in-out 2; }
+        
+        @keyframes cat-tail {
+          0%, 100% { d: path("M46 42 Q56 38 54 30"); }
+          50% { d: path("M46 42 Q56 42 58 35"); }
+        }
+        .animate-cat-tail { animation: cat-tail 1.2s ease-in-out infinite; transform-origin: 46px 42px; }
+        
         @keyframes cat-tail-fast {
           0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(15deg); }
-          50% { transform: rotate(0deg); }
-          75% { transform: rotate(-15deg); }
+          25% { transform: rotate(20deg); }
+          75% { transform: rotate(-20deg); }
         }
+        .animate-cat-tail-fast { animation: cat-tail-fast 0.3s ease-in-out infinite; transform-origin: 46px 42px; }
+        
         @keyframes cat-tail-curious {
-          0%, 100% { transform: rotate(0deg) translateY(0); }
-          50% { transform: rotate(5deg) translateY(-3px); }
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(30deg); }
         }
+        .animate-cat-tail-curious { animation: cat-tail-curious 2s ease-in-out; transform-origin: 46px 42px; }
+        
         @keyframes cat-tail-pounce {
-          0%, 100% { transform: rotate(-10deg); }
-          50% { transform: rotate(-25deg); }
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(-45deg); }
         }
+        .animate-cat-tail-pounce { animation: cat-tail-pounce 0.5s ease-in-out; transform-origin: 46px 42px; }
+        
         @keyframes cat-groom {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-3px) rotate(-10deg); }
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-2px); }
         }
+        .animate-cat-groom { animation: cat-groom 0.5s ease-in-out infinite; }
+        
+        @keyframes cat-paw-up {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px) rotate(-15deg); }
+        }
+        .animate-cat-paw-up { animation: cat-paw-up 1.8s ease-in-out; }
+        
         @keyframes cat-walk {
           0%, 100% { transform: translateY(0); }
           25% { transform: translateY(-2px); }
           75% { transform: translateY(-2px); }
         }
-        @keyframes cat-roll {
-          0% { transform: rotate(0deg); }
-          25% { transform: rotate(90deg) translateY(-5px); }
-          50% { transform: rotate(180deg); }
-          75% { transform: rotate(270deg) translateY(-5px); }
-          100% { transform: rotate(360deg); }
-        }
+        .animate-cat-walk { animation: cat-walk 0.4s ease-in-out infinite; }
+        
         @keyframes cat-zzz {
-          0%, 100% { opacity: 1; transform: translateY(0); }
-          50% { opacity: 0.5; transform: translateY(-3px); }
+          0%, 100% { opacity: 0; transform: translateY(0); }
+          50% { opacity: 1; transform: translateY(-5px); }
         }
-        @keyframes cat-happy-eyes {
-          0%, 100% { transform: scaleY(1); }
-          50% { transform: scaleY(0.5); }
-        }
-        @keyframes cat-pounce {
-          0%, 100% { transform: translateY(0) scaleY(1); }
-          30% { transform: translateY(3px) scaleY(0.85); }
-          60% { transform: translateY(-8px) scaleY(1.1); }
-          80% { transform: translateY(-2px) scaleY(1); }
-        }
-        @keyframes cat-curious {
-          0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(3px); }
-        }
-        @keyframes cat-head-tilt {
-          0%, 100% { transform: rotate(0deg); }
-          50% { transform: rotate(8deg); }
-        }
-        @keyframes cat-head-back {
-          0%, 100% { transform: rotate(0deg) translateY(0); }
-          50% { transform: rotate(-10deg) translateY(-2px); }
-        }
-        @keyframes cat-ear-twitch {
-          0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(-5deg); }
-          75% { transform: rotate(5deg); }
-        }
-        @keyframes cat-ear-twitch-alt {
-          0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(5deg); }
-          75% { transform: rotate(-5deg); }
-        }
-        @keyframes cat-wide-eyes {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.15); }
-        }
-        @keyframes cat-squint {
-          0%, 100% { transform: scaleY(1); }
-          50% { transform: scaleY(0.3); }
-        }
+        .animate-cat-zzz { animation: cat-zzz 2s ease-in-out infinite; }
+        
         @keyframes cat-tongue {
           0%, 100% { transform: scaleY(1); }
-          50% { transform: scaleY(1.3); }
+          50% { transform: scaleY(1.2); }
         }
+        .animate-cat-tongue { animation: cat-tongue 0.5s ease-in-out; }
+        
         @keyframes cat-whisker-twitch {
           0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(2deg); }
-          75% { transform: rotate(-2deg); }
+          50% { transform: rotate(5deg); }
         }
-        @keyframes cat-paw-up {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
-        }
+        .animate-cat-whisker-twitch { animation: cat-whisker-twitch 0.3s ease-in-out 3; }
+        
         @keyframes cat-sit-body {
           0%, 100% { transform: scaleY(1); }
           50% { transform: scaleY(0.95); }
         }
-        @keyframes cat-meow-waves {
-          0% { opacity: 0; transform: scale(0.8); }
-          50% { opacity: 0.8; transform: scale(1.1); }
-          100% { opacity: 0; transform: scale(1.3); }
-        }
-        
-        .animate-cat-blink { animation: cat-blink 0.6s ease-in-out; }
-        .animate-cat-breathe { animation: cat-breathe 2s ease-in-out infinite; }
-        .animate-cat-stretch { animation: cat-stretch 1.8s ease-in-out; }
-        .animate-cat-tail { animation: cat-tail 1.2s ease-in-out infinite; transform-origin: 46px 42px; }
-        .animate-cat-tail-fast { animation: cat-tail-fast 0.3s ease-in-out infinite; transform-origin: 46px 42px; }
-        .animate-cat-tail-curious { animation: cat-tail-curious 1s ease-in-out infinite; transform-origin: 46px 42px; }
-        .animate-cat-tail-pounce { animation: cat-tail-pounce 0.3s ease-in-out infinite; transform-origin: 46px 42px; }
-        .animate-cat-groom { animation: cat-groom 0.4s ease-in-out infinite; }
-        .animate-cat-walk { animation: cat-walk 0.25s ease-in-out infinite; }
-        .animate-cat-roll { animation: cat-roll 1.8s ease-in-out; }
-        .animate-cat-zzz { animation: cat-zzz 1.5s ease-in-out infinite; }
-        .animate-cat-happy-eyes { animation: cat-happy-eyes 0.25s ease-in-out infinite; }
-        .animate-cat-pounce { animation: cat-pounce 1.5s ease-in-out; }
-        .animate-cat-curious { animation: cat-curious 2s ease-in-out; }
-        .animate-cat-head-tilt { animation: cat-head-tilt 2s ease-in-out; }
-        .animate-cat-head-back { animation: cat-head-back 2.2s ease-in-out; }
-        .animate-cat-ear-twitch { animation: cat-ear-twitch 0.5s ease-in-out infinite; }
-        .animate-cat-ear-twitch-alt { animation: cat-ear-twitch-alt 0.5s ease-in-out infinite; }
-        .animate-cat-wide-eyes { animation: cat-wide-eyes 2s ease-in-out; }
-        .animate-cat-squint { animation: cat-squint 2.2s ease-in-out; }
-        .animate-cat-tongue { animation: cat-tongue 1s ease-in-out infinite; }
-        .animate-cat-whisker-twitch { animation: cat-whisker-twitch 0.3s ease-in-out infinite; }
-        .animate-cat-paw-up { animation: cat-paw-up 0.9s ease-in-out infinite; }
         .animate-cat-sit-body { animation: cat-sit-body 2.5s ease-in-out; }
-        .animate-cat-meow-waves { animation: cat-meow-waves 0.6s ease-out forwards; }
-        .animate-cat-smile { transform: scaleY(1.3); }
+        
+        @keyframes costume-in {
+          0% { opacity: 0; transform: scale(0.8); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-costume-in { animation: costume-in 0.3s ease-out; }
       `}</style>
     </div>
   );
 });
 
 CatCompanion.displayName = 'CatCompanion';
+
+export default CatCompanion;

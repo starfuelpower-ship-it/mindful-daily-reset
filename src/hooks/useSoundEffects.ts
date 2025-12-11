@@ -87,7 +87,21 @@ export function useSoundEffects() {
     enabled.current = value;
   }, []);
 
-  return { playSound, setEnabled };
+  const triggerHapticFn = useCallback((type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error' = 'medium') => {
+    if ('vibrate' in navigator) {
+      const patterns: Record<string, number | number[]> = {
+        light: 10,
+        medium: 25,
+        heavy: [50, 30, 50],
+        success: [10, 50, 20],
+        warning: [30, 20, 30],
+        error: [50, 30, 50, 30, 50],
+      };
+      navigator.vibrate(patterns[type]);
+    }
+  }, []);
+
+  return { playSound, setEnabled, triggerHaptic: triggerHapticFn };
 }
 
 // Haptic feedback utility with more types

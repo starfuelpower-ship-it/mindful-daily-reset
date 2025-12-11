@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePoints } from '@/contexts/PointsContext';
 import { usePremium } from '@/contexts/PremiumContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { toast } from 'sonner';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { ArrowLeft, Coins, Crown, Sparkles, Check, Lock, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CatCostume, COSTUME_DATA, type CostumeType } from '@/components/CatCostume';
 
 interface Costume {
   id: string;
@@ -22,17 +24,76 @@ interface Costume {
   category: string;
 }
 
+// Map database costume names to our CostumeType
+const getCostumeType = (name: string): CostumeType => {
+  const map: Record<string, CostumeType> = {
+    'Cozy Scarf': 'scarf',
+    'Wizard Hat': 'wizard_hat',
+    'Raincoat': 'raincoat',
+    'Sleep Cap': 'sleep_cap',
+    'Headphones': 'headphones',
+    'Flower Crown': 'flower_crown',
+    'Bow Tie': 'bow_tie',
+    'Santa Hat': 'santa_hat',
+    'Royal Crown': 'crown',
+  };
+  return map[name] || 'none';
+};
+
+// Cat preview with costume for store display
+const CatPreviewSmall = ({ costume, isDark }: { costume: CostumeType; isDark: boolean }) => (
+  <svg viewBox="0 0 64 64" className="w-16 h-16 mx-auto">
+    <g>
+      {/* Body */}
+      <ellipse cx="32" cy="42" rx="14" ry="10" className={isDark ? 'fill-gray-400' : 'fill-amber-200'} />
+      {/* Head */}
+      <circle cx="32" cy="28" r="12" className={isDark ? 'fill-gray-400' : 'fill-amber-200'} />
+      {/* Ears */}
+      <polygon points="22,20 26,28 18,28" className={isDark ? 'fill-gray-400' : 'fill-amber-200'} />
+      <polygon points="23,22 25,26 20,26" className={isDark ? 'fill-gray-500' : 'fill-pink-200'} />
+      <polygon points="42,20 46,28 38,28" className={isDark ? 'fill-gray-400' : 'fill-amber-200'} />
+      <polygon points="41,22 44,26 39,26" className={isDark ? 'fill-gray-500' : 'fill-pink-200'} />
+      {/* Eyes */}
+      <ellipse cx="27" cy="26" rx="2.5" ry="3" className="fill-gray-800" />
+      <ellipse cx="37" cy="26" rx="2.5" ry="3" className="fill-gray-800" />
+      <circle cx="26" cy="25" r="1" className="fill-white opacity-80" />
+      <circle cx="36" cy="25" r="1" className="fill-white opacity-80" />
+      {/* Nose */}
+      <ellipse cx="32" cy="31" rx="1.5" ry="1" className="fill-pink-400" />
+      {/* Mouth */}
+      <path d="M30 33 Q32 35 34 33" stroke={isDark ? '#374151' : '#92400e'} strokeWidth="1" fill="none" />
+      {/* Whiskers */}
+      <g className={isDark ? 'stroke-gray-500' : 'stroke-amber-400'} strokeWidth="0.5">
+        <line x1="18" y1="30" x2="26" y2="31" />
+        <line x1="18" y1="32" x2="26" y2="32" />
+        <line x1="46" y1="30" x2="38" y2="31" />
+        <line x1="46" y1="32" x2="38" y2="32" />
+      </g>
+      {/* Paws */}
+      <ellipse cx="26" cy="50" rx="4" ry="3" className={isDark ? 'fill-gray-400' : 'fill-amber-200'} />
+      <ellipse cx="38" cy="50" rx="4" ry="3" className={isDark ? 'fill-gray-400' : 'fill-amber-200'} />
+      {/* Tail */}
+      <path d="M46 42 Q56 38 54 30" stroke={isDark ? '#9ca3af' : '#fbbf24'} strokeWidth="4" strokeLinecap="round" fill="none" />
+      {/* Costume */}
+      <CatCostume costume={costume} isDark={isDark} />
+    </g>
+  </svg>
+);
+
 const Rewards = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { balance, spendPoints } = usePoints();
   const { isPremium } = usePremium();
-  const { playSound } = useSoundEffects();
+  const { resolvedTheme } = useTheme();
+  const { playSound, triggerHaptic } = useSoundEffects();
   const [costumes, setCostumes] = useState<Costume[]>([]);
   const [ownedCostumes, setOwnedCostumes] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
+
+  const isDark = resolvedTheme === 'dark';
 
   useEffect(() => {
     if (!user) {
@@ -88,6 +149,7 @@ const Rewards = () => {
 
     setPurchasing(costume.id);
     playSound('click');
+    triggerHaptic('light');
 
     const success = await spendPoints(costume.price, `Purchased ${costume.name}`);
 
@@ -99,7 +161,8 @@ const Rewards = () => {
 
       setOwnedCostumes((prev) => new Set([...prev, costume.id]));
       toast.success(`You unlocked ${costume.name}!`, { icon: '🎉' });
-      playSound('success');
+      playSound('achievement');
+      triggerHaptic('success');
     }
 
     setPurchasing(null);
@@ -164,6 +227,7 @@ const Rewards = () => {
             {regularCostumes.map((costume) => {
               const owned = ownedCostumes.has(costume.id);
               const canAfford = balance >= costume.price;
+              const costumeType = getCostumeType(costume.name);
 
               return (
                 <div
@@ -175,7 +239,10 @@ const Rewards = () => {
                       : 'bg-card border-border hover:border-primary/50 hover:shadow-md'
                   )}
                 >
-                  <div className="text-4xl mb-2 text-center">{costume.icon}</div>
+                  {/* Cat preview with costume */}
+                  <div className="mb-2">
+                    <CatPreviewSmall costume={costumeType} isDark={isDark} />
+                  </div>
                   <h3 className="font-semibold text-sm text-center mb-1">{costume.name}</h3>
                   <p className="text-xs text-muted-foreground text-center mb-3 line-clamp-2">
                     {costume.description}
@@ -221,6 +288,7 @@ const Rewards = () => {
                 const owned = ownedCostumes.has(costume.id);
                 const canAfford = balance >= costume.price;
                 const canPurchase = isPremium && canAfford && !owned;
+                const costumeType = getCostumeType(costume.name);
 
                 return (
                   <div
@@ -234,7 +302,10 @@ const Rewards = () => {
                     )}
                   >
                     <Sparkles className="absolute top-2 right-2 w-4 h-4 text-amber-500" />
-                    <div className="text-4xl mb-2 text-center">{costume.icon}</div>
+                    {/* Cat preview with costume */}
+                    <div className="mb-2">
+                      <CatPreviewSmall costume={costumeType} isDark={isDark} />
+                    </div>
                     <h3 className="font-semibold text-sm text-center mb-1">{costume.name}</h3>
                     <p className="text-xs text-muted-foreground text-center mb-3 line-clamp-2">
                       {costume.description}

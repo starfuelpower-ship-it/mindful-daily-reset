@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { useUserSettings } from '@/hooks/useUserSettings';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import type { CostumeType } from '@/components/CatCostume';
 
 export type CompanionType = 'cat' | 'none';
 
@@ -9,6 +10,8 @@ interface CompanionContextType {
   setShowCompanion: (show: boolean) => void;
   companionType: CompanionType;
   setCompanionType: (type: CompanionType) => void;
+  equippedCostume: CostumeType;
+  setEquippedCostume: (costume: CostumeType) => Promise<void>;
   triggerReaction: (type: 'habit_complete' | 'all_complete') => void;
   currentReaction: 'habit_complete' | 'all_complete' | null;
   isLoading: boolean;
@@ -18,10 +21,10 @@ const CompanionContext = createContext<CompanionContextType | undefined>(undefin
 
 const COMPANION_SHOW_KEY = 'daily-reset-show-companion';
 const COMPANION_TYPE_KEY = 'daily-reset-companion-type';
+const EQUIPPED_COSTUME_KEY = 'daily-reset-equipped-costume';
 
 export function CompanionProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const { settings, updateSettings, loading } = useUserSettings();
   
   const [localShowCompanion, setLocalShowCompanion] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -39,19 +42,83 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
     return 'cat';
   });
 
+  const [equippedCostume, setEquippedCostumeState] = useState<CostumeType>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(EQUIPPED_COSTUME_KEY);
+      return (stored as CostumeType) || 'none';
+    }
+    return 'none';
+  });
+
   const [currentReaction, setCurrentReaction] = useState<'habit_complete' | 'all_complete' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const initialized = useRef(false);
 
-  // Sync with database settings
+  // Load user's equipped costume from database
   useEffect(() => {
-    if (user && settings && !initialized.current) {
-      const show = (settings as any).show_companion ?? true;
-      const type = (settings as any).companion_type as CompanionType || 'cat';
-      setLocalShowCompanion(show);
-      setLocalCompanionType(type);
-      initialized.current = true;
-    }
-  }, [user, settings]);
+    const loadEquippedCostume = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // First check user_settings for show_companion
+        const { data: settingsData } = await supabase
+          .from('user_settings')
+          .select('show_companion, companion_type')
+          .eq('user_id', user.id)
+          .single();
+
+        if (settingsData) {
+          setLocalShowCompanion(settingsData.show_companion ?? true);
+          setLocalCompanionType((settingsData.companion_type as CompanionType) || 'cat');
+        }
+
+        // Then check user_equipped_costume
+        const { data: costumeData } = await supabase
+          .from('user_equipped_costume')
+          .select('costume_id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (costumeData?.costume_id) {
+          // Get the costume details to find the costume type
+          const { data: costumeDetails } = await supabase
+            .from('cat_costumes')
+            .select('name')
+            .eq('id', costumeData.costume_id)
+            .single();
+
+          if (costumeDetails) {
+            // Map costume name to costume type
+            const costumeMap: Record<string, CostumeType> = {
+              'Cozy Scarf': 'scarf',
+              'Wizard Hat': 'wizard_hat',
+              'Raincoat': 'raincoat',
+              'Sleep Cap': 'sleep_cap',
+              'Headphones': 'headphones',
+              'Flower Crown': 'flower_crown',
+              'Bow Tie': 'bow_tie',
+              'Santa Hat': 'santa_hat',
+              'Royal Crown': 'crown',
+            };
+            const costumeType = costumeMap[costumeDetails.name] || 'none';
+            setEquippedCostumeState(costumeType);
+            localStorage.setItem(EQUIPPED_COSTUME_KEY, costumeType);
+          }
+        }
+        
+        initialized.current = true;
+      } catch (error) {
+        console.error('Error loading companion data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEquippedCostume();
+  }, [user]);
 
   // Persist to localStorage for guests
   useEffect(() => {
@@ -66,19 +133,94 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
     }
   }, [localCompanionType, user]);
 
+  useEffect(() => {
+    localStorage.setItem(EQUIPPED_COSTUME_KEY, equippedCostume);
+  }, [equippedCostume]);
+
   const setShowCompanion = useCallback(async (show: boolean) => {
     setLocalShowCompanion(show);
     if (user) {
-      await updateSettings({ show_companion: show } as any);
+      try {
+        await supabase
+          .from('user_settings')
+          .update({ show_companion: show })
+          .eq('user_id', user.id);
+      } catch (error) {
+        console.error('Error updating show_companion:', error);
+      }
     }
-  }, [updateSettings, user]);
+  }, [user]);
 
   const setCompanionType = useCallback(async (type: CompanionType) => {
     setLocalCompanionType(type);
     if (user) {
-      await updateSettings({ companion_type: type } as any);
+      try {
+        await supabase
+          .from('user_settings')
+          .update({ companion_type: type })
+          .eq('user_id', user.id);
+      } catch (error) {
+        console.error('Error updating companion_type:', error);
+      }
     }
-  }, [updateSettings, user]);
+  }, [user]);
+
+  const setEquippedCostume = useCallback(async (costume: CostumeType) => {
+    setEquippedCostumeState(costume);
+    localStorage.setItem(EQUIPPED_COSTUME_KEY, costume);
+
+    if (user) {
+      try {
+        // Map costume type back to database costume name
+        const costumeNameMap: Record<CostumeType, string | null> = {
+          none: null,
+          scarf: 'Cozy Scarf',
+          wizard_hat: 'Wizard Hat',
+          raincoat: 'Raincoat',
+          sleep_cap: 'Sleep Cap',
+          headphones: 'Headphones',
+          flower_crown: 'Flower Crown',
+          bow_tie: 'Bow Tie',
+          santa_hat: 'Santa Hat',
+          crown: 'Royal Crown',
+        };
+
+        const costumeName = costumeNameMap[costume];
+        let costumeId: string | null = null;
+
+        if (costumeName) {
+          // Get the costume ID from the database
+          const { data: costumeData } = await supabase
+            .from('cat_costumes')
+            .select('id')
+            .eq('name', costumeName)
+            .single();
+
+          costumeId = costumeData?.id || null;
+        }
+
+        // Check if user already has an equipped costume record
+        const { data: existing } = await supabase
+          .from('user_equipped_costume')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (existing) {
+          await supabase
+            .from('user_equipped_costume')
+            .update({ costume_id: costumeId, updated_at: new Date().toISOString() })
+            .eq('user_id', user.id);
+        } else {
+          await supabase
+            .from('user_equipped_costume')
+            .insert({ user_id: user.id, costume_id: costumeId });
+        }
+      } catch (error) {
+        console.error('Error updating equipped costume:', error);
+      }
+    }
+  }, [user]);
 
   const triggerReaction = useCallback((type: 'habit_complete' | 'all_complete') => {
     setCurrentReaction(type);
@@ -93,9 +235,11 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
         setShowCompanion,
         companionType: localCompanionType,
         setCompanionType,
+        equippedCostume,
+        setEquippedCostume,
         triggerReaction,
         currentReaction,
-        isLoading: loading,
+        isLoading,
       }}
     >
       {children}
