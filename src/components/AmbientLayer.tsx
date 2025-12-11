@@ -223,6 +223,271 @@ const SnowEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
 
 SnowEffect.displayName = 'SnowEffect';
 
+// Fireflies effect component
+const FirefliesEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: number }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>();
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const intensityFactor = intensity / 100;
+    const fireflyCount = Math.round(8 + intensityFactor * 20);
+
+    const fireflies: { x: number; y: number; vx: number; vy: number; size: number; brightness: number; phase: number }[] = [];
+
+    for (let i = 0; i < fireflyCount; i++) {
+      fireflies.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        size: 2 + Math.random() * 3,
+        brightness: Math.random(),
+        phase: Math.random() * Math.PI * 2,
+      });
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      fireflies.forEach((fly) => {
+        fly.phase += 0.03;
+        const glow = (Math.sin(fly.phase) + 1) / 2;
+        const alpha = (0.2 + glow * 0.8) * intensityFactor;
+
+        // Draw glow
+        const gradient = ctx.createRadialGradient(fly.x, fly.y, 0, fly.x, fly.y, fly.size * 4);
+        gradient.addColorStop(0, isDark ? `rgba(255, 255, 150, ${alpha})` : `rgba(255, 220, 100, ${alpha * 0.8})`);
+        gradient.addColorStop(0.5, isDark ? `rgba(255, 200, 50, ${alpha * 0.3})` : `rgba(255, 180, 50, ${alpha * 0.2})`);
+        gradient.addColorStop(1, 'transparent');
+
+        ctx.beginPath();
+        ctx.arc(fly.x, fly.y, fly.size * 4, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Draw core
+        ctx.beginPath();
+        ctx.arc(fly.x, fly.y, fly.size * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 200, ${alpha})`;
+        ctx.fill();
+
+        // Move
+        fly.x += fly.vx + Math.sin(fly.phase * 0.5) * 0.3;
+        fly.y += fly.vy + Math.cos(fly.phase * 0.3) * 0.2;
+
+        // Bounce
+        if (fly.x < 0 || fly.x > canvas.width) fly.vx *= -1;
+        if (fly.y < 0 || fly.y > canvas.height) fly.vy *= -1;
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [isDark, intensity]);
+
+  return <canvas ref={canvasRef} className="absolute inset-0" />;
+});
+
+FirefliesEffect.displayName = 'FirefliesEffect';
+
+// Cherry blossoms effect component
+const CherryBlossomsEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: number }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>();
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const intensityFactor = intensity / 100;
+    const petalCount = Math.round(12 + intensityFactor * 25);
+
+    const petals: { x: number; y: number; size: number; rotation: number; rotationSpeed: number; speed: number; drift: number; opacity: number }[] = [];
+
+    for (let i = 0; i < petalCount; i++) {
+      petals.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        size: 6 + Math.random() * 8,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.05,
+        speed: 0.5 + Math.random() * 0.8,
+        drift: (Math.random() - 0.5) * 0.8,
+        opacity: (0.4 + Math.random() * 0.4) * intensityFactor,
+      });
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      petals.forEach((petal) => {
+        ctx.save();
+        ctx.translate(petal.x, petal.y);
+        ctx.rotate(petal.rotation);
+
+        // Draw petal shape
+        ctx.beginPath();
+        ctx.ellipse(0, 0, petal.size, petal.size * 0.5, 0, 0, Math.PI * 2);
+        ctx.fillStyle = isDark 
+          ? `rgba(255, 180, 200, ${petal.opacity * 0.7})`
+          : `rgba(255, 182, 193, ${petal.opacity})`;
+        ctx.fill();
+
+        ctx.restore();
+
+        // Update position
+        petal.y += petal.speed;
+        petal.x += petal.drift + Math.sin(petal.y * 0.01) * 0.5;
+        petal.rotation += petal.rotationSpeed;
+
+        if (petal.y > canvas.height + petal.size) {
+          petal.y = -petal.size;
+          petal.x = Math.random() * canvas.width;
+        }
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [isDark, intensity]);
+
+  return <canvas ref={canvasRef} className="absolute inset-0" />;
+});
+
+CherryBlossomsEffect.displayName = 'CherryBlossomsEffect';
+
+// Autumn leaves effect component
+const AutumnLeavesEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: number }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>();
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const intensityFactor = intensity / 100;
+    const leafCount = Math.round(10 + intensityFactor * 20);
+
+    const colors = isDark 
+      ? ['rgba(200, 120, 50, ', 'rgba(180, 80, 40, ', 'rgba(220, 150, 60, ', 'rgba(160, 100, 40, ']
+      : ['rgba(220, 120, 40, ', 'rgba(200, 80, 30, ', 'rgba(240, 160, 50, ', 'rgba(180, 90, 30, '];
+
+    const leaves: { x: number; y: number; size: number; rotation: number; rotationSpeed: number; speed: number; sway: number; swayPhase: number; color: string; opacity: number }[] = [];
+
+    for (let i = 0; i < leafCount; i++) {
+      leaves.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        size: 10 + Math.random() * 15,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.03,
+        speed: 0.6 + Math.random() * 0.6,
+        sway: 1 + Math.random() * 2,
+        swayPhase: Math.random() * Math.PI * 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        opacity: (0.5 + Math.random() * 0.3) * intensityFactor,
+      });
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      leaves.forEach((leaf) => {
+        ctx.save();
+        ctx.translate(leaf.x, leaf.y);
+        ctx.rotate(leaf.rotation);
+
+        // Draw leaf shape
+        ctx.beginPath();
+        ctx.moveTo(0, -leaf.size / 2);
+        ctx.quadraticCurveTo(leaf.size / 2, 0, 0, leaf.size / 2);
+        ctx.quadraticCurveTo(-leaf.size / 2, 0, 0, -leaf.size / 2);
+        ctx.fillStyle = leaf.color + leaf.opacity + ')';
+        ctx.fill();
+
+        // Draw stem
+        ctx.beginPath();
+        ctx.moveTo(0, leaf.size / 2);
+        ctx.lineTo(0, leaf.size / 2 + 4);
+        ctx.strokeStyle = leaf.color + (leaf.opacity * 0.8) + ')';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.restore();
+
+        // Update position
+        leaf.swayPhase += 0.02;
+        leaf.y += leaf.speed;
+        leaf.x += Math.sin(leaf.swayPhase) * leaf.sway * 0.3;
+        leaf.rotation += leaf.rotationSpeed;
+
+        if (leaf.y > canvas.height + leaf.size) {
+          leaf.y = -leaf.size;
+          leaf.x = Math.random() * canvas.width;
+        }
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [isDark, intensity]);
+
+  return <canvas ref={canvasRef} className="absolute inset-0" />;
+});
+
+AutumnLeavesEffect.displayName = 'AutumnLeavesEffect';
+
 export function AmbientLayer() {
   const { ambientMode, visualsEnabled, intensity } = useAmbient();
   const { resolvedTheme } = useTheme();
@@ -247,7 +512,7 @@ export function AmbientLayer() {
   }
 
   const showOverlay = isVisible && !isDark && currentMode !== 'off';
-  const overlayOpacity = 0.03 + (intensity / 100) * 0.04; // 3-7% based on intensity
+  const overlayOpacity = 0.03 + (intensity / 100) * 0.04;
 
   // Get effect component based on mode
   const getEffectComponent = () => {
@@ -258,6 +523,12 @@ export function AmbientLayer() {
         return <SunRaysEffect isDark={isDark} intensity={intensity} />;
       case 'snow':
         return <SnowEffect isDark={isDark} intensity={intensity} />;
+      case 'fireflies':
+        return <FirefliesEffect isDark={isDark} intensity={intensity} />;
+      case 'cherry_blossoms':
+        return <CherryBlossomsEffect isDark={isDark} intensity={intensity} />;
+      case 'autumn_leaves':
+        return <AutumnLeavesEffect isDark={isDark} intensity={intensity} />;
       default:
         return null;
     }

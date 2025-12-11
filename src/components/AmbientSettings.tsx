@@ -2,7 +2,7 @@ import { useAmbient, AmbientMode } from '@/contexts/AmbientContext';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import { CloudRain, Sun, Snowflake, XCircle, Eye, Sparkles } from 'lucide-react';
+import { CloudRain, Sun, Snowflake, XCircle, Eye, Sparkles, Flame, Flower2, Leaf } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const AMBIENT_OPTIONS: { id: AmbientMode; label: string; icon: React.ComponentType<any>; description: string }[] = [
@@ -10,6 +10,9 @@ const AMBIENT_OPTIONS: { id: AmbientMode; label: string; icon: React.ComponentTy
   { id: 'rain', label: 'Rain', icon: CloudRain, description: 'Soft raindrops' },
   { id: 'sun_rays', label: 'Sun Rays', icon: Sun, description: 'Warm light rays' },
   { id: 'snow', label: 'Snow', icon: Snowflake, description: 'Gentle snowfall' },
+  { id: 'fireflies', label: 'Fireflies', icon: Flame, description: 'Glowing lights' },
+  { id: 'cherry_blossoms', label: 'Blossoms', icon: Flower2, description: 'Falling petals' },
+  { id: 'autumn_leaves', label: 'Autumn', icon: Leaf, description: 'Drifting leaves' },
 ];
 
 export function AmbientSettings() {
@@ -35,7 +38,7 @@ export function AmbientSettings() {
       {/* Mode Selection */}
       <div className="space-y-2">
         <Label className="text-sm text-muted-foreground">Atmosphere Style</Label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {AMBIENT_OPTIONS.map((option) => {
             const Icon = option.icon;
             const isSelected = ambientMode === option.id;
