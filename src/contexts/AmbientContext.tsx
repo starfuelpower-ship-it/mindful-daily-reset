@@ -3,7 +3,7 @@ import { useUserSettings } from '@/hooks/useUserSettings';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type AmbientMode = 'off' | 'rain' | 'sun_rays' | 'snow';
+export type AmbientMode = 'off' | 'rain' | 'sun_rays' | 'snow' | 'fireflies' | 'cherry_blossoms' | 'autumn_leaves';
 
 interface AmbientContextType {
   ambientMode: AmbientMode;

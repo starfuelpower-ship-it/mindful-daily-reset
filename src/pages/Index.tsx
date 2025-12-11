@@ -19,6 +19,7 @@ import { DailyReflectionModal } from '@/components/DailyReflectionModal';
 import { MotivationalMessage } from '@/components/MotivationalMessage';
 import { QuoteDisplay } from '@/components/QuoteDisplay';
 import { ShareMilestone, useShareMilestone } from '@/components/ShareMilestone';
+import { CatCompanionIntro } from '@/components/CatCompanionIntro';
 import { Button } from '@/components/ui/button';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
@@ -376,6 +377,9 @@ const Index = () => {
           onOpenChange={(open) => !open && closeShare()}
         />
       )}
+
+      {/* Cat Companion Intro */}
+      <CatCompanionIntro />
     </div>
   );
 };
