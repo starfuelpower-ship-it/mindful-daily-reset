@@ -5,16 +5,16 @@ const config: CapacitorConfig = {
   appName: 'Cozy Habits',
   webDir: 'dist',
   
-  // Hot reload from Lovable sandbox during development
-  server: {
-    url: 'https://53d04b63-e0ee-43f3-822a-f5b2e6319d75.lovableproject.com?forceHideBadge=true',
-    cleartext: true,
-  },
+  // PRODUCTION: Server block removed for App Store builds
+  // DEVELOPMENT: Uncomment for hot reload from Lovable sandbox
+  // server: {
+  //   url: 'https://53d04b63-e0ee-43f3-822a-f5b2e6319d75.lovableproject.com?forceHideBadge=true',
+  //   cleartext: true,
+  // },
 
   // iOS-specific configuration
   ios: {
-    // Enable in-app purchases capability
-    // This will be added to the Xcode project
+    scheme: 'App',
     contentInset: 'automatic',
     allowsLinkPreview: true,
     scrollEnabled: true,
