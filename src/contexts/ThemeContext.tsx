@@ -1,23 +1,43 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+type BaseTheme = 'light' | 'dark' | 'system';
+type PremiumTheme = 'pastel' | 'neon' | 'forest' | 'sunset';
+type ColorTheme = PremiumTheme | 'default';
 
 interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
+  theme: BaseTheme;
+  setTheme: (theme: BaseTheme) => void;
   resolvedTheme: 'light' | 'dark';
+  colorTheme: ColorTheme;
+  setColorTheme: (theme: ColorTheme) => void;
+  previewTheme: ColorTheme | null;
+  setPreviewTheme: (theme: ColorTheme | null) => void;
 }
+
+export const PREMIUM_THEMES: { id: PremiumTheme; name: string; description: string }[] = [
+  { id: 'pastel', name: 'Light Pastel', description: 'Soft pinks and creams' },
+  { id: 'neon', name: 'Dark Neon', description: 'Vibrant cyberpunk vibes' },
+  { id: 'forest', name: 'Forest Green', description: 'Calm natural tones' },
+  { id: 'sunset', name: 'Sunset Orange', description: 'Warm evening glow' },
+];
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
+  const [theme, setTheme] = useState<BaseTheme>(() => {
     const stored = localStorage.getItem('daily-reset-theme');
-    return (stored as Theme) || 'system';
+    return (stored as BaseTheme) || 'system';
   });
 
+  const [colorTheme, setColorThemeState] = useState<ColorTheme>(() => {
+    const stored = localStorage.getItem('daily-reset-color-theme');
+    return (stored as ColorTheme) || 'default';
+  });
+
+  const [previewTheme, setPreviewTheme] = useState<ColorTheme | null>(null);
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
+  // Apply base light/dark theme
   useEffect(() => {
     const root = window.document.documentElement;
 
@@ -43,12 +63,44 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
+  // Apply color theme (or preview)
+  useEffect(() => {
+    const root = window.document.documentElement;
+    const activeTheme = previewTheme || colorTheme;
+    
+    // Remove all theme classes
+    root.classList.remove('theme-pastel', 'theme-neon', 'theme-forest', 'theme-sunset');
+    
+    // Add the active theme class
+    if (activeTheme !== 'default') {
+      root.classList.add(`theme-${activeTheme}`);
+    }
+  }, [colorTheme, previewTheme]);
+
+  // Persist theme choices
   useEffect(() => {
     localStorage.setItem('daily-reset-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    localStorage.setItem('daily-reset-color-theme', colorTheme);
+  }, [colorTheme]);
+
+  const setColorTheme = (newTheme: ColorTheme) => {
+    setColorThemeState(newTheme);
+    setPreviewTheme(null); // Clear preview when setting actual theme
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
+    <ThemeContext.Provider value={{ 
+      theme, 
+      setTheme, 
+      resolvedTheme, 
+      colorTheme, 
+      setColorTheme,
+      previewTheme,
+      setPreviewTheme
+    }}>
       {children}
     </ThemeContext.Provider>
   );
