@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 type BaseTheme = 'light' | 'dark' | 'system';
 type PremiumTheme = 'pastel' | 'neon' | 'forest' | 'sunset';
@@ -38,7 +38,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [previewTheme, setPreviewTheme] = useState<ColorTheme | null>(null);
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
-  const resetPreview = () => setPreviewTheme(null);
+  const resetPreview = useCallback(() => setPreviewTheme(null), []);
 
   // Apply base light/dark theme
   useEffect(() => {
