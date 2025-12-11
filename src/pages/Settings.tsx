@@ -6,7 +6,9 @@ import { ThemePicker } from '@/components/ThemePicker';
 import { AmbientSettings } from '@/components/AmbientSettings';
 import { CompanionSettings } from '@/components/CompanionSettings';
 import { MusicSettings } from '@/components/MusicSettings';
-import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music } from 'lucide-react';
+import { NotificationSettings } from '@/components/NotificationSettings';
+import { AchievementsUI } from '@/components/AchievementsUI';
+import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music, Bell, Trophy, MessageCircle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -16,6 +18,16 @@ export default function Settings() {
 
   const handleSignOut = async () => {
     await signOut();
+    toast.success('Signed out');
+    navigate('/');
+  };
+
+  const handleSendFeedback = () => {
+    const email = 'feedback@dailyreset.app';
+    const subject = encodeURIComponent('Daily Reset Feedback');
+    const body = encodeURIComponent('Hi Daily Reset team,\n\nI wanted to share some feedback:\n\n');
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+  };
     toast.success('Signed out');
     navigate('/');
   };
@@ -149,6 +161,30 @@ export default function Settings() {
             </div>
           </div>
 
+          {/* Notifications Section */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground px-1 flex items-center gap-2">
+              <Bell className="w-4 h-4" />
+              Notifications
+            </h2>
+            <div className="bg-card rounded-2xl border border-border/50 p-4">
+              <NotificationSettings />
+            </div>
+          </div>
+
+          {/* Achievements Section */}
+          {user && (
+            <div className="space-y-2">
+              <h2 className="text-sm font-medium text-muted-foreground px-1 flex items-center gap-2">
+                <Trophy className="w-4 h-4" />
+                Achievements
+              </h2>
+              <div className="bg-card rounded-2xl border border-border/50 p-4">
+                <AchievementsUI />
+              </div>
+            </div>
+          )}
+
           {/* Premium Features Section */}
           <div className="space-y-2">
             <h2 className="text-sm font-medium text-muted-foreground px-1">Premium Features</h2>
@@ -190,9 +226,27 @@ export default function Settings() {
             </div>
           </div>
 
+          {/* Support Section */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground px-1">Support</h2>
+            <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+              <button
+                onClick={handleSendFeedback}
+                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Mail className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-foreground">Send Feedback</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+
           {/* App Info */}
           <div className="text-center pt-4">
             <p className="text-sm text-muted-foreground">Daily Reset v1.0.0</p>
+            <p className="text-xs text-muted-foreground mt-1">Made with 💚 for habit builders</p>
           </div>
         </div>
       </div>

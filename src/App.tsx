@@ -14,6 +14,7 @@ import { PointsProvider } from "@/contexts/PointsContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AmbientLayer } from "@/components/AmbientLayer";
 import { CatCompanion } from "@/components/CatCompanion";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
@@ -45,6 +46,7 @@ const App = () => (
                     <CompanionProvider>
                       <MusicProvider>
                         <QuotesProvider>
+                          <OfflineIndicator />
                           <AmbientLayer />
                           <CatCompanion />
                           <Routes>
