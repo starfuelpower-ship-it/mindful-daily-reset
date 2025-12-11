@@ -1,7 +1,8 @@
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef, memo, useState } from 'react';
 import { useAmbient, AmbientMode } from '@/contexts/AmbientContext';
+import { cn } from '@/lib/utils';
 
-// Rain effect component
+// Rain effect component - very subtle overlay
 const RainEffect = memo(() => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
@@ -21,15 +22,15 @@ const RainEffect = memo(() => {
     window.addEventListener('resize', resize);
 
     const drops: { x: number; y: number; speed: number; length: number; opacity: number }[] = [];
-    const dropCount = 40; // Low density
+    const dropCount = 25; // Very low density
 
     for (let i = 0; i < dropCount; i++) {
       drops.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        speed: 1 + Math.random() * 1.5, // Slow speed
-        length: 15 + Math.random() * 20,
-        opacity: 0.1 + Math.random() * 0.15,
+        speed: 0.8 + Math.random() * 1, // Slow speed
+        length: 12 + Math.random() * 15,
+        opacity: 0.04 + Math.random() * 0.06, // Very low opacity
       });
     }
 
@@ -39,9 +40,9 @@ const RainEffect = memo(() => {
       drops.forEach((drop) => {
         ctx.beginPath();
         ctx.moveTo(drop.x, drop.y);
-        ctx.lineTo(drop.x + 0.5, drop.y + drop.length);
-        ctx.strokeStyle = `rgba(150, 180, 200, ${drop.opacity})`;
-        ctx.lineWidth = 1;
+        ctx.lineTo(drop.x + 0.3, drop.y + drop.length);
+        ctx.strokeStyle = `rgba(180, 200, 220, ${drop.opacity})`;
+        ctx.lineWidth = 0.8;
         ctx.stroke();
 
         drop.y += drop.speed;
@@ -67,44 +68,44 @@ const RainEffect = memo(() => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0"
-      style={{ filter: 'blur(0.5px)' }}
+      className="absolute inset-0"
+      style={{ filter: 'blur(0.3px)' }}
     />
   );
 });
 
 RainEffect.displayName = 'RainEffect';
 
-// Sun rays effect component
+// Sun rays effect component - very subtle
 const SunRaysEffect = memo(() => {
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {[...Array(6)].map((_, i) => (
+    <div className="absolute inset-0 overflow-hidden">
+      {[...Array(4)].map((_, i) => (
         <div
           key={i}
           className="absolute"
           style={{
-            top: '-30%',
-            right: `${5 + i * 12}%`,
-            width: '150px',
-            height: '180%',
+            top: '-40%',
+            right: `${8 + i * 15}%`,
+            width: '120px',
+            height: '200%',
             background: `linear-gradient(
               135deg,
-              rgba(255, 248, 220, ${0.06 + i * 0.015}) 0%,
-              rgba(255, 223, 150, ${0.04}) 50%,
+              rgba(255, 250, 230, ${0.02 + i * 0.008}) 0%,
+              rgba(255, 235, 180, ${0.015}) 50%,
               transparent 100%
             )`,
-            transform: `rotate(${20 + i * 6}deg)`,
-            filter: 'blur(25px)',
-            animation: `sunRayFade ${7 + i * 1.5}s ease-in-out infinite`,
-            animationDelay: `${i * 1}s`,
+            transform: `rotate(${22 + i * 8}deg)`,
+            filter: 'blur(30px)',
+            animation: `sunRayFade ${9 + i * 2}s ease-in-out infinite`,
+            animationDelay: `${i * 1.5}s`,
           }}
         />
       ))}
       <style>{`
         @keyframes sunRayFade {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 1; }
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.8; }
         }
       `}</style>
     </div>
@@ -113,7 +114,7 @@ const SunRaysEffect = memo(() => {
 
 SunRaysEffect.displayName = 'SunRaysEffect';
 
-// Snow effect component
+// Snow effect component - very subtle
 const SnowEffect = memo(() => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
@@ -133,16 +134,16 @@ const SnowEffect = memo(() => {
     window.addEventListener('resize', resize);
 
     const flakes: { x: number; y: number; speed: number; size: number; opacity: number; drift: number }[] = [];
-    const flakeCount = 30; // Very light density
+    const flakeCount = 18; // Very light density
 
     for (let i = 0; i < flakeCount; i++) {
       flakes.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        speed: 0.3 + Math.random() * 0.5, // Very slow
-        size: 2 + Math.random() * 3,
-        opacity: 0.15 + Math.random() * 0.2,
-        drift: Math.random() * 0.5 - 0.25,
+        speed: 0.2 + Math.random() * 0.3, // Very slow
+        size: 1.5 + Math.random() * 2,
+        opacity: 0.06 + Math.random() * 0.08, // Very low opacity
+        drift: Math.random() * 0.3 - 0.15,
       });
     }
 
@@ -156,7 +157,7 @@ const SnowEffect = memo(() => {
         ctx.fill();
 
         flake.y += flake.speed;
-        flake.x += flake.drift + Math.sin(flake.y * 0.01) * 0.3;
+        flake.x += flake.drift + Math.sin(flake.y * 0.008) * 0.2;
 
         if (flake.y > canvas.height) {
           flake.y = -flake.size;
@@ -182,8 +183,8 @@ const SnowEffect = memo(() => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0"
-      style={{ filter: 'blur(0.5px)' }}
+      className="absolute inset-0"
+      style={{ filter: 'blur(0.3px)' }}
     />
   );
 });
@@ -199,16 +200,41 @@ const effectComponents: Record<AmbientMode, React.ComponentType | null> = {
 
 export function AmbientLayer() {
   const { ambientMode, visualsEnabled } = useAmbient();
+  const [isVisible, setIsVisible] = useState(false);
+  const [currentMode, setCurrentMode] = useState<AmbientMode>(ambientMode);
 
-  if (!visualsEnabled || ambientMode === 'off') {
+  // Handle fade transitions
+  useEffect(() => {
+    if (visualsEnabled && ambientMode !== 'off') {
+      // Fade in new effect
+      setCurrentMode(ambientMode);
+      const timer = setTimeout(() => setIsVisible(true), 50);
+      return () => clearTimeout(timer);
+    } else {
+      // Fade out
+      setIsVisible(false);
+    }
+  }, [ambientMode, visualsEnabled]);
+
+  if (!visualsEnabled && !isVisible) {
     return null;
   }
 
-  const EffectComponent = effectComponents[ambientMode];
+  const EffectComponent = effectComponents[currentMode];
 
-  if (!EffectComponent) {
+  if (!EffectComponent && !isVisible) {
     return null;
   }
 
-  return <EffectComponent />;
+  return (
+    <div
+      className={cn(
+        'fixed inset-0 pointer-events-none z-40 transition-opacity duration-700 ease-in-out',
+        isVisible && EffectComponent ? 'opacity-100' : 'opacity-0'
+      )}
+      aria-hidden="true"
+    >
+      {EffectComponent && <EffectComponent />}
+    </div>
+  );
 }

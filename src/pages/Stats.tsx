@@ -170,7 +170,7 @@ export default function Stats() {
   }
 
   return (
-    <div className="min-h-screen bg-background/80 backdrop-blur-sm pb-24 relative z-10">
+    <div className="min-h-screen bg-background pb-24">
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <header className="mb-6 animate-fade-in">

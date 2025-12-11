@@ -85,7 +85,7 @@ export default function Premium() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background/90 backdrop-blur-sm relative z-10">
+    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg">
         <div className="max-w-lg mx-auto px-4 py-4">
