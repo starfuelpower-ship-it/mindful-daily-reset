@@ -32,9 +32,9 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
   const [localMode, setLocalMode] = useState<AmbientMode>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(AMBIENT_MODE_KEY);
-      return (stored as AmbientMode) || 'sun_rays';
+      return (stored as AmbientMode) || 'snow';
     }
-    return 'sun_rays';
+    return 'snow';
   });
   
   const [localVisualsEnabled, setLocalVisualsEnabled] = useState(() => {
@@ -58,7 +58,7 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
   // Sync local state with settings from database (for logged-in users)
   useEffect(() => {
     if (user && settings && !initialized.current) {
-      const mode = (settings as any).ambient_mode as AmbientMode || 'sun_rays';
+      const mode = (settings as any).ambient_mode as AmbientMode || 'snow';
       const visuals = (settings as any).ambient_visuals_enabled ?? true;
       
       setLocalMode(mode);

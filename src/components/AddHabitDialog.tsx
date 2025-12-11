@@ -22,8 +22,62 @@ import { Category, OLD_CATEGORY_CONFIG } from '@/types/habit';
 import { HabitIconPicker } from './HabitIconPicker';
 import { HabitColorPicker } from './HabitColorPicker';
 import { usePremium } from '@/contexts/PremiumContext';
+import { Badge } from '@/components/ui/badge';
 
 const categories: Category[] = ['Health', 'Productivity', 'Fitness', 'Mindset', 'Custom'];
+
+const HABIT_SUGGESTIONS: Record<Category, string[]> = {
+  Health: [
+    'Drink 8 glasses of water',
+    'Take vitamins',
+    'Eat breakfast',
+    'Sleep 8 hours',
+    'No sugar today',
+    'Eat fruits & veggies',
+    'Meal prep',
+    'No late night snacks',
+  ],
+  Productivity: [
+    'Wake up early',
+    'Plan my day',
+    'No social media until noon',
+    'Deep work session',
+    'Clear email inbox',
+    'Review daily goals',
+    'Learn something new',
+    'Read 30 minutes',
+  ],
+  Fitness: [
+    'Morning workout',
+    'Walk 10,000 steps',
+    'Stretch for 10 min',
+    'Go to the gym',
+    'Do yoga',
+    'Take the stairs',
+    'Evening run',
+    'Core exercises',
+  ],
+  Mindset: [
+    'Morning meditation',
+    'Practice gratitude',
+    'Journal thoughts',
+    'Positive affirmations',
+    'Breathwork session',
+    'Digital detox hour',
+    'Call a friend',
+    'Random act of kindness',
+  ],
+  Custom: [
+    'Practice instrument',
+    'Water plants',
+    'Tidy workspace',
+    'No spending day',
+    'Creative time',
+    'Learn a language',
+    'Side project work',
+    'Self-care routine',
+  ],
+};
 
 interface AddHabitDialogProps {
   onAdd?: (name: string, category: string, notes: string, icon?: string, color?: string) => void;
@@ -88,6 +142,12 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
     }
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setName(suggestion);
+  };
+
+  const suggestions = HABIT_SUGGESTIONS[category];
+
   const DialogBody = () => (
     <form onSubmit={handleSubmit} className="space-y-5 pt-2">
       {/* Icon and Color pickers */}
@@ -147,6 +207,23 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
         </Select>
       </div>
 
+      {/* Suggestions */}
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Quick suggestions</Label>
+        <div className="flex flex-wrap gap-2">
+          {suggestions.slice(0, 6).map((suggestion) => (
+            <Badge
+              key={suggestion}
+              variant="secondary"
+              className="cursor-pointer hover:bg-primary/20 transition-colors text-xs py-1 px-2"
+              onClick={() => handleSuggestionClick(suggestion)}
+            >
+              {suggestion}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
       {/* Notes */}
       <div className="space-y-2">
         <Label htmlFor="notes">Notes (optional)</Label>
@@ -156,7 +233,7 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           className="rounded-xl resize-none"
-          rows={3}
+          rows={2}
         />
       </div>
 
