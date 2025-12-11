@@ -79,7 +79,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background/80 backdrop-blur-sm relative z-10 flex flex-col">
       <div className="p-4">
         <Button
           variant="ghost"
