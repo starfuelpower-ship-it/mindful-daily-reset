@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { CelebrationAnimation } from './CelebrationAnimation';
 import { getHabitIcon } from './HabitIconPicker';
 import { useCompanion } from '@/contexts/CompanionContext';
+import { triggerHaptic } from '@/hooks/useSoundEffects';
 
 interface CloudHabitCardProps {
   habit: CloudHabit;
@@ -104,6 +105,9 @@ export function CloudHabitCard({
       setTimeout(() => setIsAnimating(false), 400);
       
       if (soundEnabled) playCompletionSound();
+      
+      // Trigger haptic feedback
+      triggerHaptic('medium');
       
       if (confettiEnabled) {
         setCelebrationStreak(newStreak);

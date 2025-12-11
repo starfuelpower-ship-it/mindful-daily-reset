@@ -17,8 +17,10 @@ import { EmptyState } from '@/components/EmptyState';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { DailyReflectionModal } from '@/components/DailyReflectionModal';
 import { MotivationalMessage } from '@/components/MotivationalMessage';
+import { QuoteDisplay } from '@/components/QuoteDisplay';
 import { ShareMilestone, useShareMilestone } from '@/components/ShareMilestone';
 import { Button } from '@/components/ui/button';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -37,6 +39,7 @@ const Index = () => {
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const { shareData, openShare, closeShare, isOpen: isShareOpen } = useShareMilestone();
   const { triggerReaction } = useCompanion();
+  const { playSound } = useSoundEffects();
 
   // User preferences (with defaults for guests)
   const confettiEnabled = settings?.confetti_enabled ?? true;
@@ -152,7 +155,18 @@ const Index = () => {
   };
 
   const toggleTheme = () => {
+    playSound('click');
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
+
+  const handleSettingsClick = () => {
+    playSound('click');
+    navigate('/settings');
+  };
+
+  const handleAuthClick = () => {
+    playSound('click');
+    navigate('/auth');
   };
 
   if (isLoading || !onboardingChecked) {
@@ -191,7 +205,7 @@ const Index = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate('/settings')}
+                onClick={handleSettingsClick}
                 className="text-muted-foreground hover:text-foreground"
               >
                 <Settings className="w-5 h-5" />
@@ -200,7 +214,7 @@ const Index = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/auth')}
+                onClick={handleAuthClick}
                 className="text-muted-foreground"
               >
                 <User className="w-4 h-4 mr-1.5" />
@@ -255,12 +269,17 @@ const Index = () => {
         </div>
 
         {/* Motivational Message */}
-        <div className="mb-5">
+        <div className="mb-3">
           <MotivationalMessage 
             bestStreak={bestStreak} 
             completedToday={completedCount} 
             totalHabits={totalCount} 
           />
+        </div>
+
+        {/* Daily Quote */}
+        <div className="mb-5">
+          <QuoteDisplay />
         </div>
 
         {/* Habits List */}
