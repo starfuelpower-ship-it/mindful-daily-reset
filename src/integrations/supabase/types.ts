@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      cat_costumes: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          icon: string
+          id: string
+          is_premium_only: boolean | null
+          name: string
+          price: number
+          sort_order: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon: string
+          id?: string
+          is_premium_only?: boolean | null
+          name: string
+          price?: number
+          sort_order?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          is_premium_only?: boolean | null
+          name?: string
+          price?: number
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       group_achievements: {
         Row: {
           achieved_at: string
@@ -438,6 +474,33 @@ export type Database = {
         }
         Relationships: []
       }
+      point_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -509,6 +572,100 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_costumes: {
+        Row: {
+          costume_id: string
+          id: string
+          purchased_at: string | null
+          user_id: string
+        }
+        Insert: {
+          costume_id: string
+          id?: string
+          purchased_at?: string | null
+          user_id: string
+        }
+        Update: {
+          costume_id?: string
+          id?: string
+          purchased_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_costumes_costume_id_fkey"
+            columns: ["costume_id"]
+            isOneToOne: false
+            referencedRelation: "cat_costumes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_equipped_costume: {
+        Row: {
+          costume_id: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          costume_id?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          costume_id?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_equipped_costume_costume_id_fkey"
+            columns: ["costume_id"]
+            isOneToOne: false
+            referencedRelation: "cat_costumes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_points: {
+        Row: {
+          balance: number
+          created_at: string | null
+          current_streak_bonus: number | null
+          id: string
+          last_daily_bonus: string | null
+          last_weekly_bonus: string | null
+          total_earned: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string | null
+          current_streak_bonus?: number | null
+          id?: string
+          last_daily_bonus?: string | null
+          last_weekly_bonus?: string | null
+          total_earned?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string | null
+          current_streak_bonus?: number | null
+          id?: string
+          last_daily_bonus?: string | null
+          last_weekly_bonus?: string | null
+          total_earned?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_settings: {
         Row: {
