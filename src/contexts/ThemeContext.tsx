@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 
 type BaseTheme = 'light' | 'dark' | 'system';
 type PremiumTheme = 'pastel' | 'neon' | 'forest' | 'sunset';
@@ -13,6 +12,7 @@ interface ThemeContextType {
   setColorTheme: (theme: ColorTheme) => void;
   previewTheme: ColorTheme | null;
   setPreviewTheme: (theme: ColorTheme | null) => void;
+  resetPreview: () => void;
 }
 
 export const PREMIUM_THEMES: { id: PremiumTheme; name: string; description: string }[] = [
@@ -25,8 +25,6 @@ export const PREMIUM_THEMES: { id: PremiumTheme; name: string; description: stri
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const location = useLocation();
-  
   const [theme, setTheme] = useState<BaseTheme>(() => {
     const stored = localStorage.getItem('daily-reset-theme');
     return (stored as BaseTheme) || 'system';
@@ -40,10 +38,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [previewTheme, setPreviewTheme] = useState<ColorTheme | null>(null);
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
-  // Reset preview theme when navigating between pages
-  useEffect(() => {
-    setPreviewTheme(null);
-  }, [location.pathname]);
+  const resetPreview = () => setPreviewTheme(null);
 
   // Apply base light/dark theme
   useEffect(() => {
@@ -108,7 +103,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       colorTheme, 
       setColorTheme,
       previewTheme,
-      setPreviewTheme
+      setPreviewTheme,
+      resetPreview
     }}>
       {children}
     </ThemeContext.Provider>
