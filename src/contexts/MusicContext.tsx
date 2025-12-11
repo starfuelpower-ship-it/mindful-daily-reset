@@ -22,10 +22,20 @@ const TRACKS = [
 ];
 
 const LOCAL_STORAGE_KEY = 'daily-reset-music-settings';
+const MUSIC_INITIALIZED_KEY = 'daily-reset-music-initialized';
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [musicEnabled, setMusicEnabledState] = useState(false);
+  // Default to true for first-time users
+  const [musicEnabled, setMusicEnabledState] = useState(() => {
+    const initialized = localStorage.getItem(MUSIC_INITIALIZED_KEY);
+    if (!initialized) return true; // First time - enable music
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored).musicEnabled ?? true;
+    }
+    return true;
+  });
   const [volume, setVolumeState] = useState(30);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,6 +68,9 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const loadSettings = async () => {
       setIsLoading(true);
       
+      // Mark as initialized for future visits
+      localStorage.setItem(MUSIC_INITIALIZED_KEY, 'true');
+      
       if (user) {
         const { data } = await supabase
           .from('user_settings')
@@ -66,14 +79,14 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
           .single();
         
         if (data) {
-          setMusicEnabledState(data.music_enabled ?? false);
+          setMusicEnabledState(data.music_enabled ?? true);
           setVolumeState(data.music_volume ?? 30);
         }
       } else {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
-          setMusicEnabledState(parsed.musicEnabled ?? false);
+          setMusicEnabledState(parsed.musicEnabled ?? true);
           setVolumeState(parsed.volume ?? 30);
         }
       }

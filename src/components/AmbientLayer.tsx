@@ -3,7 +3,7 @@ import { useAmbient, AmbientMode } from '@/contexts/AmbientContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
-// Rain effect component
+// Rain effect component with puddles at bottom
 const RainEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
@@ -22,12 +22,23 @@ const RainEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
     resize();
     window.addEventListener('resize', resize);
 
-    // Scale drop count and opacity based on intensity (10-100)
     const intensityFactor = intensity / 100;
     const baseDropCount = isDark ? 15 : 20;
     const dropCount = Math.round(baseDropCount + (intensityFactor * 30));
     
     const drops: { x: number; y: number; speed: number; length: number; opacity: number }[] = [];
+    const splashes: { x: number; y: number; radius: number; opacity: number; maxRadius: number }[] = [];
+    const puddles: { x: number; width: number; opacity: number }[] = [];
+
+    // Create puddles at the bottom
+    const puddleCount = Math.round(3 + intensityFactor * 5);
+    for (let i = 0; i < puddleCount; i++) {
+      puddles.push({
+        x: Math.random() * canvas.width,
+        width: 30 + Math.random() * 60,
+        opacity: 0.05 + Math.random() * 0.1 * intensityFactor,
+      });
+    }
 
     for (let i = 0; i < dropCount; i++) {
       const baseOpacity = isDark ? 0.03 : 0.15;
@@ -35,7 +46,7 @@ const RainEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
       drops.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        speed: 0.8 + Math.random() * 1,
+        speed: 2 + Math.random() * 2,
         length: 12 + Math.random() * 18,
         opacity: baseOpacity + (Math.random() * (maxOpacity - baseOpacity) * intensityFactor),
       });
@@ -44,6 +55,36 @@ const RainEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Draw puddles at bottom
+      puddles.forEach((puddle) => {
+        ctx.beginPath();
+        ctx.ellipse(puddle.x, canvas.height - 5, puddle.width, 4, 0, 0, Math.PI * 2);
+        ctx.fillStyle = isDark 
+          ? `rgba(100, 130, 160, ${puddle.opacity})`
+          : `rgba(142, 174, 207, ${puddle.opacity})`;
+        ctx.fill();
+      });
+
+      // Draw and update splashes
+      for (let i = splashes.length - 1; i >= 0; i--) {
+        const splash = splashes[i];
+        ctx.beginPath();
+        ctx.arc(splash.x, splash.y, splash.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = isDark 
+          ? `rgba(180, 200, 220, ${splash.opacity})`
+          : `rgba(142, 174, 207, ${splash.opacity})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        splash.radius += 0.5;
+        splash.opacity -= 0.02;
+        
+        if (splash.opacity <= 0 || splash.radius >= splash.maxRadius) {
+          splashes.splice(i, 1);
+        }
+      }
+
+      // Draw rain drops
       drops.forEach((drop) => {
         ctx.beginPath();
         ctx.moveTo(drop.x, drop.y);
@@ -55,7 +96,17 @@ const RainEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
         ctx.stroke();
 
         drop.y += drop.speed;
-        if (drop.y > canvas.height) {
+        if (drop.y > canvas.height - 20) {
+          // Create splash
+          if (Math.random() < 0.3) {
+            splashes.push({
+              x: drop.x,
+              y: canvas.height - 10,
+              radius: 1,
+              opacity: 0.3 * intensityFactor,
+              maxRadius: 8 + Math.random() * 6,
+            });
+          }
           drop.y = -drop.length;
           drop.x = Math.random() * canvas.width;
         }
@@ -85,12 +136,11 @@ const RainEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
 
 RainEffect.displayName = 'RainEffect';
 
-// Sun rays effect component
+// Sun rays effect component with flickering
 const SunRaysEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: number }) => {
   const intensityFactor = intensity / 100;
   const rayCount = Math.round(3 + intensityFactor * 4);
   
-  // Scale opacity based on intensity
   const baseOpacity = isDark ? 0.01 : 0.06;
   const maxOpacity = isDark ? 0.04 : 0.18;
   const opacityRange = maxOpacity - baseOpacity;
@@ -121,15 +171,45 @@ const SunRaysEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity:
                 )`,
             transform: `rotate(${22 + i * 8}deg)`,
             filter: isDark ? 'blur(30px)' : 'blur(25px)',
-            animation: `sunRayFade ${9 + i * 2}s ease-in-out infinite`,
-            animationDelay: `${i * 1.5}s`,
+            animation: `sunRayFade${i} ${5 + i * 1.5}s ease-in-out infinite, sunRayFlicker ${0.8 + i * 0.2}s ease-in-out infinite`,
+            animationDelay: `${i * 0.8}s`,
           }}
         />
       ))}
       <style>{`
-        @keyframes sunRayFade {
-          0%, 100% { opacity: ${0.3 + intensityFactor * 0.4}; }
-          50% { opacity: ${0.6 + intensityFactor * 0.4}; }
+        @keyframes sunRayFade0 {
+          0%, 100% { opacity: ${0.4 + intensityFactor * 0.3}; transform: rotate(22deg) scaleY(1); }
+          50% { opacity: ${0.7 + intensityFactor * 0.3}; transform: rotate(22deg) scaleY(1.02); }
+        }
+        @keyframes sunRayFade1 {
+          0%, 100% { opacity: ${0.35 + intensityFactor * 0.35}; transform: rotate(30deg) scaleY(1); }
+          50% { opacity: ${0.65 + intensityFactor * 0.35}; transform: rotate(30deg) scaleY(1.03); }
+        }
+        @keyframes sunRayFade2 {
+          0%, 100% { opacity: ${0.3 + intensityFactor * 0.4}; transform: rotate(38deg) scaleY(1); }
+          50% { opacity: ${0.6 + intensityFactor * 0.4}; transform: rotate(38deg) scaleY(1.02); }
+        }
+        @keyframes sunRayFade3 {
+          0%, 100% { opacity: ${0.35 + intensityFactor * 0.35}; transform: rotate(46deg) scaleY(1); }
+          50% { opacity: ${0.7 + intensityFactor * 0.3}; transform: rotate(46deg) scaleY(1.01); }
+        }
+        @keyframes sunRayFade4 {
+          0%, 100% { opacity: ${0.3 + intensityFactor * 0.4}; transform: rotate(54deg) scaleY(1); }
+          50% { opacity: ${0.65 + intensityFactor * 0.35}; transform: rotate(54deg) scaleY(1.02); }
+        }
+        @keyframes sunRayFade5 {
+          0%, 100% { opacity: ${0.35 + intensityFactor * 0.35}; transform: rotate(62deg) scaleY(1); }
+          50% { opacity: ${0.6 + intensityFactor * 0.4}; transform: rotate(62deg) scaleY(1.03); }
+        }
+        @keyframes sunRayFade6 {
+          0%, 100% { opacity: ${0.3 + intensityFactor * 0.4}; transform: rotate(70deg) scaleY(1); }
+          50% { opacity: ${0.65 + intensityFactor * 0.35}; transform: rotate(70deg) scaleY(1.01); }
+        }
+        @keyframes sunRayFlicker {
+          0%, 100% { filter: blur(25px) brightness(1); }
+          25% { filter: blur(24px) brightness(1.05); }
+          50% { filter: blur(26px) brightness(0.95); }
+          75% { filter: blur(25px) brightness(1.02); }
         }
       `}</style>
     </div>
@@ -138,7 +218,7 @@ const SunRaysEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity:
 
 SunRaysEffect.displayName = 'SunRaysEffect';
 
-// Snow effect component
+// Snow effect component with snow piling at bottom
 const SnowEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
@@ -157,12 +237,15 @@ const SnowEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
     resize();
     window.addEventListener('resize', resize);
 
-    // Scale flake count and opacity based on intensity
     const intensityFactor = intensity / 100;
     const baseFlakeCount = isDark ? 10 : 15;
     const flakeCount = Math.round(baseFlakeCount + (intensityFactor * 25));
 
     const flakes: { x: number; y: number; speed: number; size: number; opacity: number; drift: number }[] = [];
+    
+    // Snow pile data - heights at different x positions
+    const pileSegments = 50;
+    const snowPile: number[] = new Array(pileSegments).fill(0).map(() => Math.random() * 3);
 
     for (let i = 0; i < flakeCount; i++) {
       const baseOpacity = isDark ? 0.04 : 0.2;
@@ -170,7 +253,7 @@ const SnowEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
       flakes.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        speed: 0.2 + Math.random() * 0.3,
+        speed: 0.3 + Math.random() * 0.4,
         size: isDark ? (1.5 + Math.random() * 2) : (2 + Math.random() * 2.5),
         opacity: baseOpacity + (Math.random() * (maxOpacity - baseOpacity) * intensityFactor),
         drift: Math.random() * 0.3 - 0.15,
@@ -180,21 +263,48 @@ const SnowEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Draw snow pile at bottom
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height);
+      
+      const segmentWidth = canvas.width / (pileSegments - 1);
+      for (let i = 0; i < pileSegments; i++) {
+        const x = i * segmentWidth;
+        const pileHeight = snowPile[i] * intensityFactor * 3;
+        ctx.lineTo(x, canvas.height - pileHeight);
+      }
+      
+      ctx.lineTo(canvas.width, canvas.height);
+      ctx.closePath();
+      ctx.fillStyle = isDark 
+        ? `rgba(200, 210, 220, ${0.15 * intensityFactor})`
+        : `rgba(240, 245, 250, ${0.25 * intensityFactor})`;
+      ctx.fill();
+
+      // Draw snowflakes
       flakes.forEach((flake) => {
         ctx.beginPath();
         ctx.arc(flake.x, flake.y, flake.size, 0, Math.PI * 2);
         ctx.fillStyle = isDark 
           ? `rgba(255, 255, 255, ${flake.opacity})`
-          : `rgba(181, 181, 181, ${flake.opacity})`;
+          : `rgba(220, 230, 240, ${flake.opacity})`;
         ctx.fill();
 
         flake.y += flake.speed;
         flake.x += flake.drift + Math.sin(flake.y * 0.008) * 0.2;
 
-        if (flake.y > canvas.height) {
+        // Check if flake reached bottom
+        const segmentIndex = Math.floor((flake.x / canvas.width) * pileSegments);
+        const clampedIndex = Math.max(0, Math.min(pileSegments - 1, segmentIndex));
+        const pileHeight = snowPile[clampedIndex] * intensityFactor * 3;
+        
+        if (flake.y > canvas.height - pileHeight - 5) {
+          // Add to pile slightly
+          snowPile[clampedIndex] = Math.min(snowPile[clampedIndex] + 0.02, 8);
           flake.y = -flake.size;
           flake.x = Math.random() * canvas.width;
         }
+        
         if (flake.x > canvas.width) flake.x = 0;
         if (flake.x < 0) flake.x = canvas.width;
       });
