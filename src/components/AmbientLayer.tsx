@@ -3,20 +3,8 @@ import { useAmbient, AmbientMode } from '@/contexts/AmbientContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
-// Light mode colors for better visibility
-const LIGHT_MODE_COLORS = {
-  rain: 'rgba(142, 174, 207, 0.35)', // Gray-blue #8EAECF
-  snow: 'rgba(181, 181, 181, 0.4)', // Soft gray #B5B5B5
-};
-
-// Dark mode colors (original subtle colors)
-const DARK_MODE_COLORS = {
-  rain: 'rgba(180, 200, 220, 0.08)',
-  snow: 'rgba(255, 255, 255, 0.12)',
-};
-
 // Rain effect component
-const RainEffect = memo(({ isDark }: { isDark: boolean }) => {
+const RainEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
 
@@ -34,20 +22,24 @@ const RainEffect = memo(({ isDark }: { isDark: boolean }) => {
     resize();
     window.addEventListener('resize', resize);
 
+    // Scale drop count and opacity based on intensity (10-100)
+    const intensityFactor = intensity / 100;
+    const baseDropCount = isDark ? 15 : 20;
+    const dropCount = Math.round(baseDropCount + (intensityFactor * 30));
+    
     const drops: { x: number; y: number; speed: number; length: number; opacity: number }[] = [];
-    const dropCount = isDark ? 25 : 35; // More drops in light mode for visibility
 
     for (let i = 0; i < dropCount; i++) {
+      const baseOpacity = isDark ? 0.03 : 0.15;
+      const maxOpacity = isDark ? 0.12 : 0.45;
       drops.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         speed: 0.8 + Math.random() * 1,
         length: 12 + Math.random() * 18,
-        opacity: isDark ? (0.04 + Math.random() * 0.06) : (0.25 + Math.random() * 0.15),
+        opacity: baseOpacity + (Math.random() * (maxOpacity - baseOpacity) * intensityFactor),
       });
     }
-
-    const rainColor = isDark ? DARK_MODE_COLORS.rain : LIGHT_MODE_COLORS.rain;
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -80,7 +72,7 @@ const RainEffect = memo(({ isDark }: { isDark: boolean }) => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isDark]);
+  }, [isDark, intensity]);
 
   return (
     <canvas
@@ -94,9 +86,14 @@ const RainEffect = memo(({ isDark }: { isDark: boolean }) => {
 RainEffect.displayName = 'RainEffect';
 
 // Sun rays effect component
-const SunRaysEffect = memo(({ isDark }: { isDark: boolean }) => {
-  // Light mode: warm gold (#E9D694), Dark mode: original pale yellow
-  const rayCount = isDark ? 4 : 5;
+const SunRaysEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: number }) => {
+  const intensityFactor = intensity / 100;
+  const rayCount = Math.round(3 + intensityFactor * 4);
+  
+  // Scale opacity based on intensity
+  const baseOpacity = isDark ? 0.01 : 0.06;
+  const maxOpacity = isDark ? 0.04 : 0.18;
+  const opacityRange = maxOpacity - baseOpacity;
   
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -112,14 +109,14 @@ const SunRaysEffect = memo(({ isDark }: { isDark: boolean }) => {
             background: isDark
               ? `linear-gradient(
                   135deg,
-                  rgba(255, 250, 230, ${0.02 + i * 0.008}) 0%,
-                  rgba(255, 235, 180, ${0.015}) 50%,
+                  rgba(255, 250, 230, ${baseOpacity + (i * 0.005 * intensityFactor) + (opacityRange * intensityFactor * 0.3)}) 0%,
+                  rgba(255, 235, 180, ${baseOpacity * 0.8 + (opacityRange * intensityFactor * 0.2)}) 50%,
                   transparent 100%
                 )`
               : `linear-gradient(
                   135deg,
-                  rgba(233, 214, 148, ${0.12 + i * 0.02}) 0%,
-                  rgba(233, 214, 148, ${0.06}) 50%,
+                  rgba(233, 214, 148, ${baseOpacity + (i * 0.015 * intensityFactor) + (opacityRange * intensityFactor * 0.5)}) 0%,
+                  rgba(233, 214, 148, ${baseOpacity * 0.5 + (opacityRange * intensityFactor * 0.3)}) 50%,
                   transparent 100%
                 )`,
             transform: `rotate(${22 + i * 8}deg)`,
@@ -131,8 +128,8 @@ const SunRaysEffect = memo(({ isDark }: { isDark: boolean }) => {
       ))}
       <style>{`
         @keyframes sunRayFade {
-          0%, 100% { opacity: ${isDark ? 0.4 : 0.6}; }
-          50% { opacity: ${isDark ? 0.8 : 1}; }
+          0%, 100% { opacity: ${0.3 + intensityFactor * 0.4}; }
+          50% { opacity: ${0.6 + intensityFactor * 0.4}; }
         }
       `}</style>
     </div>
@@ -142,7 +139,7 @@ const SunRaysEffect = memo(({ isDark }: { isDark: boolean }) => {
 SunRaysEffect.displayName = 'SunRaysEffect';
 
 // Snow effect component
-const SnowEffect = memo(({ isDark }: { isDark: boolean }) => {
+const SnowEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
 
@@ -160,16 +157,22 @@ const SnowEffect = memo(({ isDark }: { isDark: boolean }) => {
     resize();
     window.addEventListener('resize', resize);
 
+    // Scale flake count and opacity based on intensity
+    const intensityFactor = intensity / 100;
+    const baseFlakeCount = isDark ? 10 : 15;
+    const flakeCount = Math.round(baseFlakeCount + (intensityFactor * 25));
+
     const flakes: { x: number; y: number; speed: number; size: number; opacity: number; drift: number }[] = [];
-    const flakeCount = isDark ? 18 : 25; // More flakes in light mode
 
     for (let i = 0; i < flakeCount; i++) {
+      const baseOpacity = isDark ? 0.04 : 0.2;
+      const maxOpacity = isDark ? 0.15 : 0.5;
       flakes.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         speed: 0.2 + Math.random() * 0.3,
         size: isDark ? (1.5 + Math.random() * 2) : (2 + Math.random() * 2.5),
-        opacity: isDark ? (0.06 + Math.random() * 0.08) : (0.3 + Math.random() * 0.15),
+        opacity: baseOpacity + (Math.random() * (maxOpacity - baseOpacity) * intensityFactor),
         drift: Math.random() * 0.3 - 0.15,
       });
     }
@@ -207,7 +210,7 @@ const SnowEffect = memo(({ isDark }: { isDark: boolean }) => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isDark]);
+  }, [isDark, intensity]);
 
   return (
     <canvas
@@ -221,7 +224,7 @@ const SnowEffect = memo(({ isDark }: { isDark: boolean }) => {
 SnowEffect.displayName = 'SnowEffect';
 
 export function AmbientLayer() {
-  const { ambientMode, visualsEnabled } = useAmbient();
+  const { ambientMode, visualsEnabled, intensity } = useAmbient();
   const { resolvedTheme } = useTheme();
   const [isVisible, setIsVisible] = useState(false);
   const [currentMode, setCurrentMode] = useState<AmbientMode>(ambientMode);
@@ -244,16 +247,17 @@ export function AmbientLayer() {
   }
 
   const showOverlay = isVisible && !isDark && currentMode !== 'off';
+  const overlayOpacity = 0.03 + (intensity / 100) * 0.04; // 3-7% based on intensity
 
   // Get effect component based on mode
   const getEffectComponent = () => {
     switch (currentMode) {
       case 'rain':
-        return <RainEffect isDark={isDark} />;
+        return <RainEffect isDark={isDark} intensity={intensity} />;
       case 'sun_rays':
-        return <SunRaysEffect isDark={isDark} />;
+        return <SunRaysEffect isDark={isDark} intensity={intensity} />;
       case 'snow':
-        return <SnowEffect isDark={isDark} />;
+        return <SnowEffect isDark={isDark} intensity={intensity} />;
       default:
         return null;
     }
@@ -269,7 +273,7 @@ export function AmbientLayer() {
           'fixed inset-0 pointer-events-none z-30 transition-opacity duration-500 ease-in-out',
           showOverlay ? 'opacity-100' : 'opacity-0'
         )}
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}
+        style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity})` }}
         aria-hidden="true"
       />
       

@@ -1,7 +1,8 @@
 import { useAmbient, AmbientMode } from '@/contexts/AmbientContext';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import { CloudRain, Sun, Snowflake, XCircle, Eye } from 'lucide-react';
+import { CloudRain, Sun, Snowflake, XCircle, Eye, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const AMBIENT_OPTIONS: { id: AmbientMode; label: string; icon: React.ComponentType<any>; description: string }[] = [
@@ -17,8 +18,17 @@ export function AmbientSettings() {
     setAmbientMode,
     visualsEnabled,
     setVisualsEnabled,
+    intensity,
+    setIntensity,
     turnOffAllAmbience,
   } = useAmbient();
+
+  const getIntensityLabel = (value: number) => {
+    if (value <= 25) return 'Subtle';
+    if (value <= 50) return 'Light';
+    if (value <= 75) return 'Medium';
+    return 'Visible';
+  };
 
   return (
     <div className="space-y-4">
@@ -52,6 +62,29 @@ export function AmbientSettings() {
           })}
         </div>
       </div>
+
+      {/* Intensity Slider */}
+      {ambientMode !== 'off' && (
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-4 h-4 text-muted-foreground" />
+              <Label className="text-sm">Intensity</Label>
+            </div>
+            <span className="text-xs text-muted-foreground font-medium">
+              {getIntensityLabel(intensity)}
+            </span>
+          </div>
+          <Slider
+            value={[intensity]}
+            onValueChange={([value]) => setIntensity(value)}
+            min={10}
+            max={100}
+            step={5}
+            className="w-full"
+          />
+        </div>
+      )}
 
       {/* Visuals Toggle */}
       <div className="space-y-3 pt-2">

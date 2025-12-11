@@ -10,6 +10,8 @@ interface AmbientContextType {
   setAmbientMode: (mode: AmbientMode) => void;
   visualsEnabled: boolean;
   setVisualsEnabled: (enabled: boolean) => void;
+  intensity: number; // 0-100
+  setIntensity: (value: number) => void;
   isLoading: boolean;
   turnOffAllAmbience: () => void;
 }
@@ -19,6 +21,7 @@ const AmbientContext = createContext<AmbientContextType | undefined>(undefined);
 // Local storage keys for guests
 const AMBIENT_MODE_KEY = 'daily-reset-ambient-mode';
 const AMBIENT_VISUALS_KEY = 'daily-reset-ambient-visuals';
+const AMBIENT_INTENSITY_KEY = 'daily-reset-ambient-intensity';
 
 export function AmbientProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -40,6 +43,14 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
       return stored === null ? true : stored === 'true';
     }
     return true;
+  });
+
+  const [localIntensity, setLocalIntensity] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(AMBIENT_INTENSITY_KEY);
+      return stored ? parseInt(stored, 10) : 50;
+    }
+    return 50;
   });
   
   const initialized = useRef(false);
@@ -69,6 +80,12 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
     }
   }, [localVisualsEnabled, user]);
 
+  useEffect(() => {
+    if (!user) {
+      localStorage.setItem(AMBIENT_INTENSITY_KEY, String(localIntensity));
+    }
+  }, [localIntensity, user]);
+
   const setAmbientMode = useCallback(async (mode: AmbientMode) => {
     setLocalMode(mode);
     if (user) {
@@ -82,6 +99,11 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
       await updateSettings({ ambient_visuals_enabled: enabled } as any);
     }
   }, [updateSettings, user]);
+
+  const setIntensity = useCallback((value: number) => {
+    setLocalIntensity(value);
+    // Note: intensity is stored locally only, not in database
+  }, []);
 
   const turnOffAllAmbience = useCallback(async () => {
     setLocalMode('off');
@@ -101,6 +123,8 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
         setAmbientMode,
         visualsEnabled: localVisualsEnabled,
         setVisualsEnabled,
+        intensity: localIntensity,
+        setIntensity,
         isLoading: loading,
         turnOffAllAmbience,
       }}
