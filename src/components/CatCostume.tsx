@@ -4,13 +4,18 @@ export type CostumeType =
   | 'none'
   | 'scarf'
   | 'wizard_hat'
-  | 'raincoat'
   | 'sleep_cap'
+  | 'raincoat'
   | 'headphones'
   | 'flower_crown'
   | 'bow_tie'
   | 'santa_hat'
-  | 'crown';
+  | 'crown'
+  | 'winter_beanie'
+  | 'sunhat'
+  | 'sweater'
+  | 'cape'
+  | 'party_hat';
 
 interface CatCostumeProps {
   costume: CostumeType;
@@ -94,6 +99,9 @@ export const CatCostume = memo(({ costume, isDark = false }: CatCostumeProps) =>
             {/* Buttons */}
             <circle cx="32" cy="42" r="1.5" fill="#f59e0b" />
             <circle cx="32" cy="48" r="1.5" fill="#f59e0b" />
+            {/* Rain boots */}
+            <ellipse cx="26" cy="52" rx="5" ry="3" fill="#fbbf24" stroke="#f59e0b" strokeWidth="1" />
+            <ellipse cx="38" cy="52" rx="5" ry="3" fill="#fbbf24" stroke="#f59e0b" strokeWidth="1" />
           </g>
         );
 
@@ -229,6 +237,113 @@ export const CatCostume = memo(({ costume, isDark = false }: CatCostumeProps) =>
           </g>
         );
 
+      case 'winter_beanie':
+        return (
+          <g className="animate-costume-in">
+            {/* Beanie base */}
+            <path
+              d="M18 22 Q18 10 32 8 Q46 10 46 22"
+              fill="#3b82f6"
+              stroke="#2563eb"
+              strokeWidth="1"
+            />
+            {/* Beanie fold */}
+            <ellipse cx="32" cy="22" rx="14" ry="3" fill="#60a5fa" />
+            {/* Pattern stripes */}
+            <path d="M20 14 Q26 12 32 14 Q38 12 44 14" stroke="#93c5fd" strokeWidth="2" fill="none" />
+            <path d="M22 18 Q27 16 32 18 Q37 16 42 18" stroke="#93c5fd" strokeWidth="1.5" fill="none" />
+            {/* Pompom */}
+            <circle cx="32" cy="5" r="4" fill="#93c5fd" />
+            <circle cx="31" cy="4" r="1.5" fill="#bfdbfe" />
+          </g>
+        );
+
+      case 'sunhat':
+        return (
+          <g className="animate-costume-in">
+            {/* Hat top */}
+            <ellipse cx="32" cy="14" rx="10" ry="6" fill="#fef3c7" stroke="#fcd34d" strokeWidth="1" />
+            {/* Wide brim */}
+            <ellipse cx="32" cy="18" rx="18" ry="4" fill="#fef3c7" stroke="#fcd34d" strokeWidth="1" />
+            {/* Ribbon */}
+            <ellipse cx="32" cy="14" rx="9" ry="5" fill="none" stroke="#f472b6" strokeWidth="2" />
+            {/* Ribbon bow */}
+            <circle cx="44" cy="14" r="2" fill="#f472b6" />
+            <circle cx="47" cy="13" r="1.5" fill="#f9a8d4" />
+          </g>
+        );
+
+      case 'sweater':
+        return (
+          <g className="animate-costume-in">
+            {/* Sweater body */}
+            <path
+              d="M18 34 L18 54 L46 54 L46 34 Q32 32 18 34"
+              fill="#22c55e"
+              stroke="#16a34a"
+              strokeWidth="1"
+            />
+            {/* Collar */}
+            <ellipse cx="32" cy="36" rx="8" ry="3" fill="#16a34a" />
+            {/* Pattern - zigzag */}
+            <path d="M20 42 L24 38 L28 42 L32 38 L36 42 L40 38 L44 42" stroke="#86efac" strokeWidth="1.5" fill="none" />
+            <path d="M20 48 L24 44 L28 48 L32 44 L36 48 L40 44 L44 48" stroke="#86efac" strokeWidth="1.5" fill="none" />
+          </g>
+        );
+
+      case 'cape':
+        return (
+          <g className="animate-costume-in">
+            {/* Cape body */}
+            <path
+              d="M18 28 Q16 40 20 56 L44 56 Q48 40 46 28"
+              fill="#dc2626"
+              stroke="#b91c1c"
+              strokeWidth="1"
+            />
+            {/* Cape inner */}
+            <path
+              d="M20 30 Q18 42 22 54 L42 54 Q46 42 44 30"
+              fill="#7c3aed"
+            />
+            {/* Clasp */}
+            <circle cx="32" cy="30" r="3" fill="#fbbf24" stroke="#f59e0b" strokeWidth="1" />
+            <circle cx="32" cy="30" r="1.5" fill="#fcd34d" />
+            {/* Cape collar */}
+            <path
+              d="M24 28 Q28 24 32 28 Q36 24 40 28"
+              fill="#dc2626"
+              stroke="#b91c1c"
+              strokeWidth="1"
+            />
+          </g>
+        );
+
+      case 'party_hat':
+        return (
+          <g className="animate-costume-in">
+            {/* Party hat cone */}
+            <path
+              d="M22 22 L32 2 L42 22 Z"
+              fill="#ec4899"
+              stroke="#db2777"
+              strokeWidth="1"
+            />
+            {/* Stripes */}
+            <path d="M26 18 L30 8" stroke="#f9a8d4" strokeWidth="2" />
+            <path d="M34 18 L38 8" stroke="#a855f7" strokeWidth="2" />
+            {/* Pompom on top */}
+            <circle cx="32" cy="2" r="3" fill="#fbbf24" />
+            <circle cx="31" cy="1" r="1" fill="#fcd34d" />
+            {/* Elastic band */}
+            <ellipse cx="32" cy="22" rx="10" ry="2" fill="#ec4899" stroke="#db2777" strokeWidth="1" />
+            {/* Confetti dots */}
+            <circle cx="25" cy="14" r="1" fill="#22c55e" />
+            <circle cx="38" cy="12" r="1" fill="#3b82f6" />
+            <circle cx="30" cy="16" r="0.8" fill="#fbbf24" />
+          </g>
+        );
+
       default:
         return null;
     }
@@ -240,17 +355,52 @@ export const CatCostume = memo(({ costume, isDark = false }: CatCostumeProps) =>
 CatCostume.displayName = 'CatCostume';
 
 // Costume metadata for the picker UI
-export const COSTUME_DATA: Record<CostumeType, { name: string; description: string; category: string }> = {
-  none: { name: 'No Costume', description: 'Just your adorable cat', category: 'default' },
-  scarf: { name: 'Cozy Scarf', description: 'A warm knit scarf for chilly days', category: 'accessory' },
-  wizard_hat: { name: 'Wizard Hat', description: 'Magical and mystical', category: 'hat' },
-  raincoat: { name: 'Raincoat', description: 'Stay dry in style', category: 'outfit' },
-  sleep_cap: { name: 'Sleep Cap', description: 'Perfect for cozy nights', category: 'hat' },
-  headphones: { name: 'Headphones', description: 'Listening to lo-fi beats', category: 'accessory' },
-  flower_crown: { name: 'Flower Crown', description: 'Spring vibes all year', category: 'hat' },
-  bow_tie: { name: 'Bow Tie', description: 'Looking fancy!', category: 'accessory' },
-  santa_hat: { name: 'Santa Hat', description: 'Ho ho ho! Festive spirit', category: 'hat' },
-  crown: { name: 'Royal Crown', description: 'Your cat is royalty', category: 'hat' },
+export const COSTUME_DATA: Record<CostumeType, { name: string; description: string; category: string; price: number }> = {
+  none: { name: 'No Costume', description: 'Just your adorable cat', category: 'default', price: 0 },
+  scarf: { name: 'Cozy Scarf', description: 'A warm knit scarf for chilly days', category: 'accessory', price: 100 },
+  wizard_hat: { name: 'Wizard Hat', description: 'Magical and mystical', category: 'hat', price: 200 },
+  raincoat: { name: 'Raincoat & Boots', description: 'Stay dry in style', category: 'outfit', price: 220 },
+  sleep_cap: { name: 'Sleepy Nightcap', description: 'Perfect for cozy nights', category: 'hat', price: 150 },
+  headphones: { name: 'Headphones', description: 'Listening to lo-fi beats', category: 'accessory', price: 180 },
+  flower_crown: { name: 'Flower Crown', description: 'Spring vibes all year', category: 'hat', price: 160 },
+  bow_tie: { name: 'Bow Tie', description: 'Looking fancy!', category: 'accessory', price: 80 },
+  santa_hat: { name: 'Santa Hat', description: 'Ho ho ho! Festive spirit', category: 'hat', price: 120 },
+  crown: { name: 'Royal Crown', description: 'Your cat is royalty', category: 'hat', price: 250 },
+  winter_beanie: { name: 'Winter Beanie', description: 'Stay warm and stylish', category: 'hat', price: 140 },
+  sunhat: { name: 'Summer Sunhat', description: 'Perfect for sunny days', category: 'hat', price: 130 },
+  sweater: { name: 'Cozy Sweater', description: 'Warm and snuggly knit', category: 'outfit', price: 200 },
+  cape: { name: 'Hero Cape', description: 'Superhero vibes!', category: 'outfit', price: 280 },
+  party_hat: { name: 'Party Hat', description: 'Celebrate every day!', category: 'hat', price: 100 },
 };
+
+// Map database costume names to CostumeType
+export const DB_TO_COSTUME_MAP: Record<string, CostumeType> = {
+  'Cozy Scarf': 'scarf',
+  'Wizard Hat': 'wizard_hat',
+  'Raincoat & Boots': 'raincoat',
+  'Sleepy Nightcap': 'sleep_cap',
+  'Headphones': 'headphones',
+  'Flower Crown': 'flower_crown',
+  'Bow Tie': 'bow_tie',
+  'Santa Hat': 'santa_hat',
+  'Royal Crown': 'crown',
+  'Winter Beanie': 'winter_beanie',
+  'Summer Sunhat': 'sunhat',
+  'Cozy Sweater': 'sweater',
+  'Hero Cape': 'cape',
+  'Party Hat': 'party_hat',
+};
+
+// Get CostumeType from database name
+export const getCostumeTypeFromDB = (name: string): CostumeType => {
+  return DB_TO_COSTUME_MAP[name] || 'none';
+};
+
+// Get all available costume types (excluding 'none')
+export const ALL_COSTUME_TYPES: CostumeType[] = [
+  'scarf', 'wizard_hat', 'sleep_cap', 'raincoat', 'headphones',
+  'flower_crown', 'bow_tie', 'santa_hat', 'crown', 'winter_beanie',
+  'sunhat', 'sweater', 'cape', 'party_hat'
+];
 
 export default CatCostume;
