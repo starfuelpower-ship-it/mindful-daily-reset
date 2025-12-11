@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Plus, UserPlus, LogOut, Copy, Crown } from 'lucide-react';
+import { Users, Plus, UserPlus, LogOut, Copy, Crown, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useGroups } from '@/hooks/useGroups';
@@ -7,9 +7,16 @@ import { BottomTabBar } from '@/components/BottomTabBar';
 import { PremiumLock } from '@/components/PremiumLock';
 import { GroupLeaderboard } from '@/components/GroupLeaderboard';
 import { GroupActivityFeed } from '@/components/GroupActivityFeed';
+import { ShareableStreakCard } from '@/components/ShareableStreakCard';
+import { GroupXPBar } from '@/components/GroupXPBar';
+import { GroupChallenges } from '@/components/GroupChallenges';
+import { GroupBadges } from '@/components/GroupBadges';
+import { GroupChat } from '@/components/GroupChat';
+import { GroupAchievements } from '@/components/GroupAchievements';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -21,11 +28,18 @@ export default function Groups() {
     groups, 
     members, 
     activities,
+    challenges,
+    badges,
+    userBadges,
+    chatMessages,
+    achievements,
     currentGroup, 
     isLoading, 
     createGroup, 
     joinGroup, 
     leaveGroup,
+    createChallenge,
+    sendChatMessage,
     refetchActivities 
   } = useGroups();
   
@@ -81,14 +95,35 @@ export default function Groups() {
     }
   };
 
+  const handleCreateChallenge = (title: string, description: string, targetCount: number, endDate: string) => {
+    if (currentGroup) {
+      createChallenge(currentGroup.id, title, description, targetCount, endDate);
+    }
+  };
+
+  const handleSendMessage = (message: string) => {
+    if (currentGroup) {
+      sendChatMessage(currentGroup.id, message);
+    }
+  };
+
   const hasGroup = groups.length > 0 && currentGroup;
+
+  // Calculate user rank
+  const sortedMembers = [...members].sort((a, b) => b.streak - a.streak);
+  const currentMember = members.find(m => m.user_id === user.id);
+  const userRank = sortedMembers.findIndex(m => m.user_id === user.id) + 1;
+  const userName = currentMember?.profile?.display_name || currentMember?.profile?.email?.split('@')[0] || 'You';
 
   return (
     <div className="min-h-screen pb-24">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-foreground">Groups</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">Groups</h1>
+            <Sparkles className="w-5 h-5 text-primary" />
+          </div>
           <p className="text-sm text-muted-foreground">Build habits together</p>
         </div>
       </header>
@@ -133,15 +168,70 @@ export default function Groups() {
               </div>
             </div>
 
-            {/* Leaderboard */}
-            <GroupLeaderboard members={members} currentUserId={user.id} />
-
-            {/* Activity Feed */}
-            <GroupActivityFeed 
-              activities={activities} 
-              currentUserId={user.id}
-              onReactionChange={refetchActivities}
+            {/* XP Bar */}
+            <GroupXPBar 
+              totalXP={currentGroup.total_xp || 0} 
+              level={currentGroup.level || 1} 
             />
+
+            {/* Shareable Streak Card */}
+            <ShareableStreakCard
+              userName={userName}
+              streak={currentMember?.streak || 0}
+              groupName={currentGroup.name}
+              rank={userRank || 1}
+              totalXP={currentGroup.total_xp || 0}
+            />
+
+            {/* Tabs for different sections */}
+            <Tabs defaultValue="activity" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="activity">Feed</TabsTrigger>
+                <TabsTrigger value="challenges">Challenges</TabsTrigger>
+                <TabsTrigger value="badges">Badges</TabsTrigger>
+                <TabsTrigger value="rewards">Rewards</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="activity" className="space-y-4 mt-4">
+                {/* Leaderboard */}
+                <GroupLeaderboard members={members} currentUserId={user.id} />
+
+                {/* Activity Feed */}
+                <GroupActivityFeed 
+                  activities={activities} 
+                  currentUserId={user.id}
+                  onReactionChange={refetchActivities}
+                />
+
+                {/* Chat */}
+                <GroupChat
+                  groupId={currentGroup.id}
+                  currentUserId={user.id}
+                  messages={chatMessages}
+                  onSendMessage={handleSendMessage}
+                />
+              </TabsContent>
+
+              <TabsContent value="challenges" className="mt-4">
+                <GroupChallenges
+                  challenges={challenges}
+                  currentUserId={user.id}
+                  onCreateChallenge={handleCreateChallenge}
+                />
+              </TabsContent>
+
+              <TabsContent value="badges" className="mt-4">
+                <GroupBadges
+                  allBadges={badges}
+                  userBadges={userBadges}
+                  totalXP={currentGroup.total_xp || 0}
+                />
+              </TabsContent>
+
+              <TabsContent value="rewards" className="mt-4">
+                <GroupAchievements achievements={achievements} />
+              </TabsContent>
+            </Tabs>
 
             {/* Leave Group Button */}
             <Button
