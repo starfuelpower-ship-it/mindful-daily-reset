@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { DailyReflectionModal } from '@/components/DailyReflectionModal';
 import { MotivationalMessage } from '@/components/MotivationalMessage';
+import { ShareMilestone, useShareMilestone } from '@/components/ShareMilestone';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
 import { format } from 'date-fns';
@@ -33,6 +34,7 @@ const Index = () => {
   const [showReflection, setShowReflection] = useState(false);
   const hasShownReflectionToday = useRef(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const { shareData, openShare, closeShare, isOpen: isShareOpen } = useShareMilestone();
 
   // User preferences (with defaults for guests)
   const confettiEnabled = settings?.confetti_enabled ?? true;
@@ -270,6 +272,7 @@ const Index = () => {
                       habit={habit}
                       onToggle={handleToggleHabit}
                       onEdit={setEditingHabit}
+                      onShare={(h) => openShare(h.name, h.icon || '✅', h.streak)}
                       index={index}
                       confettiEnabled={confettiEnabled}
                       soundEnabled={soundEnabled}
@@ -327,6 +330,17 @@ const Index = () => {
         completedCount={completedCount}
         totalCount={totalCount}
       />
+
+      {/* Share Milestone Modal */}
+      {shareData && (
+        <ShareMilestone
+          habitName={shareData.habitName}
+          habitIcon={shareData.habitIcon}
+          streak={shareData.streak}
+          open={isShareOpen}
+          onOpenChange={(open) => !open && closeShare()}
+        />
+      )}
     </div>
   );
 };
