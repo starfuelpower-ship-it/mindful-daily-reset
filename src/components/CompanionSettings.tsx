@@ -1,10 +1,13 @@
 import { useCompanion } from '@/contexts/CompanionContext';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Cat } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Cat, Palette, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function CompanionSettings() {
   const { showCompanion, setShowCompanion } = useCompanion();
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-4">
@@ -26,6 +29,20 @@ export function CompanionSettings() {
           onCheckedChange={setShowCompanion}
         />
       </div>
+
+      {showCompanion && (
+        <Button
+          variant="outline"
+          className="w-full justify-between"
+          onClick={() => navigate('/cat')}
+        >
+          <div className="flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            <span>Customize Cat Costume</span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </Button>
+      )}
     </div>
   );
 }
