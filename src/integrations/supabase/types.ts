@@ -522,6 +522,8 @@ export type Database = {
           daily_reset_time: string | null
           done_habit_position: string | null
           id: string
+          music_enabled: boolean | null
+          music_volume: number | null
           show_companion: boolean | null
           sound_enabled: boolean | null
           start_of_week: string | null
@@ -541,6 +543,8 @@ export type Database = {
           daily_reset_time?: string | null
           done_habit_position?: string | null
           id?: string
+          music_enabled?: boolean | null
+          music_volume?: number | null
           show_companion?: boolean | null
           sound_enabled?: boolean | null
           start_of_week?: string | null
@@ -560,6 +564,8 @@ export type Database = {
           daily_reset_time?: string | null
           done_habit_position?: string | null
           id?: string
+          music_enabled?: boolean | null
+          music_volume?: number | null
           show_companion?: boolean | null
           sound_enabled?: boolean | null
           start_of_week?: string | null

@@ -8,6 +8,7 @@ import { PremiumProvider } from "@/contexts/PremiumContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AmbientProvider } from "@/contexts/AmbientContext";
 import { CompanionProvider } from "@/contexts/CompanionContext";
+import { MusicProvider } from "@/contexts/MusicContext";
 import { AmbientLayer } from "@/components/AmbientLayer";
 import { CatCompanion } from "@/components/CatCompanion";
 import Index from "./pages/Index";
@@ -35,21 +36,23 @@ const App = () => (
             <PremiumProvider>
               <AmbientProvider>
                 <CompanionProvider>
-                  <AmbientLayer />
-                  <CatCompanion />
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/premium" element={<Premium />} />
-                    <Route path="/stats" element={<Stats />} />
-                    <Route path="/groups" element={<Groups />} />
-                    <Route path="/journal" element={<Journal />} />
-                    <Route path="/onboarding" element={<Onboarding />} />
-                    <Route path="/habit-manager" element={<HabitManager />} />
-                    <Route path="/widgets" element={<Widgets />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <MusicProvider>
+                    <AmbientLayer />
+                    <CatCompanion />
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/premium" element={<Premium />} />
+                      <Route path="/stats" element={<Stats />} />
+                      <Route path="/groups" element={<Groups />} />
+                      <Route path="/journal" element={<Journal />} />
+                      <Route path="/onboarding" element={<Onboarding />} />
+                      <Route path="/habit-manager" element={<HabitManager />} />
+                      <Route path="/widgets" element={<Widgets />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </MusicProvider>
                 </CompanionProvider>
               </AmbientProvider>
             </PremiumProvider>
