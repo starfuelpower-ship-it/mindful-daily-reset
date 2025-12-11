@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -14,6 +14,7 @@ import { AddHabitDialog } from '@/components/AddHabitDialog';
 import { EditHabitDialog } from '@/components/EditHabitDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { BottomTabBar } from '@/components/BottomTabBar';
+import { DailyReflectionModal } from '@/components/DailyReflectionModal';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
 import { format } from 'date-fns';
@@ -26,6 +27,8 @@ const Index = () => {
   const [editingHabit, setEditingHabit] = useState<CloudHabit | null>(null);
   const [hasMigrated, setHasMigrated] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showReflection, setShowReflection] = useState(false);
+  const hasShownReflectionToday = useRef(false);
 
   // User preferences (with defaults for guests)
   const confettiEnabled = settings?.confetti_enabled ?? true;
@@ -65,6 +68,30 @@ const Index = () => {
       }
     }
   }, [user, hasMigrated, cloudHabits.isLoading]);
+
+  // Show daily reflection when all habits are completed (for logged-in users only)
+  useEffect(() => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const reflectionKey = `reflection-shown-${today}`;
+    const alreadyShown = localStorage.getItem(reflectionKey) === 'true';
+    
+    if (
+      isLoggedIn && 
+      totalCount > 0 && 
+      completedCount === totalCount && 
+      !hasShownReflectionToday.current &&
+      !alreadyShown &&
+      !isLoading
+    ) {
+      // Small delay to let celebration animation play first
+      const timer = setTimeout(() => {
+        setShowReflection(true);
+        hasShownReflectionToday.current = true;
+        localStorage.setItem(reflectionKey, 'true');
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [completedCount, totalCount, isLoggedIn, isLoading]);
 
   const handleAddHabit = (name: string, category: string, notes: string, icon?: string, color?: string) => {
     if (isLoggedIn) {
@@ -266,6 +293,14 @@ const Index = () => {
           onDelete={cloudHabits.deleteHabit}
         />
       )}
+
+      {/* Daily Reflection Modal */}
+      <DailyReflectionModal
+        open={showReflection}
+        onOpenChange={setShowReflection}
+        completedCount={completedCount}
+        totalCount={totalCount}
+      />
     </div>
   );
 };
