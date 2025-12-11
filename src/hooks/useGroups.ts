@@ -23,10 +23,26 @@ export interface GroupMember {
   };
 }
 
+export interface GroupActivity {
+  id: string;
+  group_id: string;
+  user_id: string;
+  activity_type: string;
+  habit_name: string | null;
+  streak_count: number | null;
+  created_at: string;
+  profile?: {
+    display_name: string | null;
+    email: string | null;
+  };
+  reactions: { emoji: string; count: number; hasReacted: boolean }[];
+}
+
 export function useGroups() {
   const { user } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [activities, setActivities] = useState<GroupActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
 
@@ -39,7 +55,6 @@ export function useGroups() {
     
     setIsLoading(true);
     try {
-      // Get groups the user is a member of
       const { data: memberData, error: memberError } = await supabase
         .from('group_members')
         .select('group_id')
@@ -82,7 +97,6 @@ export function useGroups() {
 
       if (membersError) throw membersError;
 
-      // Fetch profiles for each member
       if (membersData && membersData.length > 0) {
         const userIds = membersData.map(m => m.user_id);
         const { data: profilesData } = await supabase
@@ -104,6 +118,68 @@ export function useGroups() {
     }
   }, [user]);
 
+  const fetchGroupActivities = useCallback(async (groupId: string) => {
+    if (!user) return;
+
+    try {
+      const { data: activitiesData, error: activitiesError } = await supabase
+        .from('group_activities')
+        .select('*')
+        .eq('group_id', groupId)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (activitiesError) throw activitiesError;
+
+      if (activitiesData && activitiesData.length > 0) {
+        // Fetch profiles
+        const userIds = [...new Set(activitiesData.map(a => a.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, display_name, email')
+          .in('id', userIds);
+
+        // Fetch reactions
+        const activityIds = activitiesData.map(a => a.id);
+        const { data: reactionsData } = await supabase
+          .from('group_reactions')
+          .select('*')
+          .in('activity_id', activityIds);
+
+        const activitiesWithDetails = activitiesData.map(activity => {
+          const activityReactions = reactionsData?.filter(r => r.activity_id === activity.id) || [];
+          const reactionCounts: Record<string, { count: number; hasReacted: boolean }> = {};
+          
+          activityReactions.forEach(r => {
+            if (!reactionCounts[r.emoji]) {
+              reactionCounts[r.emoji] = { count: 0, hasReacted: false };
+            }
+            reactionCounts[r.emoji].count++;
+            if (r.user_id === user.id) {
+              reactionCounts[r.emoji].hasReacted = true;
+            }
+          });
+
+          return {
+            ...activity,
+            profile: profilesData?.find(p => p.id === activity.user_id) || null,
+            reactions: Object.entries(reactionCounts).map(([emoji, data]) => ({
+              emoji,
+              count: data.count,
+              hasReacted: data.hasReacted
+            }))
+          };
+        });
+
+        setActivities(activitiesWithDetails);
+      } else {
+        setActivities([]);
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    }
+  }, [user]);
+
   const createGroup = async (name: string) => {
     if (!user) return null;
 
@@ -122,7 +198,6 @@ export function useGroups() {
 
       if (groupError) throw groupError;
 
-      // Add creator as a member
       const { error: memberError } = await supabase
         .from('group_members')
         .insert({
@@ -147,7 +222,6 @@ export function useGroups() {
     if (!user) return false;
 
     try {
-      // Find the group by invite code
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
         .select('*')
@@ -161,7 +235,6 @@ export function useGroups() {
         return false;
       }
 
-      // Check if already a member
       const { data: existingMember } = await supabase
         .from('group_members')
         .select('id')
@@ -174,7 +247,6 @@ export function useGroups() {
         return false;
       }
 
-      // Join the group
       const { error: joinError } = await supabase
         .from('group_members')
         .insert({
@@ -210,12 +282,40 @@ export function useGroups() {
       toast.success('Left the group');
       setCurrentGroup(null);
       setMembers([]);
+      setActivities([]);
       await fetchUserGroups();
       return true;
     } catch (error) {
       console.error('Error leaving group:', error);
       toast.error('Failed to leave group');
       return false;
+    }
+  };
+
+  const postActivity = async (
+    groupId: string, 
+    activityType: 'habit_completed' | 'all_completed' | 'streak_milestone',
+    habitName?: string,
+    streakCount?: number
+  ) => {
+    if (!user) return;
+
+    try {
+      await supabase
+        .from('group_activities')
+        .insert({
+          group_id: groupId,
+          user_id: user.id,
+          activity_type: activityType,
+          habit_name: habitName || null,
+          streak_count: streakCount || null
+        });
+
+      if (currentGroup?.id === groupId) {
+        fetchGroupActivities(groupId);
+      }
+    } catch (error) {
+      console.error('Error posting activity:', error);
     }
   };
 
@@ -226,18 +326,22 @@ export function useGroups() {
   useEffect(() => {
     if (currentGroup) {
       fetchGroupMembers(currentGroup.id);
+      fetchGroupActivities(currentGroup.id);
     }
-  }, [currentGroup, fetchGroupMembers]);
+  }, [currentGroup, fetchGroupMembers, fetchGroupActivities]);
 
   return {
     groups,
     members,
+    activities,
     currentGroup,
     isLoading,
     createGroup,
     joinGroup,
     leaveGroup,
+    postActivity,
     setCurrentGroup,
-    refetch: fetchUserGroups
+    refetch: fetchUserGroups,
+    refetchActivities: () => currentGroup && fetchGroupActivities(currentGroup.id)
   };
 }

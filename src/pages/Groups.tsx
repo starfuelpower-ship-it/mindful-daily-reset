@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Users, Plus, UserPlus, LogOut, Copy, Crown, Flame } from 'lucide-react';
+import { Users, Plus, UserPlus, LogOut, Copy, Crown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useGroups } from '@/hooks/useGroups';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { PremiumLock } from '@/components/PremiumLock';
+import { GroupLeaderboard } from '@/components/GroupLeaderboard';
+import { GroupActivityFeed } from '@/components/GroupActivityFeed';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -15,7 +17,17 @@ export default function Groups() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isPremium } = usePremium();
-  const { groups, members, currentGroup, isLoading, createGroup, joinGroup, leaveGroup } = useGroups();
+  const { 
+    groups, 
+    members, 
+    activities,
+    currentGroup, 
+    isLoading, 
+    createGroup, 
+    joinGroup, 
+    leaveGroup,
+    refetchActivities 
+  } = useGroups();
   
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
@@ -101,6 +113,9 @@ export default function Groups() {
                     <p className="text-sm text-muted-foreground">{members.length} members</p>
                   </div>
                 </div>
+                {currentGroup.created_by === user.id && (
+                  <Crown className="w-5 h-5 text-yellow-500" />
+                )}
               </div>
               
               {/* Invite Code */}
@@ -118,40 +133,15 @@ export default function Groups() {
               </div>
             </div>
 
-            {/* Members List */}
-            <div className="ios-card p-6">
-              <h3 className="font-semibold text-foreground mb-4">Members</h3>
-              <div className="space-y-3">
-                {members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-lg">
-                        {member.profile?.display_name?.[0]?.toUpperCase() || 
-                         member.profile?.email?.[0]?.toUpperCase() || '?'}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-foreground">
-                        {member.profile?.display_name || member.profile?.email?.split('@')[0] || 'Unknown'}
-                        {member.user_id === currentGroup.created_by && (
-                          <Crown className="w-4 h-4 text-yellow-500 inline ml-2" />
-                        )}
-                        {member.user_id === user.id && (
-                          <span className="text-xs text-muted-foreground ml-2">(you)</span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 text-orange-500">
-                      <Flame className="w-4 h-4" />
-                      <span className="font-semibold">{member.streak}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Leaderboard */}
+            <GroupLeaderboard members={members} currentUserId={user.id} />
+
+            {/* Activity Feed */}
+            <GroupActivityFeed 
+              activities={activities} 
+              currentUserId={user.id}
+              onReactionChange={refetchActivities}
+            />
 
             {/* Leave Group Button */}
             <Button
