@@ -512,6 +512,9 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          ambient_mode: string | null
+          ambient_sounds_enabled: boolean | null
+          ambient_visuals_enabled: boolean | null
           confetti_enabled: boolean | null
           created_at: string | null
           daily_notification: boolean | null
@@ -526,6 +529,9 @@ export type Database = {
           vacation_mode: boolean | null
         }
         Insert: {
+          ambient_mode?: string | null
+          ambient_sounds_enabled?: boolean | null
+          ambient_visuals_enabled?: boolean | null
           confetti_enabled?: boolean | null
           created_at?: string | null
           daily_notification?: boolean | null
@@ -540,6 +546,9 @@ export type Database = {
           vacation_mode?: boolean | null
         }
         Update: {
+          ambient_mode?: string | null
+          ambient_sounds_enabled?: boolean | null
+          ambient_visuals_enabled?: boolean | null
           confetti_enabled?: boolean | null
           created_at?: string | null
           daily_notification?: boolean | null
