@@ -37,7 +37,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     return true;
   });
   const [volume, setVolumeState] = useState(30);
-  const [currentTrack, setCurrentTrack] = useState(0);
+  const [currentTrack, setCurrentTrack] = useState(1); // Default to "Rainy Morning Vibes 2"
   const [isLoading, setIsLoading] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
