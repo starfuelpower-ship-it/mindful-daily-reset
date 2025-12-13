@@ -105,7 +105,7 @@ const Install = () => {
           {isIOS ? (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground text-center font-medium">
-                To install on iPhone/iPad:
+                To install on your device:
               </p>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-3 border border-border rounded-lg">
