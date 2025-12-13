@@ -436,7 +436,23 @@ serve(async (req) => {
       );
     }
 
-    // Check if transaction was already processed (replay attack prevention)
+    // Rate limiting: Check verification attempts in last hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count: recentAttempts } = await supabaseAdmin
+      .from('verified_transactions')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', oneHourAgo);
+    
+    if (recentAttempts && recentAttempts >= 5) {
+      console.warn('[verify-premium] Rate limit exceeded for user:', user.id);
+      return new Response(
+        JSON.stringify({ error: 'Too many verification attempts. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Pre-check for existing transaction (non-atomic, but provides early rejection)
     const txnToCheck = transactionId || purchaseToken;
     if (txnToCheck) {
       const { data: existingTxn } = await supabaseAdmin
