@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
@@ -8,20 +9,56 @@ import { CompanionSettings } from '@/components/CompanionSettings';
 import { MusicSettings } from '@/components/MusicSettings';
 import { NotificationSettings } from '@/components/NotificationSettings';
 import { AchievementsUI } from '@/components/AchievementsUI';
-import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music, Bell, Trophy, MessageCircle, Mail, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music, Bell, Trophy, MessageCircle, Mail, HelpCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTutorial } from '@/components/AppTutorial';
-
+import { supabase } from '@/integrations/supabase/client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 export default function Settings() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isPremium } = usePremium();
   const { resetTutorial } = useTutorial();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
     toast.success('Signed out');
     navigate('/');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-account');
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Sign out locally after successful deletion
+      await signOut();
+      toast.success('Your account has been deleted');
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error('Failed to delete account. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   const handleSendFeedback = () => {
@@ -100,10 +137,17 @@ export default function Settings() {
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="w-full p-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors"
+                    className="w-full p-4 flex items-center gap-3 text-left hover:bg-muted/50 transition-colors border-b border-border/50"
                   >
                     <LogOut className="w-5 h-5 text-muted-foreground" />
                     <span className="text-foreground">Sign Out</span>
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="w-full p-4 flex items-center gap-3 text-left hover:bg-destructive/10 transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5 text-destructive" />
+                    <span className="text-destructive">Delete Account</span>
                   </button>
                 </>
               ) : (
@@ -288,6 +332,30 @@ export default function Settings() {
           </div>
         </div>
       </div>
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Delete Account
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your account and remove all your data including habits, progress, points, and settings.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Account'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
