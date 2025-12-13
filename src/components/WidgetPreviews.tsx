@@ -87,7 +87,7 @@ const LargeWidget = ({ className }: WidgetProps) => (
     className
   )}>
     <div>
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Daily Reset</p>
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Cozy Habits</p>
       <p className="text-xl font-bold text-foreground mt-1">Your Progress</p>
     </div>
     
@@ -226,7 +226,7 @@ export const WidgetPreviews = () => {
             Add widgets via your phone's widget gallery
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Long press your home screen → Add Widget → Daily Reset
+            Long press your home screen → Add Widget → Cozy Habits
           </p>
         </div>
       ) : (

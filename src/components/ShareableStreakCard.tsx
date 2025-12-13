@@ -19,7 +19,7 @@ export const ShareableStreakCard = ({
   totalXP 
 }: ShareableStreakCardProps) => {
   const handleShare = async () => {
-    const shareText = `🔥 ${userName} is on a ${streak}-day streak in "${groupName}"!\n\n🏆 Rank: #${rank}\n⭐ XP: ${totalXP}\n\nJoin us on Daily Reset!`;
+    const shareText = `🔥 ${userName} is on a ${streak}-day streak in "${groupName}"!\n\n🏆 Rank: #${rank}\n⭐ XP: ${totalXP}\n\nJoin us on Cozy Habits!`;
     
     if (navigator.share) {
       try {

@@ -109,12 +109,12 @@ export default function Groups() {
   const shareInviteCode = async () => {
     if (!currentGroup) return;
     
-    const shareText = `Join my group "${currentGroup.name}" on Daily Reset!\n\nInvite Code: ${currentGroup.invite_code}`;
+    const shareText = `Join my group "${currentGroup.name}" on Cozy Habits!\n\nInvite Code: ${currentGroup.invite_code}`;
     
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Join my Daily Reset group!',
+          title: 'Join my Cozy Habits group!',
           text: shareText,
         });
         triggerHaptic('success');

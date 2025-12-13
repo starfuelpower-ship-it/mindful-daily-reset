@@ -115,7 +115,7 @@ export function SplashScreen({ onComplete, minDuration = 2000 }: SplashScreenPro
 
       {/* App Name */}
       <h1 className="text-3xl font-bold text-foreground mb-2 animate-fade-in">
-        Daily Reset
+        Cozy Habits
       </h1>
       <p className="text-muted-foreground animate-fade-in" style={{ animationDelay: '0.3s' }}>
         Grow your habits, grow yourself

@@ -251,7 +251,7 @@ const Index = () => {
         {/* Header */}
         <header className="flex items-start justify-between mb-4 animate-fade-in">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Daily Reset</h1>
+            <h1 className="text-2xl font-bold text-foreground">Cozy Habits</h1>
             <p className="text-muted-foreground text-sm mt-0.5">
               {format(new Date(), 'EEEE, MMMM d')}
             </p>

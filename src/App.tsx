@@ -30,6 +30,8 @@ import Rewards from "./pages/Rewards";
 import CatCustomize from "./pages/CatCustomize";
 import PointsShop from "./pages/PointsShop";
 import Install from "./pages/Install";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,6 +70,8 @@ const App = () => (
                             <Route path="/cat" element={<CatCustomize />} />
                             <Route path="/points-shop" element={<PointsShop />} />
                             <Route path="/install" element={<Install />} />
+                            <Route path="/privacy" element={<PrivacyPolicy />} />
+                            <Route path="/terms" element={<TermsOfService />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </QuotesProvider>

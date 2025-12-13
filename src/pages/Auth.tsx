@@ -95,7 +95,7 @@ export default function Auth() {
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-sm space-y-8 animate-fade-in">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-foreground">Daily Reset</h1>
+            <h1 className="text-3xl font-bold text-foreground">Cozy Habits</h1>
             <p className="mt-2 text-muted-foreground">
               {isSignUp ? 'Create an account to sync your habits' : 'Welcome back'}
             </p>
