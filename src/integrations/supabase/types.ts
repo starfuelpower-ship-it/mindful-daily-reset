@@ -774,9 +774,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_points: {
+        Args: { _amount: number; _description?: string; _type: string }
+        Returns: Json
+      }
+      claim_daily_bonus: { Args: never; Returns: Json }
+      claim_weekly_bonus: { Args: never; Returns: Json }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
+      }
+      spend_points: {
+        Args: { _amount: number; _description: string }
+        Returns: Json
       }
     }
     Enums: {
