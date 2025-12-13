@@ -139,7 +139,7 @@ export function useNotifications() {
   const testNotification = useCallback((type: keyof typeof NOTIFICATION_MESSAGES) => {
     const messages = NOTIFICATION_MESSAGES[type];
     const message = messages[Math.floor(Math.random() * messages.length)];
-    sendNotification('Daily Reset', message, type);
+    sendNotification('Cozy Habits', message, type);
   }, [sendNotification]);
 
   return {

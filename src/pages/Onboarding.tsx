@@ -206,25 +206,19 @@ export default function Onboarding() {
         )} />
       </div>
 
-      {/* Skip button */}
+      {/* Skip button - single X button in corner */}
       <button
         onClick={skipOnboarding}
-        className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground transition-colors z-10"
-        aria-label="Skip tutorial"
+        className="absolute top-4 right-4 p-2.5 rounded-full bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10"
+        aria-label="Skip onboarding"
       >
         <X className="w-5 h-5" />
       </button>
 
       {/* Progress bar */}
-      <div className="p-6 pt-8 relative z-10">
-        <div className="flex justify-between items-center mb-2">
+      <div className="p-6 pt-12 relative z-10">
+        <div className="flex justify-center items-center mb-2">
           <span className="text-xs text-muted-foreground">{step + 1} of {totalSteps}</span>
-          <button
-            onClick={skipOnboarding}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Skip
-          </button>
         </div>
         <div className="h-1 bg-muted rounded-full overflow-hidden">
           <div 

@@ -448,27 +448,19 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
       </div>
 
       <div className="relative w-full max-w-md">
-        {/* Skip button */}
+        {/* Skip button - single X button */}
         <button
           onClick={handleSkip}
-          className="absolute -top-2 right-0 p-2 text-muted-foreground hover:text-foreground transition-colors z-10"
+          className="absolute -top-2 right-0 p-2.5 rounded-full bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10"
           aria-label="Skip tutorial"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Progress bar */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
+        <div className="mb-6 pt-2">
+          <div className="flex justify-center items-center mb-2">
             <span className="text-xs text-muted-foreground">{currentStep + 1} of {tutorialSteps.length}</span>
-            {!isLastStep && (
-              <button
-                onClick={handleSkip}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Skip
-              </button>
-            )}
           </div>
           <div className="h-1 bg-muted rounded-full overflow-hidden">
             <div 

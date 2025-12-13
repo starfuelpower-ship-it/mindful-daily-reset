@@ -39,7 +39,7 @@ const ShareCard = ({ habitName, habitIcon, streak }: { habitName: string; habitI
       
       {/* Header */}
       <div className="text-center z-10">
-        <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">Daily Reset</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">Cozy Habits</p>
         <p className="text-sm text-muted-foreground mt-1">Streak Achievement</p>
       </div>
 
@@ -88,7 +88,7 @@ export const ShareMilestone = ({ habitName, habitIcon, streak, open, onOpenChang
 
   const generateShareText = () => {
     const plantStage = getPlantStage(streak);
-    return `🔥 ${streak} day streak on "${habitName}"! ${plantStage.emoji}\n\nBuilding better habits with Daily Reset. #habits #productivity #dailyreset`;
+    return `🔥 ${streak} day streak on "${habitName}"! ${plantStage.emoji}\n\nBuilding better habits with Cozy Habits. #habits #productivity #cozyhabits`;
   };
 
   const handleTwitterShare = () => {
@@ -171,7 +171,7 @@ export const ShareMilestone = ({ habitName, habitIcon, streak, open, onOpenChang
       // Draw footer
       ctx.fillStyle = '#9ca3af';
       ctx.font = '20px system-ui';
-      ctx.fillText('Daily Reset', 320, 720);
+      ctx.fillText('Cozy Habits', 320, 720);
       ctx.font = '16px system-ui';
       ctx.fillText('Building habits, one day at a time', 320, 750);
 

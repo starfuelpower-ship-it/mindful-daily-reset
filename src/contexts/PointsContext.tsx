@@ -68,10 +68,11 @@ export function PointsProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data) {
-        setBalance(data.balance);
-        setTotalEarned(data.total_earned);
+        // Ensure we never have negative or invalid values
+        setBalance(Math.max(0, data.balance || 0));
+        setTotalEarned(Math.max(0, data.total_earned || 0));
       } else {
-        // Create initial points record
+        // Create initial points record - ALWAYS start at 0
         const { data: newData, error: insertError } = await supabase
           .from('user_points')
           .insert({ user_id: user.id, balance: 0, total_earned: 0 })
@@ -80,8 +81,8 @@ export function PointsProvider({ children }: { children: React.ReactNode }) {
 
         if (insertError) throw insertError;
         if (newData) {
-          setBalance(newData.balance);
-          setTotalEarned(newData.total_earned);
+          setBalance(0);
+          setTotalEarned(0);
         }
       }
     } catch (error) {
@@ -141,7 +142,8 @@ export function PointsProvider({ children }: { children: React.ReactNode }) {
   }, [user, balance, totalEarned]);
 
   const spendPoints = useCallback(async (amount: number, description: string): Promise<boolean> => {
-    if (!user || balance < amount) return false;
+    // Prevent negative balance - safeguard
+    if (!user || balance < amount || amount <= 0) return false;
 
     try {
       const { error: updateError } = await supabase

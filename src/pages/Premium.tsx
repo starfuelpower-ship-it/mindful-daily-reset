@@ -203,9 +203,9 @@ export default function Premium() {
           </p>
           
           <div className="flex justify-center gap-4 text-xs text-muted-foreground">
-            <button className="hover:text-foreground">Terms of Service</button>
+            <button onClick={() => navigate('/terms')} className="hover:text-foreground">Terms of Service</button>
             <span>•</span>
-            <button className="hover:text-foreground">Privacy Policy</button>
+            <button onClick={() => navigate('/privacy')} className="hover:text-foreground">Privacy Policy</button>
             <span>•</span>
             <button 
               onClick={handleRestore}
