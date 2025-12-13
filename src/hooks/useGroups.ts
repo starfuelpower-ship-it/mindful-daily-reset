@@ -514,13 +514,20 @@ export function useGroups() {
   const sendChatMessage = async (groupId: string, message: string) => {
     if (!user) return;
 
+    // Validate message on client-side as well
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage || trimmedMessage.length > 2000) {
+      console.error('Invalid message: must be 1-2000 characters');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('group_chat')
         .insert({
           group_id: groupId,
           user_id: user.id,
-          message
+          message: trimmedMessage
         });
 
       if (error) throw error;

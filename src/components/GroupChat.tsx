@@ -6,7 +6,11 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { z } from 'zod';
+import { toast } from 'sonner';
 
+// Message validation schema - max 2000 characters
+const messageSchema = z.string().trim().min(1, 'Message cannot be empty').max(2000, 'Message is too long (max 2000 characters)');
 interface ChatMessage {
   id: string;
   user_id: string;
@@ -39,10 +43,13 @@ export const GroupChat = ({ groupId, currentUserId, messages, onSendMessage }: G
   }, [messages, isExpanded]);
 
   const handleSend = () => {
-    if (newMessage.trim()) {
-      onSendMessage(newMessage.trim());
-      setNewMessage('');
+    const result = messageSchema.safeParse(newMessage);
+    if (!result.success) {
+      toast.error(result.error.errors[0]?.message || 'Invalid message');
+      return;
     }
+    onSendMessage(result.data);
+    setNewMessage('');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -126,12 +133,13 @@ export const GroupChat = ({ groupId, currentUserId, messages, onSendMessage }: G
             <div className="flex gap-2">
               <Input
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={(e) => setNewMessage(e.target.value.slice(0, 2000))}
                 onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
                 className="flex-1"
+                maxLength={2000}
               />
-              <Button onClick={handleSend} size="icon" disabled={!newMessage.trim()}>
+              <Button onClick={handleSend} size="icon" disabled={!newMessage.trim() || newMessage.length > 2000}>
                 <Send className="w-4 h-4" />
               </Button>
             </div>
