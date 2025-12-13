@@ -733,6 +733,42 @@ export type Database = {
         }
         Relationships: []
       }
+      verified_transactions: {
+        Row: {
+          created_at: string
+          environment: string
+          id: string
+          product_id: string
+          purchase_type: string
+          raw_receipt_data: Json | null
+          transaction_id: string
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          created_at?: string
+          environment?: string
+          id?: string
+          product_id: string
+          purchase_type: string
+          raw_receipt_data?: Json | null
+          transaction_id: string
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          created_at?: string
+          environment?: string
+          id?: string
+          product_id?: string
+          purchase_type?: string
+          raw_receipt_data?: Json | null
+          transaction_id?: string
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
