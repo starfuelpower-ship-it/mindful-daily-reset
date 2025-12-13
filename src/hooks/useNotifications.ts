@@ -12,13 +12,13 @@ interface NotificationSettings {
 }
 
 const DEFAULT_SETTINGS: NotificationSettings = {
-  enabled: false,
+  enabled: false, // OFF by default - user must explicitly opt-in
   morningReminder: true,
   morningTime: '08:00',
   eveningReminder: true,
   eveningTime: '20:00',
   streakWarning: true,
-  catReminder: true,
+  catReminder: false, // Less important, default off
 };
 
 const NOTIFICATION_SETTINGS_KEY = 'daily-reset-notification-settings';

@@ -190,15 +190,15 @@ export default function Premium() {
             )}
           </Button>
           
-          {/* Legal text - Apple required */}
+          {/* Legal text */}
           <p className="text-xs text-center text-muted-foreground px-4">
             {isNativePlatform ? (
               <>
-                Payment will be charged to your Apple ID account at confirmation of purchase.
+                Payment will be charged to your account at confirmation of purchase.
                 Subscription automatically renews unless canceled at least 24 hours before the end of the current period.
               </>
             ) : (
-              'Purchase via the iOS app to unlock Premium features.'
+              'Download the app to unlock Premium features.'
             )}
           </p>
           

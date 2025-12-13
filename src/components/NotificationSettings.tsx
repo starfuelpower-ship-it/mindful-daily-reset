@@ -1,4 +1,5 @@
-import { Bell, BellOff, Sun, Moon, Flame, Cat } from 'lucide-react';
+import { useState } from 'react';
+import { Bell, BellOff, Sun, Moon, Flame, Cat, Info } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,8 @@ export function NotificationSettings() {
     testNotification,
     scheduleNotifications,
   } = useNotifications();
+  
+  const [showExplanation, setShowExplanation] = useState(false);
 
   if (!isSupported) {
     return (
@@ -25,30 +28,83 @@ export function NotificationSettings() {
     );
   }
 
+  // Show explanation before requesting permission
+  const handleEnableClick = () => {
+    if (permission === 'default') {
+      setShowExplanation(true);
+    } else {
+      requestPermission();
+    }
+  };
+
+  const handleConfirmEnable = async () => {
+    setShowExplanation(false);
+    const granted = await requestPermission();
+    if (granted) {
+      updateSetting('enabled', true);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {/* Enable Notifications */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Bell className="w-5 h-5 text-muted-foreground" />
-          <div>
-            <p className="font-medium text-foreground">Enable Notifications</p>
-            <p className="text-xs text-muted-foreground">
-              {permission === 'granted' ? 'Permission granted' : 'Permission required'}
-            </p>
+      {/* Explanation Modal/Card */}
+      {showExplanation && (
+        <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-3">
+          <div className="flex items-start gap-3">
+            <Info className="w-5 h-5 text-primary mt-0.5" />
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">Why enable notifications?</p>
+              <ul className="text-xs text-muted-foreground space-y-1">
+                <li>• Get gentle reminders to complete your habits</li>
+                <li>• Celebrate streak milestones (3, 7, 30 days!)</li>
+                <li>• Never miss a day and keep your progress</li>
+              </ul>
+              <p className="text-xs text-muted-foreground">
+                We respect your time — no ads, no spam. You control exactly which notifications you receive.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => setShowExplanation(false)} className="flex-1">
+              Not Now
+            </Button>
+            <Button size="sm" onClick={handleConfirmEnable} className="flex-1">
+              Enable Notifications
+            </Button>
           </div>
         </div>
-        {permission !== 'granted' ? (
-          <Button size="sm" onClick={requestPermission} variant="outline">
-            Enable
-          </Button>
-        ) : (
-          <Switch
-            checked={settings.enabled}
-            onCheckedChange={(checked) => updateSetting('enabled', checked)}
-          />
-        )}
-      </div>
+      )}
+
+      {/* Enable Notifications */}
+      {!showExplanation && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Bell className="w-5 h-5 text-muted-foreground" />
+            <div>
+              <p className="font-medium text-foreground">Enable Notifications</p>
+              <p className="text-xs text-muted-foreground">
+                {permission === 'granted' 
+                  ? 'Notifications enabled' 
+                  : permission === 'denied'
+                  ? 'Permission denied in settings'
+                  : 'Get reminders for your habits'}
+              </p>
+            </div>
+          </div>
+          {permission === 'denied' ? (
+            <span className="text-xs text-muted-foreground">Blocked</span>
+          ) : permission !== 'granted' ? (
+            <Button size="sm" onClick={handleEnableClick} variant="outline">
+              Enable
+            </Button>
+          ) : (
+            <Switch
+              checked={settings.enabled}
+              onCheckedChange={(checked) => updateSetting('enabled', checked)}
+            />
+          )}
+        </div>
+      )}
 
       {settings.enabled && permission === 'granted' && (
         <>
@@ -107,7 +163,10 @@ export function NotificationSettings() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-orange-500" />
-                <span className="text-sm">Streak Warning</span>
+                <div>
+                  <span className="text-sm">Streak Warning</span>
+                  <p className="text-xs text-muted-foreground">Remind if habits incomplete late in day</p>
+                </div>
               </div>
               <Switch
                 checked={settings.streakWarning}
@@ -145,7 +204,7 @@ export function NotificationSettings() {
               onClick={scheduleNotifications}
               className="flex-1"
             >
-              Save & Schedule
+              Save Settings
             </Button>
           </div>
         </>

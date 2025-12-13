@@ -327,7 +327,7 @@ export default function Settings() {
 
           {/* App Info */}
           <div className="text-center pt-4">
-            <p className="text-sm text-muted-foreground">Cozy Habits v1.0.0</p>
+            <p className="text-sm text-muted-foreground">Cozy Habits v1.0.0 (Build 1)</p>
             <p className="text-xs text-muted-foreground mt-1">Made with 💚 for habit builders</p>
           </div>
         </div>

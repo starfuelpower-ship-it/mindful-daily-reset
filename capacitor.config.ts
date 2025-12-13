@@ -12,12 +12,15 @@ const config: CapacitorConfig = {
   //   cleartext: true,
   // },
 
-  // iOS-specific configuration
+  // Android-specific configuration
+  android: {
+    allowMixedContent: true,
+  },
+  
+  // iOS configuration (if building for iOS in future)
   ios: {
     scheme: 'App',
     contentInset: 'automatic',
-    allowsLinkPreview: true,
-    scrollEnabled: true,
   },
 
   // Plugin configurations
