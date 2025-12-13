@@ -2,10 +2,18 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 
+type Platform = 'apple' | 'google' | 'web';
+
 interface PremiumContextType {
   isPremium: boolean;
   isLoading: boolean;
-  activatePremium: (planId: string, transactionId: string, receipt?: string) => Promise<boolean>;
+  activatePremium: (
+    planId: string, 
+    transactionId: string, 
+    receipt?: string,
+    purchaseToken?: string,
+    platform?: Platform
+  ) => Promise<boolean>;
   refreshPremiumStatus: () => Promise<void>;
 }
 
@@ -56,7 +64,9 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const activatePremium = useCallback(async (
     planId: string, 
     transactionId: string, 
-    receipt?: string
+    receipt?: string,
+    purchaseToken?: string,
+    platform?: Platform
   ): Promise<boolean> => {
     if (!user) {
       console.error('Cannot activate premium: no user logged in');
@@ -65,7 +75,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
 
     try {
       const { data, error } = await supabase.functions.invoke('verify-premium-purchase', {
-        body: { planId, transactionId, receipt }
+        body: { planId, transactionId, receipt, purchaseToken, platform }
       });
 
       if (error) {

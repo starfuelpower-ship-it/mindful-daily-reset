@@ -1,19 +1,22 @@
 /**
- * React hook for Apple In-App Purchases
+ * React hook for Cross-Platform In-App Purchases
  * 
  * Provides easy access to IAP functionality with loading states and error handling.
- * Compliant with Apple App Store Guidelines for digital goods.
+ * Compliant with both Apple App Store and Google Play Store Guidelines.
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { 
-  appleIAP, 
+  iapService,
+  appleIAP, // backwards compatibility
   IAP_PRODUCT_IDS, 
   POINT_BUNDLE_TO_IAP,
   SUBSCRIPTION_TO_IAP,
+  getCurrentPlatform,
   type IAPProduct, 
-  type ProductId 
-} from '@/services/appleIAP';
+  type ProductId,
+  type Platform,
+} from '@/services/iapService';
 import { usePoints } from '@/contexts/PointsContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { toast } from 'sonner';
@@ -32,17 +35,18 @@ export function useAppleIAP() {
   const [products, setProducts] = useState<Map<ProductId, IAPProduct>>(new Map());
   const { earnPoints } = usePoints();
   const { activatePremium } = usePremium();
+  const platform = getCurrentPlatform();
 
   // Initialize IAP on mount
   useEffect(() => {
     const init = async () => {
-      const success = await appleIAP.initialize();
+      const success = await iapService.initialize();
       setIsInitialized(success);
       
       if (success) {
         // Fetch all products
         const allProductIds = Object.values(IAP_PRODUCT_IDS);
-        const fetchedProducts = await appleIAP.fetchProducts(allProductIds);
+        const fetchedProducts = await iapService.fetchProducts(allProductIds);
         
         const productMap = new Map<ProductId, IAPProduct>();
         fetchedProducts.forEach(p => productMap.set(p.productId as ProductId, p));
@@ -65,12 +69,17 @@ export function useAppleIAP() {
 
     setIsLoading(true);
     try {
-      const result = await appleIAP.purchase(productId);
+      const result = await iapService.purchase(productId);
       
       if (result.success) {
         // Activate premium via secure server-side verification
+        // Pass platform-specific data for validation
         const transactionId = result.transactionId || '';
-        const activated = await activatePremium(planId, transactionId);
+        const receipt = result.receipt; // Apple receipt
+        const purchaseToken = result.purchaseToken; // Google purchase token
+        const purchasePlatform = result.platform;
+        
+        const activated = await activatePremium(planId, transactionId, receipt, purchaseToken, purchasePlatform);
         
         if (activated) {
           toast.success('Welcome to Premium! 🎉');
@@ -96,6 +105,7 @@ export function useAppleIAP() {
 
   /**
    * Purchase a points bundle
+   * NOTE: Points purchases should also be server-verified in production
    */
   const purchasePointBundle = useCallback(async (bundleId: string): Promise<boolean> => {
     const productId = POINT_BUNDLE_TO_IAP[bundleId];
@@ -108,10 +118,11 @@ export function useAppleIAP() {
 
     setIsLoading(true);
     try {
-      const result = await appleIAP.purchase(productId);
+      const result = await iapService.purchase(productId);
       
       if (result.success) {
-        // Award points to user
+        // TODO: Implement server-side verification for point purchases
+        // For now, award points directly (should be moved to edge function)
         await earnPoints(pointsToAward, 'purchase', `Purchased ${bundleId} bundle`);
         toast.success(`You received ${pointsToAward.toLocaleString()} points! 🎉`);
         return true;
@@ -136,7 +147,7 @@ export function useAppleIAP() {
   const restorePurchases = useCallback(async (): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const result = await appleIAP.restorePurchases();
+      const result = await iapService.restorePurchases();
       
       if (result.error) {
         toast.error(result.error);
@@ -153,7 +164,6 @@ export function useAppleIAP() {
         
         if (hasPremium) {
           // For restores, we use a special transaction ID to indicate a restore
-          // The server should verify this with Apple's restore API
           await activatePremium('restored', 'restore_' + Date.now());
         }
         
@@ -182,12 +192,13 @@ export function useAppleIAP() {
   /**
    * Check if running on native platform
    */
-  const isNativePlatform = appleIAP.isAvailable();
+  const isNativePlatform = iapService.isAvailable();
 
   return {
     isInitialized,
     isLoading,
     isNativePlatform,
+    platform,
     products,
     purchaseSubscription,
     purchasePointBundle,
@@ -195,3 +206,6 @@ export function useAppleIAP() {
     getProduct,
   };
 }
+
+// Re-export for backwards compatibility
+export { appleIAP, iapService };
