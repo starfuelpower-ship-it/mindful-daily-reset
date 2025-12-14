@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 const THEME_PREVIEWS = {
   default: {
     bg: 'bg-[hsl(20,50%,98%)]',
-    primary: 'bg-[hsl(350,80%,65%)]',
+    primary: 'bg-[hsl(43,90%,58%)]',
     accent: 'bg-[hsl(180,50%,90%)]',
   },
   pastel: {
