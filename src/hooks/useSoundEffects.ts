@@ -15,14 +15,11 @@ const getAudioContext = () => {
 // Cache for audio elements
 const audioCache: Record<string, HTMLAudioElement> = {};
 
-// Preload cat meow sounds - variety of cute, adorable mews
-const CAT_MEOW_SOUNDS = [
-  '/audio/cat-meow-1.mp3',
-  '/audio/cat-meow-2.mp3',
-  '/audio/cat-meow-3.mp3',
-  '/audio/cat-meow-4.mp3',
-  '/audio/cat-meow-5.mp3',
-  '/audio/cat-meow-6.mp3',
+// Preload kitten sounds - cute, adorable baby cat mews
+const KITTEN_SOUNDS = [
+  '/audio/kitten-mew-1.mp3',
+  '/audio/kitten-mew-2.mp3',
+  '/audio/kitten-mew-3.mp3',
 ];
 
 // Preload audio files
@@ -110,27 +107,27 @@ const SOUNDS: Record<SoundType, () => void> = {
     setTimeout(() => playTone(63, 0.2, 'sine', 0.05), 320);
   },
   meow: () => {
-    // Play real cat meow sound
-    const randomMeow = CAT_MEOW_SOUNDS[Math.floor(Math.random() * CAT_MEOW_SOUNDS.length)];
-    playAudioFile(randomMeow, 0.5);
+    // Play random kitten mew sound
+    const randomMew = KITTEN_SOUNDS[Math.floor(Math.random() * KITTEN_SOUNDS.length)];
+    playAudioFile(randomMew, 0.5);
   },
   meow_happy: () => {
-    // Play real cat meow with slightly higher pitch effect
-    const randomMeow = CAT_MEOW_SOUNDS[Math.floor(Math.random() * CAT_MEOW_SOUNDS.length)];
-    playAudioFile(randomMeow, 0.6);
+    // Play random kitten mew with higher volume
+    const randomMew = KITTEN_SOUNDS[Math.floor(Math.random() * KITTEN_SOUNDS.length)];
+    playAudioFile(randomMew, 0.6);
   },
   meow_curious: () => {
-    // Play real cat meow
-    const randomMeow = CAT_MEOW_SOUNDS[Math.floor(Math.random() * CAT_MEOW_SOUNDS.length)];
-    playAudioFile(randomMeow, 0.45);
+    // Play random kitten mew
+    const randomMew = KITTEN_SOUNDS[Math.floor(Math.random() * KITTEN_SOUNDS.length)];
+    playAudioFile(randomMew, 0.45);
   },
   chirp: () => {
-    // Play meow for chirp too
-    playAudioFile(CAT_MEOW_SOUNDS[0], 0.35);
+    // Play kitten chirp
+    playAudioFile(KITTEN_SOUNDS[0], 0.4);
   },
   trill: () => {
-    // Play meow for trill
-    playAudioFile(CAT_MEOW_SOUNDS[1], 0.4);
+    // Play kitten trill
+    playAudioFile(KITTEN_SOUNDS[1], 0.45);
   },
   achievement: () => {
     // Triumphant fanfare
