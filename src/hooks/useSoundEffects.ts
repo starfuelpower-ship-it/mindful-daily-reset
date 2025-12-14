@@ -12,6 +12,37 @@ const getAudioContext = () => {
   return audioContext;
 };
 
+// Cache for audio elements
+const audioCache: Record<string, HTMLAudioElement> = {};
+
+// Preload cat meow sounds
+const CAT_MEOW_SOUNDS = ['/audio/cat-meow-1.mp3', '/audio/cat-meow-2.mp3'];
+
+// Preload audio files
+const preloadAudio = (src: string): HTMLAudioElement => {
+  if (!audioCache[src]) {
+    const audio = new Audio(src);
+    audio.preload = 'auto';
+    audio.volume = 0.4;
+    audioCache[src] = audio;
+  }
+  return audioCache[src];
+};
+
+// Play real audio file
+const playAudioFile = (src: string, volume: number = 0.4) => {
+  try {
+    const audio = preloadAudio(src);
+    audio.currentTime = 0;
+    audio.volume = volume;
+    audio.play().catch(() => {
+      // Silent fail for autoplay restrictions
+    });
+  } catch (e) {
+    // Silent fail
+  }
+};
+
 // Generate simple sounds programmatically
 const playTone = (frequency: number, duration: number, type: OscillatorType = 'sine', gain: number = 0.1) => {
   try {
@@ -36,34 +67,6 @@ const playTone = (frequency: number, duration: number, type: OscillatorType = 's
     oscillator.stop(ctx.currentTime + duration);
   } catch (e) {
     // Silent fail for audio
-  }
-};
-
-// Play a frequency sweep (rising or falling) for more natural sounds
-const playFrequencySweep = (startFreq: number, endFreq: number, duration: number, type: OscillatorType = 'sine', gain: number = 0.1) => {
-  try {
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
-    
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    oscillator.type = type;
-    oscillator.frequency.setValueAtTime(startFreq, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(endFreq, ctx.currentTime + duration);
-    
-    gainNode.gain.setValueAtTime(gain, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-    
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + duration);
-  } catch (e) {
-    // Silent fail
   }
 };
 
@@ -92,7 +95,7 @@ const SOUNDS: Record<SoundType, () => void> = {
     setTimeout(() => playTone(880, 0.2, 'triangle', 0.08), 240);
   },
   purr: () => {
-    // Low rumbling purr sound - more cat-like
+    // Low rumbling purr sound
     playTone(65, 0.15, 'sine', 0.08);
     setTimeout(() => playTone(70, 0.15, 'sine', 0.07), 80);
     setTimeout(() => playTone(60, 0.15, 'sine', 0.08), 160);
@@ -100,35 +103,27 @@ const SOUNDS: Record<SoundType, () => void> = {
     setTimeout(() => playTone(63, 0.2, 'sine', 0.05), 320);
   },
   meow: () => {
-    // Classic cat meow - rising then falling frequency
-    playFrequencySweep(400, 700, 0.15, 'sine', 0.15);
-    setTimeout(() => playFrequencySweep(700, 450, 0.25, 'sine', 0.12), 150);
+    // Play real cat meow sound
+    const randomMeow = CAT_MEOW_SOUNDS[Math.floor(Math.random() * CAT_MEOW_SOUNDS.length)];
+    playAudioFile(randomMeow, 0.5);
   },
   meow_happy: () => {
-    // Happy high-pitched meow
-    playFrequencySweep(500, 900, 0.12, 'sine', 0.14);
-    setTimeout(() => playFrequencySweep(900, 700, 0.15, 'sine', 0.12), 120);
-    setTimeout(() => playFrequencySweep(700, 850, 0.1, 'sine', 0.1), 250);
+    // Play real cat meow with slightly higher pitch effect
+    const randomMeow = CAT_MEOW_SOUNDS[Math.floor(Math.random() * CAT_MEOW_SOUNDS.length)];
+    playAudioFile(randomMeow, 0.6);
   },
   meow_curious: () => {
-    // Questioning meow - ends on rising note
-    playFrequencySweep(350, 500, 0.12, 'sine', 0.12);
-    setTimeout(() => playFrequencySweep(500, 400, 0.1, 'sine', 0.1), 120);
-    setTimeout(() => playFrequencySweep(400, 650, 0.18, 'sine', 0.13), 220);
+    // Play real cat meow
+    const randomMeow = CAT_MEOW_SOUNDS[Math.floor(Math.random() * CAT_MEOW_SOUNDS.length)];
+    playAudioFile(randomMeow, 0.45);
   },
   chirp: () => {
-    // Cat chirp/chatter - short staccato sounds
-    playTone(800, 0.04, 'sine', 0.12);
-    setTimeout(() => playTone(900, 0.03, 'sine', 0.1), 50);
-    setTimeout(() => playTone(850, 0.04, 'sine', 0.11), 90);
-    setTimeout(() => playTone(950, 0.03, 'sine', 0.09), 130);
+    // Play meow for chirp too
+    playAudioFile(CAT_MEOW_SOUNDS[0], 0.35);
   },
   trill: () => {
-    // Cat trill - rolling sound between meow and purr
-    playFrequencySweep(300, 500, 0.08, 'sine', 0.1);
-    setTimeout(() => playFrequencySweep(500, 450, 0.06, 'sine', 0.09), 80);
-    setTimeout(() => playFrequencySweep(450, 550, 0.08, 'sine', 0.1), 140);
-    setTimeout(() => playFrequencySweep(550, 400, 0.1, 'sine', 0.08), 220);
+    // Play meow for trill
+    playAudioFile(CAT_MEOW_SOUNDS[1], 0.4);
   },
   achievement: () => {
     // Triumphant fanfare
