@@ -79,14 +79,34 @@ export const CatCompanion = memo(() => {
     }
   }, [currentState, walkDirection, walkProgress]);
 
-  // Check if cat is in sleep mode (shouldn't make noise)
+  // Check if cat is in sleep mode
   const isCatSleeping = currentState === 'sleeping' || currentState === 'loaf' || 
     currentState === 'curl_up' || currentState === 'settle_down' || 
     currentState === 'twitch_dream' || currentState === 'snuggle' || currentState === 'paw_tuck';
 
+  // Track last interaction time for idle purring
+  const lastInteractionRef = useRef<number>(Date.now());
+  
+  // Random purring when sleeping or idle (no interaction for 15+ seconds)
+  useEffect(() => {
+    if (!showCompanion || companionType !== 'cat') return;
+    
+    const purrInterval = setInterval(() => {
+      const timeSinceInteraction = Date.now() - lastInteractionRef.current;
+      const shouldPurr = isCatSleeping || timeSinceInteraction > 15000;
+      
+      // Random chance to purr (30% every 8-15 seconds)
+      if (shouldPurr && Math.random() < 0.3) {
+        playSound('purr');
+      }
+    }, 8000 + Math.random() * 7000);
+    
+    return () => clearInterval(purrInterval);
+  }, [isCatSleeping, showCompanion, companionType, playSound]);
+
   // Play cat sounds for reactions - only if not sleeping
   useEffect(() => {
-    if (isCatSleeping) return; // No sounds when sleeping
+    if (isCatSleeping) return;
     
     if (currentReaction === 'habit_complete') {
       playSound(getHabitCompleteSound());
@@ -98,6 +118,7 @@ export const CatCompanion = memo(() => {
 
   // Handle tap on cat - play random cat sounds only if not sleeping
   const handleCatTap = useCallback(() => {
+    lastInteractionRef.current = Date.now(); // Reset interaction timer
     triggerTapReaction();
     if (!isCatSleeping) {
       playSound(getRandomTapSound());
