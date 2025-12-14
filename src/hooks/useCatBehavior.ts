@@ -58,10 +58,10 @@ export type CatState =
   | 'head_tilt'
   | 'paw_tuck';
 
-// All tap reaction states for random selection
+// All tap reaction states - tap_meow is primary so cat opens mouth and mews
 const TAP_REACTIONS: CatState[] = [
-  'tap_reaction', 'tap_meow', 'tap_spin', 'tap_bounce', 'tap_curious',
-  'tap_love', 'tap_roll', 'tap_shake', 'tap_wave', 'tap_jump'
+  'tap_meow', 'tap_meow', 'tap_meow', 'tap_meow', // Heavily weighted to meow
+  'tap_reaction', 'tap_bounce', 'tap_curious', 'tap_love'
 ];
 
 interface CatBehaviorConfig {
