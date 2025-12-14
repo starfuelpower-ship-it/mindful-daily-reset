@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 
-type SoundType = 'click' | 'success' | 'complete' | 'pop' | 'purr' | 'achievement' | 'button';
+type SoundType = 'click' | 'success' | 'complete' | 'pop' | 'purr' | 'achievement' | 'button' | 'meow' | 'meow_happy' | 'meow_curious' | 'chirp' | 'trill';
 
 // Create audio context lazily to avoid autoplay restrictions
 let audioContext: AudioContext | null = null;
@@ -39,6 +39,34 @@ const playTone = (frequency: number, duration: number, type: OscillatorType = 's
   }
 };
 
+// Play a frequency sweep (rising or falling) for more natural sounds
+const playFrequencySweep = (startFreq: number, endFreq: number, duration: number, type: OscillatorType = 'sine', gain: number = 0.1) => {
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+    
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(startFreq, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(endFreq, ctx.currentTime + duration);
+    
+    gainNode.gain.setValueAtTime(gain, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + duration);
+  } catch (e) {
+    // Silent fail
+  }
+};
+
 const SOUNDS: Record<SoundType, () => void> = {
   click: () => {
     playTone(800, 0.05, 'sine', 0.08);
@@ -64,11 +92,43 @@ const SOUNDS: Record<SoundType, () => void> = {
     setTimeout(() => playTone(880, 0.2, 'triangle', 0.08), 240);
   },
   purr: () => {
-    // Low rumbling purr sound
-    playTone(80, 0.3, 'sine', 0.06);
-    setTimeout(() => playTone(90, 0.3, 'sine', 0.05), 100);
-    setTimeout(() => playTone(75, 0.3, 'sine', 0.06), 200);
-    setTimeout(() => playTone(85, 0.4, 'sine', 0.04), 300);
+    // Low rumbling purr sound - more cat-like
+    playTone(65, 0.15, 'sine', 0.08);
+    setTimeout(() => playTone(70, 0.15, 'sine', 0.07), 80);
+    setTimeout(() => playTone(60, 0.15, 'sine', 0.08), 160);
+    setTimeout(() => playTone(68, 0.15, 'sine', 0.06), 240);
+    setTimeout(() => playTone(63, 0.2, 'sine', 0.05), 320);
+  },
+  meow: () => {
+    // Classic cat meow - rising then falling frequency
+    playFrequencySweep(400, 700, 0.15, 'sine', 0.15);
+    setTimeout(() => playFrequencySweep(700, 450, 0.25, 'sine', 0.12), 150);
+  },
+  meow_happy: () => {
+    // Happy high-pitched meow
+    playFrequencySweep(500, 900, 0.12, 'sine', 0.14);
+    setTimeout(() => playFrequencySweep(900, 700, 0.15, 'sine', 0.12), 120);
+    setTimeout(() => playFrequencySweep(700, 850, 0.1, 'sine', 0.1), 250);
+  },
+  meow_curious: () => {
+    // Questioning meow - ends on rising note
+    playFrequencySweep(350, 500, 0.12, 'sine', 0.12);
+    setTimeout(() => playFrequencySweep(500, 400, 0.1, 'sine', 0.1), 120);
+    setTimeout(() => playFrequencySweep(400, 650, 0.18, 'sine', 0.13), 220);
+  },
+  chirp: () => {
+    // Cat chirp/chatter - short staccato sounds
+    playTone(800, 0.04, 'sine', 0.12);
+    setTimeout(() => playTone(900, 0.03, 'sine', 0.1), 50);
+    setTimeout(() => playTone(850, 0.04, 'sine', 0.11), 90);
+    setTimeout(() => playTone(950, 0.03, 'sine', 0.09), 130);
+  },
+  trill: () => {
+    // Cat trill - rolling sound between meow and purr
+    playFrequencySweep(300, 500, 0.08, 'sine', 0.1);
+    setTimeout(() => playFrequencySweep(500, 450, 0.06, 'sine', 0.09), 80);
+    setTimeout(() => playFrequencySweep(450, 550, 0.08, 'sine', 0.1), 140);
+    setTimeout(() => playFrequencySweep(550, 400, 0.1, 'sine', 0.08), 220);
   },
   achievement: () => {
     // Triumphant fanfare
@@ -77,6 +137,22 @@ const SOUNDS: Record<SoundType, () => void> = {
     setTimeout(() => playTone(784, 0.1, 'triangle', 0.12), 160);
     setTimeout(() => playTone(1047, 0.3, 'triangle', 0.15), 240);
   },
+};
+
+// Get a random cat sound for variety
+export const getRandomCatSound = (): SoundType => {
+  const catSounds: SoundType[] = ['meow', 'meow_happy', 'meow_curious', 'chirp', 'trill', 'purr'];
+  return catSounds[Math.floor(Math.random() * catSounds.length)];
+};
+
+export const getRandomTapSound = (): SoundType => {
+  const tapSounds: SoundType[] = ['meow', 'meow_curious', 'chirp', 'trill'];
+  return tapSounds[Math.floor(Math.random() * tapSounds.length)];
+};
+
+export const getHabitCompleteSound = (): SoundType => {
+  const sounds: SoundType[] = ['meow_happy', 'trill', 'chirp'];
+  return sounds[Math.floor(Math.random() * sounds.length)];
 };
 
 export function useSoundEffects() {
