@@ -61,7 +61,7 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
       icon: <Heart className="w-10 h-10" />,
       title: 'Welcome to Cozy Habits',
       subtitle: 'Your mindful habit companion',
-      color: 'from-rose-400 to-pink-500',
+      color: 'from-amber-400 to-primary',
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground leading-relaxed">
@@ -86,8 +86,8 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
               <span className="text-xs text-muted-foreground">Streak</span>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-pink-500/20 flex items-center justify-center mb-1">
-                <Cat className="w-6 h-6 text-pink-500" />
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-1">
+                <Cat className="w-6 h-6 text-primary" />
               </div>
               <span className="text-xs text-muted-foreground">Companion</span>
             </div>
@@ -191,7 +191,7 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
       icon: <Cat className="w-10 h-10" />,
       title: 'Your Cozy Cat',
       subtitle: 'A friend that celebrates with you',
-      color: 'from-pink-400 to-rose-500',
+      color: 'from-amber-400 to-primary',
       content: (
         <div className="space-y-4">
           <div className="flex justify-center py-2">
@@ -199,7 +199,7 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-200 to-amber-300 dark:from-gray-400 dark:to-gray-500 flex items-center justify-center animate-bounce-slow">
                 <span className="text-4xl">🐱</span>
               </div>
-              <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                 <Heart className="w-3 h-3 text-white fill-white" />
               </div>
             </div>
@@ -210,7 +210,7 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
               <span>Reacts when you complete habits</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Cat className="w-4 h-4 text-pink-500" />
+              <Cat className="w-4 h-4 text-primary" />
               <span>Tap to see cute animations</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -357,7 +357,7 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
       icon: <Sparkles className="w-10 h-10" />,
       title: "You're All Set!",
       subtitle: 'Start your cozy habit journey',
-      color: 'from-rose-400 via-purple-500 to-cyan-400',
+      color: 'from-amber-400 via-purple-500 to-cyan-400',
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground text-sm leading-relaxed text-center">
@@ -376,8 +376,8 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
               <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold">3</div>
               <span className="text-sm text-foreground">Watch your plant grow</span>
             </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
-              <div className="w-6 h-6 rounded-full bg-pink-500 text-white flex items-center justify-center text-xs font-bold">4</div>
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
+              <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">4</div>
               <span className="text-sm text-foreground">Customize your cat</span>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
