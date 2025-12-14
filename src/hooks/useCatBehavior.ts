@@ -41,7 +41,22 @@ export type CatState =
   | 'tail_chase'
   | 'head_shake'
   | 'lick_paw'
-  | 'scratch_ear';
+  | 'scratch_ear'
+  // New lifelike behaviors
+  | 'curious_walk'
+  | 'settle_down'
+  | 'curl_up'
+  | 'bat_at_air'
+  | 'watch_something'
+  | 'flop_over'
+  | 'twitch_dream'
+  | 'wake_stretch'
+  | 'alert_ears'
+  | 'tail_flick'
+  | 'snuggle'
+  | 'lazy_roll'
+  | 'head_tilt'
+  | 'paw_tuck';
 
 // All tap reaction states for random selection
 const TAP_REACTIONS: CatState[] = [
@@ -64,12 +79,12 @@ interface CatBehaviorState {
 }
 
 const STATE_DURATIONS: Record<CatState, { min: number; max: number }> = {
-  idle: { min: 6000, max: 12000 },
+  idle: { min: 4000, max: 8000 },
   blinking: { min: 300, max: 500 },
   grooming: { min: 2500, max: 4000 },
   stretching: { min: 2000, max: 3000 },
   walking: { min: 3000, max: 5000 },
-  sleeping: { min: 6000, max: 12000 },
+  sleeping: { min: 8000, max: 15000 },
   playful: { min: 1500, max: 2500 },
   // Tap reactions
   tap_reaction: { min: 800, max: 1200 },
@@ -94,7 +109,7 @@ const STATE_DURATIONS: Record<CatState, { min: number; max: number }> = {
   // Active behaviors
   pounce_ready: { min: 1200, max: 1800 },
   pounce: { min: 600, max: 900 },
-  loaf: { min: 4000, max: 8000 },
+  loaf: { min: 5000, max: 10000 },
   knead: { min: 2500, max: 4000 },
   belly_up: { min: 2000, max: 3500 },
   sit_tall: { min: 3000, max: 5000 },
@@ -105,6 +120,31 @@ const STATE_DURATIONS: Record<CatState, { min: number; max: number }> = {
   head_shake: { min: 600, max: 900 },
   lick_paw: { min: 2000, max: 3000 },
   scratch_ear: { min: 1800, max: 2800 },
+  // New lifelike behaviors
+  curious_walk: { min: 4000, max: 7000 },
+  settle_down: { min: 2000, max: 3000 },
+  curl_up: { min: 6000, max: 12000 },
+  bat_at_air: { min: 1500, max: 2500 },
+  watch_something: { min: 3000, max: 5000 },
+  flop_over: { min: 1500, max: 2500 },
+  twitch_dream: { min: 1000, max: 2000 },
+  wake_stretch: { min: 2000, max: 3000 },
+  alert_ears: { min: 1000, max: 1800 },
+  tail_flick: { min: 800, max: 1200 },
+  snuggle: { min: 4000, max: 8000 },
+  lazy_roll: { min: 2000, max: 3000 },
+  head_tilt: { min: 1200, max: 2000 },
+  paw_tuck: { min: 1500, max: 2500 },
+};
+
+// Behavior sequences - cat will chain these naturally
+const BEHAVIOR_CHAINS: Record<string, CatState[]> = {
+  explore: ['idle_look_left', 'idle_look_right', 'curious_walk', 'idle_sniff', 'watch_something'],
+  settle: ['stretching', 'settle_down', 'curl_up', 'sleeping'],
+  playful: ['alert_ears', 'pounce_ready', 'pounce', 'tail_chase', 'bat_at_air'],
+  sleepy: ['idle_yawn', 'loaf', 'settle_down', 'curl_up', 'twitch_dream'],
+  groom: ['sit_tall', 'lick_paw', 'scratch_ear', 'grooming', 'head_shake'],
+  wake: ['twitch_dream', 'wake_stretch', 'idle_yawn', 'idle'],
 };
 
 // States that can transition to from idle during day
@@ -113,13 +153,16 @@ const DAY_TRANSITIONS: CatState[] = [
   'idle_look_left', 'idle_look_right', 'idle_look_up', 'idle_ear_twitch',
   'idle_tail_swish', 'idle_yawn', 'idle_sniff', 'idle_whisker_twitch',
   'pounce_ready', 'loaf', 'knead', 'sit_tall', 'crouch',
-  'happy_dance', 'tail_chase', 'lick_paw', 'scratch_ear'
+  'happy_dance', 'tail_chase', 'lick_paw', 'scratch_ear',
+  'curious_walk', 'bat_at_air', 'watch_something', 'head_tilt',
+  'alert_ears', 'tail_flick', 'lazy_roll'
 ];
 
 // States that can transition to from idle during night (dark mode)
 const NIGHT_TRANSITIONS: CatState[] = [
   'blinking', 'sleeping', 'idle', 'loaf', 'idle_yawn',
-  'idle_ear_twitch', 'idle_tail_swish'
+  'idle_ear_twitch', 'idle_tail_swish', 'curl_up', 'settle_down',
+  'snuggle', 'twitch_dream', 'paw_tuck'
 ];
 
 // Weights for state selection (higher = more likely)
@@ -128,7 +171,7 @@ const STATE_WEIGHTS: Record<CatState, number> = {
   blinking: 4,
   grooming: 2,
   stretching: 2,
-  walking: 1,
+  walking: 2,
   sleeping: 3,
   playful: 2,
   // Tap reactions (0 = only triggered by tap)
@@ -143,28 +186,43 @@ const STATE_WEIGHTS: Record<CatState, number> = {
   tap_wave: 0,
   tap_jump: 0,
   // Idle variations
-  idle_look_left: 3,
-  idle_look_right: 3,
-  idle_look_up: 2,
-  idle_ear_twitch: 4,
-  idle_tail_swish: 3,
-  idle_yawn: 2,
-  idle_sniff: 2,
-  idle_whisker_twitch: 3,
+  idle_look_left: 4,
+  idle_look_right: 4,
+  idle_look_up: 3,
+  idle_ear_twitch: 5,
+  idle_tail_swish: 4,
+  idle_yawn: 3,
+  idle_sniff: 3,
+  idle_whisker_twitch: 4,
   // Active behaviors
-  pounce_ready: 1,
+  pounce_ready: 2,
   pounce: 0,
-  loaf: 2,
+  loaf: 3,
   knead: 2,
   belly_up: 1,
-  sit_tall: 2,
-  crouch: 1,
+  sit_tall: 3,
+  crouch: 2,
   startled: 0,
   happy_dance: 1,
-  tail_chase: 1,
-  head_shake: 1,
-  lick_paw: 2,
-  scratch_ear: 2,
+  tail_chase: 2,
+  head_shake: 2,
+  lick_paw: 3,
+  scratch_ear: 3,
+  // New behaviors
+  curious_walk: 3,
+  settle_down: 2,
+  curl_up: 3,
+  bat_at_air: 2,
+  watch_something: 3,
+  flop_over: 2,
+  twitch_dream: 1,
+  wake_stretch: 1,
+  alert_ears: 3,
+  tail_flick: 4,
+  snuggle: 2,
+  lazy_roll: 2,
+  head_tilt: 3,
+  paw_tuck: 2,
 };
 
 function getRandomDuration(state: CatState): number {
@@ -172,16 +230,37 @@ function getRandomDuration(state: CatState): number {
   return min + Math.random() * (max - min);
 }
 
-function selectNextState(isDarkMode: boolean, hasCustomPosition: boolean): CatState {
+function selectNextState(isDarkMode: boolean, hasCustomPosition: boolean, currentState: CatState): CatState {
+  // Check if we should continue a behavior chain
+  for (const [, chain] of Object.entries(BEHAVIOR_CHAINS)) {
+    const currentIndex = chain.indexOf(currentState);
+    if (currentIndex !== -1 && currentIndex < chain.length - 1) {
+      // 60% chance to continue the chain
+      if (Math.random() < 0.6) {
+        return chain[currentIndex + 1];
+      }
+    }
+  }
+
+  // 20% chance to start a new behavior chain
+  if (Math.random() < 0.2) {
+    const chainKeys = Object.keys(BEHAVIOR_CHAINS);
+    const chainKey = isDarkMode 
+      ? (['sleepy', 'settle', 'wake'] as const)[Math.floor(Math.random() * 3)]
+      : chainKeys[Math.floor(Math.random() * chainKeys.length)];
+    const chain = BEHAVIOR_CHAINS[chainKey];
+    if (chain) return chain[0];
+  }
+
   const transitions = isDarkMode ? NIGHT_TRANSITIONS : DAY_TRANSITIONS;
   
-  // Filter out walking if cat has been moved
+  // Filter out walking states if cat has been moved
   const availableStates = hasCustomPosition 
-    ? transitions.filter(s => s !== 'walking') 
+    ? transitions.filter(s => s !== 'walking' && s !== 'curious_walk') 
     : transitions;
   
   // Weighted random selection
-  const weights = availableStates.map(s => STATE_WEIGHTS[s]);
+  const weights = availableStates.map(s => STATE_WEIGHTS[s] || 1);
   const totalWeight = weights.reduce((a, b) => a + b, 0);
   let random = Math.random() * totalWeight;
   
@@ -235,36 +314,45 @@ export function useCatBehavior(config: CatBehaviorConfig) {
         // Don't interrupt reactions
         if (hasReaction) return scheduleNextState();
         
-        let nextState = selectNextState(isDarkMode, hasCustomPosition);
+        let nextState = selectNextState(isDarkMode, hasCustomPosition, state.currentState);
         
         // Chain pounce_ready -> pounce
         if (state.currentState === 'pounce_ready') {
           nextState = 'pounce';
         }
         
-        // Handle walking state
-        if (nextState === 'walking') {
+        // Handle walking states
+        if (nextState === 'walking' || nextState === 'curious_walk') {
           const direction = Math.random() > 0.5 ? 1 : -1;
+          const isCurious = nextState === 'curious_walk';
           setState(s => ({ 
             ...s, 
-            currentState: 'walking',
+            currentState: nextState,
             walkDirection: direction,
             walkProgress: 0 
           }));
           
-          // Animate walk progress
+          // Animate walk progress - curious walk is slower
           let progress = 0;
+          const step = isCurious ? 1 : 2;
           walkIntervalRef.current = setInterval(() => {
-            progress += 2;
+            progress += step;
             setState(s => ({ ...s, walkProgress: progress }));
             if (progress >= 100) {
               clearInterval(walkIntervalRef.current);
-              setState(s => ({ ...s, currentState: 'idle', walkDirection: 0 }));
+              // After curious walk, might stop to look around
+              const afterWalk = isCurious && Math.random() < 0.5 
+                ? 'watch_something' 
+                : 'idle';
+              setState(s => ({ ...s, currentState: afterWalk, walkDirection: 0 }));
             }
           }, 50);
         } else if (nextState === 'tail_chase') {
           // Tail chase animation with rotation
           setState(s => ({ ...s, currentState: 'tail_chase' }));
+        } else if (nextState === 'curl_up' || nextState === 'sleeping') {
+          // Transition to sleep state
+          setState(s => ({ ...s, currentState: nextState }));
         } else {
           setState(s => ({ ...s, currentState: nextState }));
         }
@@ -287,9 +375,10 @@ export function useCatBehavior(config: CatBehaviorConfig) {
     
     const blinkInterval = setInterval(() => {
       const now = Date.now();
+      const canBlink = ['idle', 'sit_tall', 'loaf', 'watch_something'].includes(state.currentState);
       if (
         now - lastBlinkRef.current > 3000 && 
-        state.currentState === 'idle' &&
+        canBlink &&
         !hasReaction
       ) {
         setState(s => ({ ...s, currentState: 'blinking' }));
