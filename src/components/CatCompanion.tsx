@@ -380,7 +380,8 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
   
   const isSleeping = stateStr === 'sleeping' || stateStr === 'loaf';
   const isBlinking = stateStr === 'blinking';
-  const isMeowing = stateStr === 'tap_meow';
+  // Cat opens mouth when meowing, chirping, trilling, or making any sound
+  const isMeowing = stateStr === 'tap_meow' || stateStr === 'meow' || stateStr === 'chirp' || stateStr === 'trill';
   const isYawning = stateStr === 'idle_yawn';
   const isBellyUp = stateStr === 'belly_up';
   
@@ -458,25 +459,25 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
             fill={bodyColor}
           />
           
-          {/* Left ear - cute pointy */}
+          {/* Left ear - smaller cute pointy */}
           <path
-            d={isSleeping ? "M18 38 L22 28 L28 38 Z" : "M16 24 L22 10 L28 24 Z"}
+            d={isSleeping ? "M20 38 L23 31 L27 38 Z" : "M19 24 L23 14 L27 24 Z"}
             fill={bodyColor}
             className={cn(earClass, stateStr === 'tap_reaction' ? 'animate-cat-ear-perk' : '')}
           />
           <path
-            d={isSleeping ? "M20 36 L22 30 L25 36 Z" : "M19 22 L22 13 L26 22 Z"}
+            d={isSleeping ? "M21 37 L23 32 L25 37 Z" : "M20 23 L23 16 L26 23 Z"}
             fill={innerEarColor}
           />
           
-          {/* Right ear - cute pointy */}
+          {/* Right ear - smaller cute pointy */}
           <path
-            d={isSleeping ? "M36 38 L42 28 L48 38 Z" : "M36 24 L42 10 L48 24 Z"}
+            d={isSleeping ? "M37 38 L41 31 L45 38 Z" : "M37 24 L41 14 L45 24 Z"}
             fill={bodyColor}
             className={cn(earClass, stateStr === 'tap_reaction' ? 'animate-cat-ear-perk-alt' : '')}
           />
           <path
-            d={isSleeping ? "M39 36 L42 30 L45 36 Z" : "M38 22 L42 13 L45 22 Z"}
+            d={isSleeping ? "M39 37 L41 32 L43 37 Z" : "M38 23 L41 16 L44 23 Z"}
             fill={innerEarColor}
           />
           
@@ -484,41 +485,41 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
           {eyesOpen ? (
             <g className={isBlinking ? 'animate-cat-blink' : ''}>
               {eyesHappy ? (
-                // Happy curved eyes
+                // Happy curved eyes - black
                 <>
-                  <path d="M25 25 Q27 23 29 25" stroke={eyeColor} strokeWidth="2" fill="none" strokeLinecap="round" />
-                  <path d="M35 25 Q37 23 39 25" stroke={eyeColor} strokeWidth="2" fill="none" strokeLinecap="round" />
+                  <path d="M25 25 Q27 23 29 25" stroke="#0a0a0a" strokeWidth="2" fill="none" strokeLinecap="round" />
+                  <path d="M35 25 Q37 23 39 25" stroke="#0a0a0a" strokeWidth="2" fill="none" strokeLinecap="round" />
                 </>
               ) : eyesWide ? (
-                // Wide curious eyes - amber/brown color
+                // Wide curious eyes - black
                 <>
-                  <ellipse cx="27" cy={isSleeping ? '40' : '26'} rx="3.5" ry="4" fill="#78350f" />
-                  <ellipse cx="37" cy={isSleeping ? '40' : '26'} rx="3.5" ry="4" fill="#78350f" />
+                  <ellipse cx="27" cy={isSleeping ? '40' : '26'} rx="3.5" ry="4" fill="#0a0a0a" />
+                  <ellipse cx="37" cy={isSleeping ? '40' : '26'} rx="3.5" ry="4" fill="#0a0a0a" />
                   <circle cx="26" cy={isSleeping ? '39' : '25'} r="1.5" fill="white" opacity="0.9" />
                   <circle cx="36" cy={isSleeping ? '39' : '25'} r="1.5" fill="white" opacity="0.9" />
                 </>
               ) : (
-                // Normal eyes - amber/brown color
+                // Normal eyes - black
                 <>
-                  <ellipse cx="27" cy={isSleeping ? '40' : '26'} rx="2.5" ry="3" fill="#78350f" />
-                  <ellipse cx="37" cy={isSleeping ? '40' : '26'} rx="2.5" ry="3" fill="#78350f" />
+                  <ellipse cx="27" cy={isSleeping ? '40' : '26'} rx="2.5" ry="3" fill="#0a0a0a" />
+                  <ellipse cx="37" cy={isSleeping ? '40' : '26'} rx="2.5" ry="3" fill="#0a0a0a" />
                   <circle cx="26" cy={isSleeping ? '39' : '25'} r="1" fill="white" opacity="0.8" />
                   <circle cx="36" cy={isSleeping ? '39' : '25'} r="1" fill="white" opacity="0.8" />
                 </>
               )}
             </g>
           ) : (
-            // Closed eyes (sleeping or blinking)
+            // Closed eyes (sleeping or blinking) - black
             <g>
               <path 
                 d={isSleeping ? "M24 40 Q27 42 30 40" : "M24 26 Q27 28 30 26"} 
-                stroke={eyeColor} 
+                stroke="#0a0a0a" 
                 strokeWidth="1.5" 
                 fill="none" 
               />
               <path 
                 d={isSleeping ? "M34 40 Q37 42 40 40" : "M34 26 Q37 28 40 26"} 
-                stroke={eyeColor} 
+                stroke="#0a0a0a" 
                 strokeWidth="1.5" 
                 fill="none" 
               />
