@@ -79,24 +79,31 @@ export const CatCompanion = memo(() => {
     }
   }, [currentState, walkDirection, walkProgress]);
 
-  // Play cat sounds for reactions
+  // Check if cat is in sleep mode (shouldn't make noise)
+  const isCatSleeping = currentState === 'sleeping' || currentState === 'loaf' || 
+    currentState === 'curl_up' || currentState === 'settle_down' || 
+    currentState === 'twitch_dream' || currentState === 'snuggle' || currentState === 'paw_tuck';
+
+  // Play cat sounds for reactions - only if not sleeping
   useEffect(() => {
+    if (isCatSleeping) return; // No sounds when sleeping
+    
     if (currentReaction === 'habit_complete') {
-      // Play a random happy cat sound when habit is completed
       playSound(getHabitCompleteSound());
     } else if (currentReaction === 'all_complete') {
-      // Play achievement sound + happy meow for all habits complete
       playSound('achievement');
       setTimeout(() => playSound('meow_happy'), 300);
     }
-  }, [currentReaction, playSound]);
+  }, [currentReaction, playSound, isCatSleeping]);
 
-  // Handle tap on cat - play random cat sounds
+  // Handle tap on cat - play random cat sounds only if not sleeping
   const handleCatTap = useCallback(() => {
     triggerTapReaction();
-    playSound(getRandomTapSound());
+    if (!isCatSleeping) {
+      playSound(getRandomTapSound());
+    }
     triggerHaptic('light');
-  }, [triggerTapReaction, playSound, triggerHaptic]);
+  }, [triggerTapReaction, playSound, triggerHaptic, isCatSleeping]);
 
   // Touch handlers for dragging
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
