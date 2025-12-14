@@ -99,35 +99,31 @@ const SOUNDS: Record<SoundType, () => void> = {
     setTimeout(() => playTone(880, 0.2, 'triangle', 0.08), 240);
   },
   purr: () => {
-    // Low rumbling purr sound
-    playTone(65, 0.15, 'sine', 0.08);
-    setTimeout(() => playTone(70, 0.15, 'sine', 0.07), 80);
-    setTimeout(() => playTone(60, 0.15, 'sine', 0.08), 160);
-    setTimeout(() => playTone(68, 0.15, 'sine', 0.06), 240);
-    setTimeout(() => playTone(63, 0.2, 'sine', 0.05), 320);
+    // Play real cat purring sound - soft and cozy
+    playAudioFile('/audio/cat-purr.mp3', 0.25);
   },
   meow: () => {
-    // Play random kitten mew sound
+    // Play random kitten mew sound - 35% softer
     const randomMew = KITTEN_SOUNDS[Math.floor(Math.random() * KITTEN_SOUNDS.length)];
-    playAudioFile(randomMew, 0.5);
+    playAudioFile(randomMew, 0.32);
   },
   meow_happy: () => {
-    // Play random kitten mew with higher volume
+    // Play random kitten mew - 35% softer
     const randomMew = KITTEN_SOUNDS[Math.floor(Math.random() * KITTEN_SOUNDS.length)];
-    playAudioFile(randomMew, 0.6);
+    playAudioFile(randomMew, 0.39);
   },
   meow_curious: () => {
-    // Play random kitten mew
+    // Play random kitten mew - 35% softer
     const randomMew = KITTEN_SOUNDS[Math.floor(Math.random() * KITTEN_SOUNDS.length)];
-    playAudioFile(randomMew, 0.45);
+    playAudioFile(randomMew, 0.29);
   },
   chirp: () => {
-    // Play kitten chirp
-    playAudioFile(KITTEN_SOUNDS[0], 0.4);
+    // Play kitten chirp - 35% softer
+    playAudioFile(KITTEN_SOUNDS[0], 0.26);
   },
   trill: () => {
-    // Play kitten trill
-    playAudioFile(KITTEN_SOUNDS[1], 0.45);
+    // Play kitten trill - 35% softer
+    playAudioFile(KITTEN_SOUNDS[1], 0.29);
   },
   achievement: () => {
     // Triumphant fanfare
