@@ -290,6 +290,23 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
     stateStr === 'tap_meow' && 'animate-cat-meow-body',
     stateStr === 'tap_curious' && 'animate-cat-curious',
     stateStr === 'sleeping' && 'animate-cat-curl',
+    stateStr === 'loaf' && 'animate-cat-loaf',
+    // New animations
+    stateStr === 'tap_love' && 'animate-cat-love',
+    stateStr === 'tap_roll' && 'animate-cat-roll',
+    stateStr === 'tap_shake' && 'animate-cat-shake',
+    stateStr === 'tap_wave' && 'animate-cat-wave',
+    stateStr === 'tap_jump' && 'animate-cat-jump',
+    stateStr === 'pounce_ready' && 'animate-cat-pounce-ready',
+    stateStr === 'pounce' && 'animate-cat-pounce',
+    stateStr === 'knead' && 'animate-cat-knead',
+    stateStr === 'belly_up' && 'animate-cat-belly-up',
+    stateStr === 'sit_tall' && 'animate-cat-sit-tall',
+    stateStr === 'crouch' && 'animate-cat-crouch',
+    stateStr === 'startled' && 'animate-cat-startled',
+    stateStr === 'happy_dance' && 'animate-cat-happy-dance',
+    stateStr === 'tail_chase' && 'animate-cat-tail-chase',
+    stateStr === 'idle_yawn' && 'animate-cat-yawn',
   );
   
   const headClass = cn(
@@ -298,6 +315,14 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
     stateStr === 'tap_curious' && 'animate-cat-head-curious',
     stateStr === 'tap_meow' && 'animate-cat-head-meow',
     stateStr === 'grooming' && 'animate-cat-head-down',
+    stateStr === 'idle_look_left' && 'animate-cat-look-left',
+    stateStr === 'idle_look_right' && 'animate-cat-look-right',
+    stateStr === 'idle_look_up' && 'animate-cat-look-up',
+    stateStr === 'idle_sniff' && 'animate-cat-sniff',
+    stateStr === 'head_shake' && 'animate-cat-head-shake',
+    stateStr === 'tap_love' && 'animate-cat-head-love',
+    stateStr === 'startled' && 'animate-cat-head-startled',
+    stateStr === 'idle_yawn' && 'animate-cat-head-yawn',
   );
   
   const tailClass = cn(
@@ -309,15 +334,41 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
     stateStr === 'tap_spin' && 'animate-cat-tail-spin',
     stateStr === 'tap_curious' && 'animate-cat-tail-perk',
     stateStr === 'sleeping' && 'animate-cat-tail-wrap',
+    stateStr === 'idle_tail_swish' && 'animate-cat-tail-swish',
+    stateStr === 'happy_dance' && 'animate-cat-tail-excited',
+    stateStr === 'pounce_ready' && 'animate-cat-tail-twitch',
+    stateStr === 'startled' && 'animate-cat-tail-puff',
+    stateStr === 'tap_love' && 'animate-cat-tail-heart',
+  );
+
+  const earClass = cn(
+    stateStr === 'idle_ear_twitch' && 'animate-cat-ear-twitch',
+    stateStr === 'startled' && 'animate-cat-ears-back',
+    stateStr === 'tap_curious' && 'animate-cat-ears-forward',
+  );
+
+  const whiskerClass = cn(
+    stateStr === 'idle_whisker_twitch' && 'animate-cat-whisker-twitch',
+    stateStr === 'idle_sniff' && 'animate-cat-whisker-sniff',
+  );
+
+  const pawClass = cn(
+    stateStr === 'lick_paw' && 'animate-cat-lick-paw',
+    stateStr === 'scratch_ear' && 'animate-cat-scratch',
+    stateStr === 'knead' && 'animate-cat-knead-paw',
+    stateStr === 'tap_wave' && 'animate-cat-wave-paw',
   );
   
-  const isSleeping = stateStr === 'sleeping';
+  const isSleeping = stateStr === 'sleeping' || stateStr === 'loaf';
   const isBlinking = stateStr === 'blinking';
   const isMeowing = stateStr === 'tap_meow';
+  const isYawning = stateStr === 'idle_yawn';
+  const isBellyUp = stateStr === 'belly_up';
   
-  const eyesOpen = !isSleeping && !isBlinking;
-  const eyesHappy = stateStr === 'playful' || stateStr === 'tap_reaction' || stateStr === 'tap_bounce';
-  const eyesWide = stateStr === 'tap_curious' || stateStr === 'tap_spin';
+  const eyesOpen = !isSleeping && !isBlinking && !isYawning;
+  const eyesHappy = stateStr === 'playful' || stateStr === 'tap_reaction' || stateStr === 'tap_bounce' || stateStr === 'tap_love' || stateStr === 'happy_dance';
+  const eyesWide = stateStr === 'tap_curious' || stateStr === 'tap_spin' || stateStr === 'startled' || stateStr === 'pounce_ready';
+  const eyesNarrow = stateStr === 'pounce' || stateStr === 'crouch';
 
   return (
     <svg
@@ -590,6 +641,26 @@ const CatStyles = memo(() => (
     .animate-cat-ear-perk { animation: cat-ear-perk 0.4s ease-out; }
     .animate-cat-ear-perk-alt { animation: cat-ear-perk 0.4s ease-out 0.1s; }
     
+    @keyframes cat-ear-twitch {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      25% { transform: rotate(-5deg) translateY(-1px); }
+      50% { transform: rotate(3deg) translateY(0); }
+      75% { transform: rotate(-3deg) translateY(-1px); }
+    }
+    .animate-cat-ear-twitch { animation: cat-ear-twitch 0.4s ease-in-out 2; }
+    
+    @keyframes cat-ears-back {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(15deg) translateX(2px); }
+    }
+    .animate-cat-ears-back { animation: cat-ears-back 0.3s ease-out forwards; }
+    
+    @keyframes cat-ears-forward {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-10deg); }
+    }
+    .animate-cat-ears-forward { animation: cat-ears-forward 0.5s ease-out; }
+    
     /* Eye animations */
     @keyframes cat-blink {
       0%, 100% { transform: scaleY(1); }
@@ -616,6 +687,52 @@ const CatStyles = memo(() => (
     }
     .animate-cat-tail-wrap { transform-origin: 24px 48px; }
     
+    @keyframes cat-tail-swish {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(25deg); }
+      40% { transform: rotate(-20deg); }
+      60% { transform: rotate(15deg); }
+      80% { transform: rotate(-10deg); }
+    }
+    .animate-cat-tail-swish { animation: cat-tail-swish 1.5s ease-in-out; transform-origin: 46px 42px; }
+    
+    @keyframes cat-tail-excited {
+      0%, 100% { transform: rotate(0deg); }
+      10% { transform: rotate(20deg); }
+      20% { transform: rotate(-20deg); }
+      30% { transform: rotate(18deg); }
+      40% { transform: rotate(-18deg); }
+      50% { transform: rotate(15deg); }
+      60% { transform: rotate(-15deg); }
+      70% { transform: rotate(10deg); }
+      80% { transform: rotate(-10deg); }
+      90% { transform: rotate(5deg); }
+    }
+    .animate-cat-tail-excited { animation: cat-tail-excited 1.5s ease-in-out; transform-origin: 46px 42px; }
+    
+    @keyframes cat-tail-twitch {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(5deg); }
+      50% { transform: rotate(-3deg); }
+      75% { transform: rotate(4deg); }
+    }
+    .animate-cat-tail-twitch { animation: cat-tail-twitch 0.3s ease-in-out infinite; transform-origin: 46px 42px; }
+    
+    @keyframes cat-tail-puff {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3) rotate(10deg); }
+      100% { transform: scale(1.2) rotate(5deg); }
+    }
+    .animate-cat-tail-puff { animation: cat-tail-puff 0.3s ease-out forwards; transform-origin: 46px 42px; }
+    
+    @keyframes cat-tail-heart {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(10deg) translateY(-2px); }
+      50% { transform: rotate(-5deg) translateY(-4px); }
+      75% { transform: rotate(8deg) translateY(-2px); }
+    }
+    .animate-cat-tail-heart { animation: cat-tail-heart 1s ease-in-out; transform-origin: 46px 42px; }
+    
     /* Paw animations */
     @keyframes cat-paw-lick {
       0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -641,12 +758,52 @@ const CatStyles = memo(() => (
     }
     .animate-cat-walk-paw-r { animation: cat-walk-paw-r 0.25s ease-in-out infinite; }
     
+    @keyframes cat-lick-paw {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      30% { transform: translateY(-10px) rotate(-25deg); }
+      60% { transform: translateY(-8px) rotate(-20deg); }
+    }
+    .animate-cat-lick-paw { animation: cat-lick-paw 2s ease-in-out infinite; }
+    
+    @keyframes cat-scratch {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      20% { transform: translateY(-12px) rotate(-30deg); }
+      40% { transform: translateY(-10px) rotate(-25deg); }
+      60% { transform: translateY(-12px) rotate(-30deg); }
+      80% { transform: translateY(-10px) rotate(-25deg); }
+    }
+    .animate-cat-scratch { animation: cat-scratch 1.8s ease-in-out infinite; }
+    
+    @keyframes cat-knead-paw {
+      0%, 100% { transform: translateY(0); }
+      25% { transform: translateY(-2px); }
+      50% { transform: translateY(0); }
+      75% { transform: translateY(-2px); }
+    }
+    .animate-cat-knead-paw { animation: cat-knead-paw 0.6s ease-in-out infinite; }
+    
+    @keyframes cat-wave-paw {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-8px) rotate(-15deg); }
+      50% { transform: translateY(-6px) rotate(10deg); }
+      75% { transform: translateY(-8px) rotate(-10deg); }
+    }
+    .animate-cat-wave-paw { animation: cat-wave-paw 0.8s ease-in-out 2; }
+    
     /* Whisker animation */
     @keyframes cat-whisker-twitch {
       0%, 100% { transform: rotate(0deg); }
       50% { transform: rotate(3deg); }
     }
     .animate-cat-whisker-twitch { animation: cat-whisker-twitch 0.2s ease-in-out 3; }
+    
+    @keyframes cat-whisker-sniff {
+      0%, 100% { transform: rotate(0deg) translateX(0); }
+      25% { transform: rotate(2deg) translateX(1px); }
+      50% { transform: rotate(-2deg) translateX(-1px); }
+      75% { transform: rotate(1deg) translateX(0.5px); }
+    }
+    .animate-cat-whisker-sniff { animation: cat-whisker-sniff 0.3s ease-in-out 4; }
     
     /* Sleep Zs */
     @keyframes cat-zzz {
@@ -655,7 +812,7 @@ const CatStyles = memo(() => (
     }
     .animate-cat-zzz { animation: cat-zzz 2.5s ease-in-out infinite; }
     
-    /* New tap animations */
+    /* Tap animations */
     @keyframes cat-bounce {
       0%, 100% { transform: translateY(0) scaleY(1); }
       20% { transform: translateY(-12px) scaleY(1.05); }
@@ -718,6 +875,186 @@ const CatStyles = memo(() => (
       100% { transform: rotate(180deg); }
     }
     .animate-cat-tail-spin { animation: cat-tail-spin 0.6s ease-in-out; transform-origin: 46px 42px; }
+    
+    /* New tap reaction animations */
+    @keyframes cat-love {
+      0%, 100% { transform: scale(1) translateY(0); }
+      25% { transform: scale(1.05) translateY(-3px); }
+      50% { transform: scale(1.08) translateY(-5px); }
+      75% { transform: scale(1.05) translateY(-3px); }
+    }
+    .animate-cat-love { animation: cat-love 1s ease-in-out; }
+    
+    @keyframes cat-head-love {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-8deg); }
+      50% { transform: rotate(8deg); }
+      75% { transform: rotate(-5deg); }
+    }
+    .animate-cat-head-love { animation: cat-head-love 1s ease-in-out; }
+    
+    @keyframes cat-roll {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(180deg) translateY(-10px); }
+      100% { transform: rotate(360deg) translateY(0); }
+    }
+    .animate-cat-roll { animation: cat-roll 1.2s ease-in-out; }
+    
+    @keyframes cat-shake {
+      0%, 100% { transform: translateX(0); }
+      10% { transform: translateX(-3px); }
+      20% { transform: translateX(3px); }
+      30% { transform: translateX(-3px); }
+      40% { transform: translateX(3px); }
+      50% { transform: translateX(-2px); }
+      60% { transform: translateX(2px); }
+      70% { transform: translateX(-1px); }
+      80% { transform: translateX(1px); }
+    }
+    .animate-cat-shake { animation: cat-shake 0.6s ease-in-out; }
+    
+    @keyframes cat-wave {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    .animate-cat-wave { animation: cat-wave 0.8s ease-in-out; }
+    
+    @keyframes cat-jump {
+      0%, 100% { transform: translateY(0) scaleY(1); }
+      30% { transform: translateY(-20px) scaleY(1.1); }
+      50% { transform: translateY(-25px) scaleY(1.05); }
+      70% { transform: translateY(-15px) scaleY(1.08); }
+    }
+    .animate-cat-jump { animation: cat-jump 0.7s ease-out; }
+    
+    /* Idle variation animations */
+    @keyframes cat-look-left {
+      0%, 100% { transform: rotate(0deg) translateX(0); }
+      50% { transform: rotate(-10deg) translateX(-2px); }
+    }
+    .animate-cat-look-left { animation: cat-look-left 1.5s ease-in-out; }
+    
+    @keyframes cat-look-right {
+      0%, 100% { transform: rotate(0deg) translateX(0); }
+      50% { transform: rotate(10deg) translateX(2px); }
+    }
+    .animate-cat-look-right { animation: cat-look-right 1.5s ease-in-out; }
+    
+    @keyframes cat-look-up {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-3px) rotate(-5deg); }
+    }
+    .animate-cat-look-up { animation: cat-look-up 1.2s ease-in-out; }
+    
+    @keyframes cat-sniff {
+      0%, 100% { transform: translateY(0); }
+      20% { transform: translateY(-1px); }
+      40% { transform: translateY(0); }
+      60% { transform: translateY(-1px); }
+      80% { transform: translateY(0); }
+    }
+    .animate-cat-sniff { animation: cat-sniff 0.8s ease-in-out; }
+    
+    @keyframes cat-yawn {
+      0%, 100% { transform: scaleY(1); }
+      30% { transform: scaleY(1.02); }
+      50% { transform: scaleY(1.05); }
+      70% { transform: scaleY(1.02); }
+    }
+    .animate-cat-yawn { animation: cat-yawn 1.8s ease-in-out; }
+    
+    @keyframes cat-head-yawn {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      30% { transform: translateY(-2px) rotate(-3deg); }
+      50% { transform: translateY(-3px) rotate(-5deg); }
+      70% { transform: translateY(-2px) rotate(-3deg); }
+    }
+    .animate-cat-head-yawn { animation: cat-head-yawn 1.8s ease-in-out; }
+    
+    @keyframes cat-head-shake {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-8deg); }
+      40% { transform: rotate(8deg); }
+      60% { transform: rotate(-5deg); }
+      80% { transform: rotate(5deg); }
+    }
+    .animate-cat-head-shake { animation: cat-head-shake 0.6s ease-in-out; }
+    
+    /* Active behavior animations */
+    @keyframes cat-pounce-ready {
+      0%, 100% { transform: scaleY(0.9) scaleX(1.05); }
+      50% { transform: scaleY(0.85) scaleX(1.08); }
+    }
+    .animate-cat-pounce-ready { animation: cat-pounce-ready 0.8s ease-in-out infinite; }
+    
+    @keyframes cat-pounce {
+      0% { transform: translateY(0) translateX(0) scaleY(1); }
+      30% { transform: translateY(-15px) translateX(20px) scaleY(1.1); }
+      60% { transform: translateY(-5px) translateX(35px) scaleY(0.95); }
+      100% { transform: translateY(0) translateX(40px) scaleY(1); }
+    }
+    .animate-cat-pounce { animation: cat-pounce 0.6s ease-out; }
+    
+    @keyframes cat-loaf {
+      0%, 100% { transform: scaleX(1.1) scaleY(0.85); }
+    }
+    .animate-cat-loaf { transform: scaleX(1.1) scaleY(0.85); }
+    
+    @keyframes cat-knead {
+      0%, 100% { transform: translateY(0); }
+      25% { transform: translateY(-1px); }
+      50% { transform: translateY(0); }
+      75% { transform: translateY(-1px); }
+    }
+    .animate-cat-knead { animation: cat-knead 1s ease-in-out infinite; }
+    
+    @keyframes cat-belly-up {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(180deg) scaleY(-1); }
+    }
+    .animate-cat-belly-up { transform: rotate(20deg) scaleY(0.9); }
+    
+    @keyframes cat-sit-tall {
+      0%, 100% { transform: scaleY(1.1) translateY(-3px); }
+    }
+    .animate-cat-sit-tall { transform: scaleY(1.08) translateY(-2px); }
+    
+    @keyframes cat-crouch {
+      0%, 100% { transform: scaleY(0.8) scaleX(1.1); }
+    }
+    .animate-cat-crouch { transform: scaleY(0.8) scaleX(1.08); }
+    
+    @keyframes cat-startled {
+      0% { transform: translateY(0) scaleY(1); }
+      30% { transform: translateY(-10px) scaleY(1.15); }
+      100% { transform: translateY(-5px) scaleY(1.1); }
+    }
+    .animate-cat-startled { animation: cat-startled 0.4s ease-out forwards; }
+    
+    @keyframes cat-head-startled {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(-10deg) translateY(-3px); }
+      100% { transform: rotate(-5deg) translateY(-2px); }
+    }
+    .animate-cat-head-startled { animation: cat-head-startled 0.4s ease-out forwards; }
+    
+    @keyframes cat-happy-dance {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      20% { transform: translateY(-5px) rotate(-5deg); }
+      40% { transform: translateY(0) rotate(5deg); }
+      60% { transform: translateY(-5px) rotate(-3deg); }
+      80% { transform: translateY(0) rotate(3deg); }
+    }
+    .animate-cat-happy-dance { animation: cat-happy-dance 1.5s ease-in-out; }
+    
+    @keyframes cat-tail-chase {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(90deg); }
+      50% { transform: rotate(180deg); }
+      75% { transform: rotate(270deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .animate-cat-tail-chase { animation: cat-tail-chase 2s linear; }
     
     /* Costume entrance */
     @keyframes costume-in {
