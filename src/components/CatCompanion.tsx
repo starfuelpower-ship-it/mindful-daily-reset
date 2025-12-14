@@ -39,7 +39,7 @@ const loadSavedScale = () => {
 };
 
 export const CatCompanion = memo(() => {
-  const { showCompanion, companionType, currentReaction, equippedCostume, catColor } = useCompanion();
+  const { showCompanion, companionType, currentReaction, equippedCostume, catColor, catSize } = useCompanion();
   const { resolvedTheme } = useTheme();
   const { playSound, triggerHaptic } = useSoundEffects();
   
@@ -226,7 +226,7 @@ export const CatCompanion = memo(() => {
             isDragging ? 'cursor-grabbing' : 'cursor-grab'
           )}
           style={{
-            transform: `translate(${walkOffset + dragPosition.x}px, ${dragPosition.y}px) scale(${scale})`,
+            transform: `translate(${walkOffset + dragPosition.x}px, ${dragPosition.y}px) scale(${scale * catSize})`,
             transition: isDragging || isPinching ? 'none' : currentState === 'walking' ? 'transform 0.05s linear' : 'transform 0.3s ease-out',
           }}
           onTouchStart={handleTouchStart}
@@ -439,25 +439,37 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
             fill={bodyColor}
           />
           
-          {/* Left ear */}
-          <polygon
-            points={isSleeping ? "22,36 26,42 18,42" : "22,20 26,28 18,28"}
+          {/* Left ear - cute rounded */}
+          <ellipse
+            cx={isSleeping ? '22' : '22'}
+            cy={isSleeping ? '38' : '20'}
+            rx="5"
+            ry="6"
             fill={bodyColor}
-            className={stateStr === 'tap_reaction' ? 'animate-cat-ear-perk' : ''}
+            className={cn(earClass, stateStr === 'tap_reaction' ? 'animate-cat-ear-perk' : '')}
           />
-          <polygon
-            points={isSleeping ? "23,38 25,40 20,40" : "23,22 25,26 20,26"}
+          <ellipse
+            cx={isSleeping ? '22' : '22'}
+            cy={isSleeping ? '39' : '21'}
+            rx="3"
+            ry="4"
             fill={innerEarColor}
           />
           
-          {/* Right ear */}
-          <polygon
-            points={isSleeping ? "42,36 46,42 38,42" : "42,20 46,28 38,28"}
+          {/* Right ear - cute rounded */}
+          <ellipse
+            cx={isSleeping ? '42' : '42'}
+            cy={isSleeping ? '38' : '20'}
+            rx="5"
+            ry="6"
             fill={bodyColor}
-            className={stateStr === 'tap_reaction' ? 'animate-cat-ear-perk-alt' : ''}
+            className={cn(earClass, stateStr === 'tap_reaction' ? 'animate-cat-ear-perk-alt' : '')}
           />
-          <polygon
-            points={isSleeping ? "41,38 44,40 39,40" : "41,22 44,26 39,26"}
+          <ellipse
+            cx={isSleeping ? '42' : '42'}
+            cy={isSleeping ? '39' : '21'}
+            rx="3"
+            ry="4"
             fill={innerEarColor}
           />
           

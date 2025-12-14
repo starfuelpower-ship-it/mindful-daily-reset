@@ -27,6 +27,8 @@ interface CompanionContextType {
   setEquippedCostume: (costume: CostumeType) => Promise<void>;
   catColor: CatColor;
   setCatColor: (color: CatColor) => void;
+  catSize: number;
+  setCatSize: (size: number) => void;
   triggerReaction: (type: 'habit_complete' | 'all_complete') => void;
   currentReaction: 'habit_complete' | 'all_complete' | null;
   isLoading: boolean;
@@ -38,6 +40,7 @@ const COMPANION_SHOW_KEY = 'daily-reset-show-companion';
 const COMPANION_TYPE_KEY = 'daily-reset-companion-type';
 const EQUIPPED_COSTUME_KEY = 'daily-reset-equipped-costume';
 const CAT_COLOR_KEY = 'daily-reset-cat-color';
+const CAT_SIZE_KEY = 'daily-reset-cat-size';
 
 export function CompanionProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -72,6 +75,17 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
       return (stored as CatColor) || 'default';
     }
     return 'default';
+  });
+
+  const [catSize, setCatSizeState] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(CAT_SIZE_KEY);
+      if (stored) {
+        const size = parseFloat(stored);
+        if (!isNaN(size) && size >= 0.5 && size <= 2) return size;
+      }
+    }
+    return 1;
   });
 
   const [currentReaction, setCurrentReaction] = useState<'habit_complete' | 'all_complete' | null>(null);
@@ -175,9 +189,18 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(CAT_COLOR_KEY, catColor);
   }, [catColor]);
 
+  useEffect(() => {
+    localStorage.setItem(CAT_SIZE_KEY, String(catSize));
+  }, [catSize]);
+
   const setCatColor = useCallback((color: CatColor) => {
     setCatColorState(color);
     localStorage.setItem(CAT_COLOR_KEY, color);
+  }, []);
+
+  const setCatSize = useCallback((size: number) => {
+    setCatSizeState(size);
+    localStorage.setItem(CAT_SIZE_KEY, String(size));
   }, []);
 
   const setShowCompanion = useCallback(async (show: boolean) => {
@@ -292,6 +315,8 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
         setEquippedCostume,
         catColor,
         setCatColor,
+        catSize,
+        setCatSize,
         triggerReaction,
         currentReaction,
         isLoading,
