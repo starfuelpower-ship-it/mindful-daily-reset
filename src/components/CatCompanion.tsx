@@ -399,187 +399,245 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
     >
       {/* Main cat group - costume will be positioned relative to this */}
       <g className={bodyClass}>
-        {/* Tail - behind body */}
+        {/* Tail - behind body, cute curved */}
         <path
-          d={isSleeping ? "M24 48 Q18 52 20 48 Q22 44 26 46" : "M46 42 Q56 38 54 28"}
+          d={isSleeping ? "M22 50 Q14 48 16 42 Q18 38 22 40" : "M48 44 Q58 42 56 32 Q55 28 52 30"}
           stroke={bodyColor}
-          strokeWidth="5"
+          strokeWidth="6"
           strokeLinecap="round"
           fill="none"
           className={tailClass}
         />
         
-        {/* Body */}
+        {/* Body - rounder, cuter */}
         <ellipse
           cx="32"
-          cy={isSleeping ? '46' : '42'}
-          rx={isSleeping ? '12' : '14'}
-          ry={isSleeping ? '8' : '10'}
+          cy={isSleeping ? '48' : '46'}
+          rx={isSleeping ? '14' : '16'}
+          ry={isSleeping ? '10' : '12'}
           fill={bodyColor}
           className={isSleeping ? 'animate-cat-breathe' : ''}
         />
         
-        {/* Back legs (visible when not sleeping) */}
+        {/* Body highlight */}
+        <ellipse
+          cx={isSleeping ? '28' : '28'}
+          cy={isSleeping ? '46' : '44'}
+          rx="6"
+          ry="4"
+          fill={bodyColorDark}
+          opacity="0.15"
+        />
+        
+        {/* Front paws - cute round paws */}
         {!isSleeping && (
           <>
-            <ellipse cx="22" cy="48" rx="4" ry="3" fill={bodyColor} />
-            <ellipse cx="42" cy="48" rx="4" ry="3" fill={bodyColor} />
+            <ellipse cx="24" cy="54" rx="5" ry="4" fill={bodyColor} 
+              className={cn(
+                stateStr === 'grooming' && 'animate-cat-paw-lick',
+                stateStr === 'walking' && 'animate-cat-walk-paw-l'
+              )}
+            />
+            <ellipse cx="40" cy="54" rx="5" ry="4" fill={bodyColor}
+              className={stateStr === 'walking' ? 'animate-cat-walk-paw-r' : ''}
+            />
+            {/* Paw pads */}
+            <circle cx="24" cy="55" r="1.5" fill={noseColor} opacity="0.4" />
+            <circle cx="40" cy="55" r="1.5" fill={noseColor} opacity="0.4" />
           </>
         )}
         
-        {/* Front paws */}
-        <ellipse 
-          cx={isSleeping ? '38' : '26'} 
-          cy={isSleeping ? '50' : '50'} 
-          rx="4" 
-          ry="3" 
-          fill={bodyColor}
-          className={cn(
-            stateStr === 'grooming' && 'animate-cat-paw-lick',
-            stateStr === 'walking' && 'animate-cat-walk-paw-l'
-          )}
-        />
-        <ellipse 
-          cx={isSleeping ? '44' : '38'} 
-          cy={isSleeping ? '50' : '50'} 
-          rx="4" 
-          ry="3" 
-          fill={bodyColor}
-          className={stateStr === 'walking' ? 'animate-cat-walk-paw-r' : ''}
-        />
+        {/* Sleeping paws */}
+        {isSleeping && (
+          <>
+            <ellipse cx="38" cy="54" rx="5" ry="3" fill={bodyColor} />
+            <ellipse cx="46" cy="52" rx="4" ry="3" fill={bodyColor} />
+          </>
+        )}
         
         {/* Head group */}
         <g className={headClass}>
-          {/* Head */}
+          {/* Head - bigger, rounder, more prominent */}
           <circle
             cx="32"
-            cy={isSleeping ? '42' : '28'}
-            r="12"
+            cy={isSleeping ? '40' : '28'}
+            r={isSleeping ? '14' : '16'}
             fill={bodyColor}
           />
           
-          {/* Left ear - cute pointy */}
+          {/* Cheek highlights */}
+          <ellipse
+            cx={isSleeping ? '24' : '22'}
+            cy={isSleeping ? '44' : '32'}
+            rx="4"
+            ry="3"
+            fill={bodyColorDark}
+            opacity="0.1"
+          />
+          <ellipse
+            cx={isSleeping ? '40' : '42'}
+            cy={isSleeping ? '44' : '32'}
+            rx="4"
+            ry="3"
+            fill={bodyColorDark}
+            opacity="0.1"
+          />
+          
+          {/* Left ear - cute pointed */}
           <path
-            d={isSleeping ? "M20 42 L22 34 L26 42 Z" : "M18 28 L22 16 L26 28 Z"}
+            d={isSleeping ? "M18 38 L22 28 L28 38 Z" : "M16 24 L22 10 L28 24 Z"}
             fill={bodyColor}
             className={cn(earClass, stateStr === 'tap_reaction' ? 'animate-cat-ear-perk' : '')}
           />
           <path
-            d={isSleeping ? "M21 40 L22 36 L24 40 Z" : "M20 27 L22 19 L24 27 Z"}
+            d={isSleeping ? "M20 36 L22 30 L25 36 Z" : "M19 22 L22 13 L26 22 Z"}
             fill={innerEarColor}
           />
           
-          {/* Right ear - cute pointy */}
+          {/* Right ear - cute pointed */}
           <path
-            d={isSleeping ? "M38 42 L42 34 L46 42 Z" : "M38 28 L42 16 L46 28 Z"}
+            d={isSleeping ? "M36 38 L42 28 L48 38 Z" : "M36 24 L42 10 L48 24 Z"}
             fill={bodyColor}
             className={cn(earClass, stateStr === 'tap_reaction' ? 'animate-cat-ear-perk-alt' : '')}
           />
           <path
-            d={isSleeping ? "M40 40 L42 36 L44 40 Z" : "M40 27 L42 19 L44 27 Z"}
+            d={isSleeping ? "M39 36 L42 30 L45 36 Z" : "M38 22 L42 13 L45 22 Z"}
             fill={innerEarColor}
           />
           
-          {/* Eyes */}
+          {/* Eyes - BIG and cute like reference */}
           {eyesOpen ? (
             <g className={isBlinking ? 'animate-cat-blink' : ''}>
               {eyesHappy ? (
-                // Happy curved eyes
+                // Happy curved eyes (^_^)
                 <>
-                  <path d="M25 25 Q27 23 29 25" stroke={eyeColor} strokeWidth="2" fill="none" strokeLinecap="round" />
-                  <path d="M35 25 Q37 23 39 25" stroke={eyeColor} strokeWidth="2" fill="none" strokeLinecap="round" />
+                  <path d="M22 26 Q26 22 30 26" stroke={eyeColor} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+                  <path d="M34 26 Q38 22 42 26" stroke={eyeColor} strokeWidth="2.5" fill="none" strokeLinecap="round" />
                 </>
               ) : eyesWide ? (
-                // Wide curious eyes
+                // Wide curious/excited eyes - extra big
                 <>
-                  <ellipse cx="27" cy={isSleeping ? '40' : '26'} rx="3.5" ry="4" fill={eyeColor} />
-                  <ellipse cx="37" cy={isSleeping ? '40' : '26'} rx="3.5" ry="4" fill={eyeColor} />
-                  <circle cx="26" cy={isSleeping ? '39' : '25'} r="1.5" fill="white" opacity="0.9" />
-                  <circle cx="36" cy={isSleeping ? '39' : '25'} r="1.5" fill="white" opacity="0.9" />
+                  {/* Eye whites */}
+                  <ellipse cx="25" cy={isSleeping ? '38' : '26'} rx="6" ry="7" fill="white" />
+                  <ellipse cx="39" cy={isSleeping ? '38' : '26'} rx="6" ry="7" fill="white" />
+                  {/* Iris - green like reference */}
+                  <ellipse cx="25" cy={isSleeping ? '38' : '26'} rx="5" ry="6" fill="#86efac" />
+                  <ellipse cx="39" cy={isSleeping ? '38' : '26'} rx="5" ry="6" fill="#86efac" />
+                  {/* Pupils */}
+                  <ellipse cx="25" cy={isSleeping ? '38' : '26'} rx="2.5" ry="4" fill={eyeColor} />
+                  <ellipse cx="39" cy={isSleeping ? '38' : '26'} rx="2.5" ry="4" fill={eyeColor} />
+                  {/* Big shine */}
+                  <ellipse cx="23" cy={isSleeping ? '35' : '23'} rx="2" ry="2.5" fill="white" />
+                  <ellipse cx="37" cy={isSleeping ? '35' : '23'} rx="2" ry="2.5" fill="white" />
+                  {/* Small shine */}
+                  <circle cx="27" cy={isSleeping ? '40' : '28'} r="1" fill="white" opacity="0.7" />
+                  <circle cx="41" cy={isSleeping ? '40' : '28'} r="1" fill="white" opacity="0.7" />
                 </>
               ) : (
-                // Normal eyes
+                // Normal cute eyes - big with shine
                 <>
-                  <ellipse cx="27" cy={isSleeping ? '40' : '26'} rx="2.5" ry="3" fill={eyeColor} />
-                  <ellipse cx="37" cy={isSleeping ? '40' : '26'} rx="2.5" ry="3" fill={eyeColor} />
-                  <circle cx="26" cy={isSleeping ? '39' : '25'} r="1" fill="white" opacity="0.8" />
-                  <circle cx="36" cy={isSleeping ? '39' : '25'} r="1" fill="white" opacity="0.8" />
+                  {/* Eye whites */}
+                  <ellipse cx="25" cy={isSleeping ? '38' : '26'} rx="5.5" ry="6.5" fill="white" />
+                  <ellipse cx="39" cy={isSleeping ? '38' : '26'} rx="5.5" ry="6.5" fill="white" />
+                  {/* Iris - cute green/teal */}
+                  <ellipse cx="25" cy={isSleeping ? '38' : '26'} rx="4.5" ry="5.5" fill="#6ee7b7" />
+                  <ellipse cx="39" cy={isSleeping ? '38' : '26'} rx="4.5" ry="5.5" fill="#6ee7b7" />
+                  {/* Pupils */}
+                  <ellipse cx="25" cy={isSleeping ? '38' : '26'} rx="2" ry="3.5" fill={eyeColor} />
+                  <ellipse cx="39" cy={isSleeping ? '38' : '26'} rx="2" ry="3.5" fill={eyeColor} />
+                  {/* Big shine */}
+                  <ellipse cx="23" cy={isSleeping ? '35' : '23'} rx="1.8" ry="2.2" fill="white" />
+                  <ellipse cx="37" cy={isSleeping ? '35' : '23'} rx="1.8" ry="2.2" fill="white" />
+                  {/* Small shine */}
+                  <circle cx="27" cy={isSleeping ? '40' : '28'} r="0.8" fill="white" opacity="0.6" />
+                  <circle cx="41" cy={isSleeping ? '40' : '28'} r="0.8" fill="white" opacity="0.6" />
                 </>
               )}
             </g>
           ) : (
-            // Closed eyes (sleeping or blinking)
+            // Closed eyes (sleeping or blinking) - curved lines
             <g>
               <path 
-                d={isSleeping ? "M24 40 Q27 42 30 40" : "M24 26 Q27 28 30 26"} 
+                d={isSleeping ? "M20 40 Q25 44 30 40" : "M20 26 Q25 30 30 26"} 
                 stroke={eyeColor} 
-                strokeWidth="1.5" 
-                fill="none" 
+                strokeWidth="2" 
+                fill="none"
+                strokeLinecap="round"
               />
               <path 
-                d={isSleeping ? "M34 40 Q37 42 40 40" : "M34 26 Q37 28 40 26"} 
+                d={isSleeping ? "M34 40 Q39 44 44 40" : "M34 26 Q39 30 44 26"} 
                 stroke={eyeColor} 
-                strokeWidth="1.5" 
-                fill="none" 
+                strokeWidth="2" 
+                fill="none"
+                strokeLinecap="round"
               />
             </g>
           )}
           
-          {/* Nose */}
-          <ellipse 
-            cx="32" 
-            cy={isSleeping ? '45' : '31'} 
-            rx="1.5" 
-            ry="1" 
-            fill={noseColor} 
+          {/* Nose - cute small triangle/heart shape */}
+          <path
+            d={isSleeping ? "M30 46 L32 44 L34 46 Q32 48 30 46" : "M30 34 L32 32 L34 34 Q32 36 30 34"}
+            fill={noseColor}
           />
           
-          {/* Mouth - open when meowing */}
+          {/* Mouth - cute cat smile */}
           {isMeowing ? (
+            // Open mouth when meowing
             <ellipse
               cx="32"
-              cy="34"
-              rx="2.5"
-              ry="2"
-              fill="#1f2937"
+              cy={isSleeping ? '50' : '38'}
+              rx="3"
+              ry="2.5"
+              fill="#374151"
               className="animate-cat-mouth-meow"
             />
+          ) : isYawning ? (
+            // Big yawn mouth
+            <ellipse
+              cx="32"
+              cy={isSleeping ? '50' : '38'}
+              rx="4"
+              ry="3"
+              fill="#374151"
+            />
           ) : (
+            // Cute W-shaped cat mouth
             <path
-              d={isSleeping ? "M30 47 Q32 49 34 47" : "M30 33 Q32 35 34 33"}
-              stroke={isDark ? '#4b5563' : '#92400e'}
-              strokeWidth="1"
+              d={isSleeping ? "M28 48 Q30 50 32 48 Q34 50 36 48" : "M28 36 Q30 38 32 36 Q34 38 36 36"}
+              stroke={isDark ? '#6b7280' : '#374151'}
+              strokeWidth="1.2"
               fill="none"
+              strokeLinecap="round"
             />
           )}
           
-          {/* Whiskers */}
-          <g stroke={whiskerColor} strokeWidth="0.5" className={stateStr === 'tap_reaction' ? 'animate-cat-whisker-twitch' : ''}>
-            <line x1="18" y1={isSleeping ? '44' : '30'} x2="26" y2={isSleeping ? '45' : '31'} />
-            <line x1="18" y1={isSleeping ? '46' : '32'} x2="26" y2={isSleeping ? '46' : '32'} />
-            <line x1="18" y1={isSleeping ? '48' : '34'} x2="26" y2={isSleeping ? '47' : '33'} />
-            <line x1="46" y1={isSleeping ? '44' : '30'} x2="38" y2={isSleeping ? '45' : '31'} />
-            <line x1="46" y1={isSleeping ? '46' : '32'} x2="38" y2={isSleeping ? '46' : '32'} />
-            <line x1="46" y1={isSleeping ? '48' : '34'} x2="38" y2={isSleeping ? '47' : '33'} />
+          {/* Whiskers - cute and subtle */}
+          <g stroke={isDark ? '#9ca3af' : '#d1d5db'} strokeWidth="0.8" opacity="0.8" className={whiskerClass}>
+            <line x1="12" y1={isSleeping ? '42' : '30'} x2="20" y2={isSleeping ? '44' : '32'} />
+            <line x1="11" y1={isSleeping ? '46' : '34'} x2="20" y2={isSleeping ? '46' : '34'} />
+            <line x1="12" y1={isSleeping ? '50' : '38'} x2="20" y2={isSleeping ? '48' : '36'} />
+            <line x1="52" y1={isSleeping ? '42' : '30'} x2="44" y2={isSleeping ? '44' : '32'} />
+            <line x1="53" y1={isSleeping ? '46' : '34'} x2="44" y2={isSleeping ? '46' : '34'} />
+            <line x1="52" y1={isSleeping ? '50' : '38'} x2="44" y2={isSleeping ? '48' : '36'} />
           </g>
         </g>
         
         {/* Sleep Zs */}
         {isSleeping && (
           <g className="animate-cat-zzz">
-            <text x="48" y="32" className="text-[8px] fill-primary font-bold">z</text>
-            <text x="52" y="26" className="text-[6px] fill-primary font-bold opacity-70">z</text>
-            <text x="56" y="22" className="text-[5px] fill-primary font-bold opacity-50">z</text>
+            <text x="50" y="28" className="text-[10px] fill-primary font-bold">z</text>
+            <text x="54" y="22" className="text-[8px] fill-primary font-bold opacity-70">z</text>
+            <text x="58" y="18" className="text-[6px] fill-primary font-bold opacity-50">z</text>
           </g>
         )}
         
         {/* Grooming paw near face */}
         {stateStr === 'grooming' && (
           <ellipse
-            cx="28"
-            cy="28"
-            rx="3"
-            ry="4"
+            cx="26"
+            cy="30"
+            rx="4"
+            ry="5"
             fill={bodyColor}
             className="animate-cat-groom-paw"
           />
@@ -590,7 +648,7 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
       <g 
         className="cat-costume-layer"
         style={{
-          transform: isSleeping ? 'translate(0, 14px)' : 'none',
+          transform: isSleeping ? 'translate(0, 12px)' : 'none',
           transformOrigin: 'center',
         }}
       >
