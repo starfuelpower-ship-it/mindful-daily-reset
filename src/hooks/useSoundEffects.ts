@@ -15,11 +15,20 @@ const getAudioContext = () => {
 // Cache for audio elements
 const audioCache: Record<string, HTMLAudioElement> = {};
 
-// Preload kitten sounds - cute, adorable baby cat mews
+// Preload kitten sounds - 15 cute, adorable baby cat mews
 const KITTEN_SOUNDS = [
   '/audio/kitten-mew-1.mp3',
   '/audio/kitten-mew-2.mp3',
   '/audio/kitten-mew-3.mp3',
+  '/audio/kitten-mew-4.mp3',
+  '/audio/kitten-mew-5.mp3',
+  '/audio/kitten-mew-6.mp3',
+  '/audio/kitten-mew-7.mp3',
+  '/audio/kitten-mew-8.mp3',
+  '/audio/kitten-mew-9.mp3',
+  '/audio/kitten-mew-10.mp3',
+  '/audio/kitten-mew-11.mp3',
+  '/audio/kitten-mew-12.mp3',
 ];
 
 // Preload audio files
