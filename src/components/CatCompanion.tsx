@@ -86,23 +86,53 @@ export const CatCompanion = memo(() => {
 
   // Track last interaction time for idle purring
   const lastInteractionRef = useRef<number>(Date.now());
+  // Track when purr last played to enforce 60 second cooldown
+  const lastPurrTimeRef = useRef<number>(0);
+  // Track purr audio element to stop after 3-4 seconds
+  const purrAudioRef = useRef<HTMLAudioElement | null>(null);
   
   // Random purring when sleeping or idle (no interaction for 15+ seconds)
+  // Purr only lasts 3-4 seconds, then stops, with 60 second cooldown before next purr
   useEffect(() => {
     if (!showCompanion || companionType !== 'cat') return;
     
     const purrInterval = setInterval(() => {
-      const timeSinceInteraction = Date.now() - lastInteractionRef.current;
+      const now = Date.now();
+      const timeSinceInteraction = now - lastInteractionRef.current;
+      const timeSinceLastPurr = now - lastPurrTimeRef.current;
       const shouldPurr = isCatSleeping || timeSinceInteraction > 15000;
       
-      // Random chance to purr (30% every 8-15 seconds)
-      if (shouldPurr && Math.random() < 0.3) {
-        playSound('purr');
+      // Only purr if 60+ seconds since last purr and conditions met
+      if (shouldPurr && timeSinceLastPurr > 60000 && Math.random() < 0.4) {
+        lastPurrTimeRef.current = now;
+        
+        // Create audio element for purr so we can stop it after 3-4 seconds
+        const purrAudio = new Audio('/audio/cat-purr.mp3');
+        purrAudio.volume = 0.25;
+        purrAudioRef.current = purrAudio;
+        purrAudio.play().catch(() => {});
+        
+        // Stop purr after 3-4 seconds
+        const purrDuration = 3000 + Math.random() * 1000;
+        setTimeout(() => {
+          if (purrAudioRef.current === purrAudio) {
+            purrAudio.pause();
+            purrAudio.currentTime = 0;
+            purrAudioRef.current = null;
+          }
+        }, purrDuration);
       }
-    }, 8000 + Math.random() * 7000);
+    }, 10000); // Check every 10 seconds
     
-    return () => clearInterval(purrInterval);
-  }, [isCatSleeping, showCompanion, companionType, playSound]);
+    return () => {
+      clearInterval(purrInterval);
+      // Stop any playing purr on cleanup
+      if (purrAudioRef.current) {
+        purrAudioRef.current.pause();
+        purrAudioRef.current = null;
+      }
+    };
+  }, [isCatSleeping, showCompanion, companionType]);
 
   // Play cat sounds for reactions - only if not sleeping
   useEffect(() => {
