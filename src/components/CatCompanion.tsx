@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo, useCallback } from 'react';
-import { useCompanion } from '@/contexts/CompanionContext';
+import { useCompanion, CAT_COLORS, CatColor } from '@/contexts/CompanionContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useCatBehavior, CatState } from '@/hooks/useCatBehavior';
@@ -39,7 +39,7 @@ const loadSavedScale = () => {
 };
 
 export const CatCompanion = memo(() => {
-  const { showCompanion, companionType, currentReaction, equippedCostume } = useCompanion();
+  const { showCompanion, companionType, currentReaction, equippedCostume, catColor } = useCompanion();
   const { resolvedTheme } = useTheme();
   const { playSound, triggerHaptic } = useSoundEffects();
   
@@ -243,6 +243,7 @@ export const CatCompanion = memo(() => {
               state={currentState} 
               isDark={isDark} 
               costume={equippedCostume}
+              catColor={catColor}
             />
           </div>
         </div>
@@ -260,12 +261,15 @@ interface CatBodyProps {
   state: CatState;
   isDark: boolean;
   costume: string;
+  catColor: CatColor;
 }
 
-const CatBody = memo(({ state, isDark, costume }: CatBodyProps) => {
-  const bodyColor = isDark ? '#9ca3af' : '#fde68a';
-  const bodyColorDark = isDark ? '#6b7280' : '#fcd34d';
-  const innerEarColor = isDark ? '#6b7280' : '#fbcfe8';
+const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
+  const colorData = CAT_COLORS[catColor];
+  // In dark mode, use gray tones for better visibility unless user explicitly chose a color
+  const bodyColor = isDark && catColor === 'default' ? '#9ca3af' : colorData.body;
+  const bodyColorDark = isDark && catColor === 'default' ? '#6b7280' : colorData.bodyDark;
+  const innerEarColor = isDark && catColor === 'default' ? '#6b7280' : colorData.innerEar;
   const eyeColor = '#1f2937';
   const noseColor = '#f472b6';
   const whiskerColor = isDark ? '#6b7280' : '#fbbf24';
