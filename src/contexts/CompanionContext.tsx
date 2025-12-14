@@ -5,6 +5,19 @@ import type { CostumeType } from '@/components/CatCostume';
 
 export type CompanionType = 'cat' | 'none';
 
+export type CatColor = 'default' | 'orange' | 'gray' | 'cream' | 'brown' | 'black' | 'white' | 'calico';
+
+export const CAT_COLORS: Record<CatColor, { name: string; body: string; bodyDark: string; innerEar: string }> = {
+  default: { name: 'Golden', body: '#fde68a', bodyDark: '#fcd34d', innerEar: '#fbcfe8' },
+  orange: { name: 'Orange Tabby', body: '#fb923c', bodyDark: '#ea580c', innerEar: '#fed7aa' },
+  gray: { name: 'Gray', body: '#9ca3af', bodyDark: '#6b7280', innerEar: '#e5e7eb' },
+  cream: { name: 'Cream', body: '#fef3c7', bodyDark: '#fde68a', innerEar: '#fce7f3' },
+  brown: { name: 'Brown', body: '#a78bfa', bodyDark: '#8b5cf6', innerEar: '#e9d5ff' },
+  black: { name: 'Black', body: '#374151', bodyDark: '#1f2937', innerEar: '#6b7280' },
+  white: { name: 'White', body: '#f9fafb', bodyDark: '#e5e7eb', innerEar: '#fce7f3' },
+  calico: { name: 'Calico', body: '#fef3c7', bodyDark: '#fdba74', innerEar: '#fce7f3' },
+};
+
 interface CompanionContextType {
   showCompanion: boolean;
   setShowCompanion: (show: boolean) => void;
@@ -12,6 +25,8 @@ interface CompanionContextType {
   setCompanionType: (type: CompanionType) => void;
   equippedCostume: CostumeType;
   setEquippedCostume: (costume: CostumeType) => Promise<void>;
+  catColor: CatColor;
+  setCatColor: (color: CatColor) => void;
   triggerReaction: (type: 'habit_complete' | 'all_complete') => void;
   currentReaction: 'habit_complete' | 'all_complete' | null;
   isLoading: boolean;
@@ -22,6 +37,7 @@ const CompanionContext = createContext<CompanionContextType | undefined>(undefin
 const COMPANION_SHOW_KEY = 'daily-reset-show-companion';
 const COMPANION_TYPE_KEY = 'daily-reset-companion-type';
 const EQUIPPED_COSTUME_KEY = 'daily-reset-equipped-costume';
+const CAT_COLOR_KEY = 'daily-reset-cat-color';
 
 export function CompanionProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -48,6 +64,14 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
       return (stored as CostumeType) || 'none';
     }
     return 'none';
+  });
+
+  const [catColor, setCatColorState] = useState<CatColor>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(CAT_COLOR_KEY);
+      return (stored as CatColor) || 'default';
+    }
+    return 'default';
   });
 
   const [currentReaction, setCurrentReaction] = useState<'habit_complete' | 'all_complete' | null>(null);
@@ -146,6 +170,15 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem(EQUIPPED_COSTUME_KEY, equippedCostume);
   }, [equippedCostume]);
+
+  useEffect(() => {
+    localStorage.setItem(CAT_COLOR_KEY, catColor);
+  }, [catColor]);
+
+  const setCatColor = useCallback((color: CatColor) => {
+    setCatColorState(color);
+    localStorage.setItem(CAT_COLOR_KEY, color);
+  }, []);
 
   const setShowCompanion = useCallback(async (show: boolean) => {
     setLocalShowCompanion(show);
@@ -257,6 +290,8 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
         setCompanionType,
         equippedCostume,
         setEquippedCostume,
+        catColor,
+        setCatColor,
         triggerReaction,
         currentReaction,
         isLoading,
