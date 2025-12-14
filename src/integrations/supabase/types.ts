@@ -774,6 +774,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_group_xp: {
+        Args: { _group_id: string; _xp_amount: number }
+        Returns: Json
+      }
       award_points: {
         Args: { _amount: number; _description?: string; _type: string }
         Returns: Json
