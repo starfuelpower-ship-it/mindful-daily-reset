@@ -15,8 +15,15 @@ const getAudioContext = () => {
 // Cache for audio elements
 const audioCache: Record<string, HTMLAudioElement> = {};
 
-// Preload cat meow sounds
-const CAT_MEOW_SOUNDS = ['/audio/cat-meow-1.mp3', '/audio/cat-meow-2.mp3'];
+// Preload cat meow sounds - variety of cute, adorable mews
+const CAT_MEOW_SOUNDS = [
+  '/audio/cat-meow-1.mp3',
+  '/audio/cat-meow-2.mp3',
+  '/audio/cat-meow-3.mp3',
+  '/audio/cat-meow-4.mp3',
+  '/audio/cat-meow-5.mp3',
+  '/audio/cat-meow-6.mp3',
+];
 
 // Preload audio files
 const preloadAudio = (src: string): HTMLAudioElement => {
