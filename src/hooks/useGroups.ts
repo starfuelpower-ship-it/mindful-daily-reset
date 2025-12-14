@@ -541,28 +541,31 @@ export function useGroups() {
     if (!user || !currentGroup) return;
 
     try {
-      const newXP = (currentGroup.total_xp || 0) + xp;
-      const newLevel = Math.floor(newXP / 500) + 1;
-
-      const { error } = await supabase
-        .from('groups')
-        .update({ total_xp: newXP, level: newLevel })
-        .eq('id', groupId);
+      // Use secure server-side RPC to add XP (validates membership and amount)
+      const { data, error } = await supabase.rpc('add_group_xp', {
+        _group_id: groupId,
+        _xp_amount: xp
+      });
 
       if (error) throw error;
 
-      // Check for level up achievement
-      if (newLevel > (currentGroup.level || 1)) {
-        await supabase.from('group_achievements').insert({
-          group_id: groupId,
-          achievement_type: 'level_up',
-          title: `Level ${newLevel} Reached!`,
-          description: `The group has reached level ${newLevel}`
-        });
-        fetchAchievements(groupId);
-      }
+      const result = data as { success: boolean; total_xp?: number; level?: number; leveled_up?: boolean; error?: string } | null;
 
-      setCurrentGroup(prev => prev ? { ...prev, total_xp: newXP, level: newLevel } : null);
+      if (result?.success) {
+        // Update local state with server-validated values
+        setCurrentGroup(prev => prev ? { 
+          ...prev, 
+          total_xp: result.total_xp ?? prev.total_xp, 
+          level: result.level ?? prev.level 
+        } : null);
+
+        // Refresh achievements if leveled up (server handles achievement creation)
+        if (result.leveled_up) {
+          fetchAchievements(groupId);
+        }
+      } else {
+        console.error('Failed to add XP:', result?.error);
+      }
     } catch (error) {
       console.error('Error adding XP:', error);
     }
