@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 20 10% 15%;
     
-    --primary: 350 80% 65%;
+    --primary: 43 90% 58%;
     --primary-foreground: 0 0% 100%;
     
     --secondary: 30 60% 95%;
@@ -33,7 +33,7 @@
     
     --border: 20 20% 90%;
     --input: 20 20% 90%;
-    --ring: 350 80% 65%;
+    --ring: 43 90% 58%;
     
     --radius: 1rem;
     
@@ -42,18 +42,18 @@
     --category-productivity: 220 70% 60%;
     --category-fitness: 25 80% 55%;
     --category-mindset: 280 60% 65%;
-    --category-custom: 350 70% 65%;
+    --category-custom: 43 85% 55%;
     
     /* Habit category colors */
     --habit-health: 150 60% 55%;
     --habit-work: 220 70% 60%;
     --habit-mind: 280 60% 65%;
     --habit-social: 35 90% 60%;
-    --habit-custom: 350 70% 65%;
+    --habit-custom: 43 85% 55%;
     
     /* Gradient backgrounds */
-    --gradient-pastel: linear-gradient(180deg, hsl(20 50% 98%) 0%, hsl(350 40% 96%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(20 30% 98%) 100%);
+    --gradient-pastel: linear-gradient(180deg, hsl(20 50% 98%) 0%, hsl(43 40% 96%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(43 30% 98%) 100%);
     
     /* Shadows */
     --shadow-sm: 0 2px 8px -2px hsl(20 20% 20% / 0.08);
@@ -83,7 +83,7 @@
     --popover: 20 15% 14%;
     --popover-foreground: 20 10% 95%;
     
-    --primary: 350 75% 60%;
+    --primary: 43 85% 55%;
     --primary-foreground: 0 0% 100%;
     
     --secondary: 20 15% 18%;
@@ -100,10 +100,10 @@
     
     --border: 20 15% 22%;
     --input: 20 15% 22%;
-    --ring: 350 75% 60%;
+    --ring: 43 85% 55%;
     
-    --gradient-pastel: linear-gradient(180deg, hsl(20 15% 10%) 0%, hsl(350 15% 12%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(20 15% 14%) 0%, hsl(20 15% 16%) 100%);
+    --gradient-pastel: linear-gradient(180deg, hsl(20 15% 10%) 0%, hsl(43 15% 12%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(20 15% 14%) 0%, hsl(43 15% 16%) 100%);
     
     --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.3);
     --shadow-card: 0 4px 16px -4px hsl(0 0% 0% / 0.4);

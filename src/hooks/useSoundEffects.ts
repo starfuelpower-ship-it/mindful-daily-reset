@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 
-type SoundType = 'click' | 'success' | 'complete' | 'pop' | 'purr' | 'achievement';
+type SoundType = 'click' | 'success' | 'complete' | 'pop' | 'purr' | 'achievement' | 'button';
 
 // Create audio context lazily to avoid autoplay restrictions
 let audioContext: AudioContext | null = null;
@@ -42,6 +42,11 @@ const playTone = (frequency: number, duration: number, type: OscillatorType = 's
 const SOUNDS: Record<SoundType, () => void> = {
   click: () => {
     playTone(800, 0.05, 'sine', 0.08);
+  },
+  button: () => {
+    // Satisfying soft tap with subtle harmonic
+    playTone(880, 0.04, 'sine', 0.12);
+    setTimeout(() => playTone(1320, 0.03, 'sine', 0.06), 20);
   },
   pop: () => {
     playTone(600, 0.08, 'sine', 0.1);
