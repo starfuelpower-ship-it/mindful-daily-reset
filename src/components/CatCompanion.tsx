@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { useCompanion, CAT_COLORS, CatColor } from '@/contexts/CompanionContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useSoundEffects, getRandomTapSound, getHabitCompleteSound } from '@/hooks/useSoundEffects';
 import { useCatBehavior, CatState } from '@/hooks/useCatBehavior';
 import { CatCostume } from './CatCostume';
 import { cn } from '@/lib/utils';
@@ -79,19 +79,22 @@ export const CatCompanion = memo(() => {
     }
   }, [currentState, walkDirection, walkProgress]);
 
-  // Play sounds for reactions
+  // Play cat sounds for reactions
   useEffect(() => {
     if (currentReaction === 'habit_complete') {
-      playSound('success');
+      // Play a random happy cat sound when habit is completed
+      playSound(getHabitCompleteSound());
     } else if (currentReaction === 'all_complete') {
+      // Play achievement sound + happy meow for all habits complete
       playSound('achievement');
+      setTimeout(() => playSound('meow_happy'), 300);
     }
   }, [currentReaction, playSound]);
 
-  // Handle tap on cat
+  // Handle tap on cat - play random cat sounds
   const handleCatTap = useCallback(() => {
     triggerTapReaction();
-    playSound('purr');
+    playSound(getRandomTapSound());
     triggerHaptic('light');
   }, [triggerTapReaction, playSound, triggerHaptic]);
 
