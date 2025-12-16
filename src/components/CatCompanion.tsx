@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo, useCallback } from 'react';
-import { useCompanion, CAT_COLORS, CatColor } from '@/contexts/CompanionContext';
+import { useCompanion, CAT_COLORS, CatColor, CatPattern } from '@/contexts/CompanionContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useSoundEffects, getRandomTapSound, getHabitCompleteSound } from '@/hooks/useSoundEffects';
 import { useCatBehavior, CatState } from '@/hooks/useCatBehavior';
@@ -39,7 +39,7 @@ const loadSavedScale = () => {
 };
 
 export const CatCompanion = memo(() => {
-  const { showCompanion, companionType, currentReaction, equippedCostume, catColor, catSize, catSoundsEnabled } = useCompanion();
+  const { showCompanion, companionType, currentReaction, equippedCostume, catColor, catSize, catSoundsEnabled, catPattern, previewPattern } = useCompanion();
   const { resolvedTheme } = useTheme();
   const { playSound, triggerHaptic } = useSoundEffects();
   
@@ -308,6 +308,7 @@ export const CatCompanion = memo(() => {
               isDark={isDark} 
               costume={equippedCostume}
               catColor={catColor}
+              catPattern={previewPattern || catPattern}
             />
           </div>
         </div>
@@ -326,9 +327,10 @@ interface CatBodyProps {
   isDark: boolean;
   costume: string;
   catColor: CatColor;
+  catPattern: CatPattern;
 }
 
-const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
+const CatBody = memo(({ state, isDark, costume, catColor, catPattern }: CatBodyProps) => {
   const colorData = CAT_COLORS[catColor];
   // In dark mode, use gray tones for better visibility unless user explicitly chose a color
   const bodyColor = isDark && catColor === 'default' ? '#9ca3af' : colorData.body;
@@ -481,6 +483,77 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
           className={isSleeping ? 'animate-cat-breathe' : ''}
         />
         
+        {/* Pattern overlays on body */}
+        {catPattern !== 'none' && (
+          <g className="cat-pattern" style={{ opacity: 0.6 }}>
+            {catPattern === 'tabby' && (
+              <>
+                <path d={isSleeping ? "M24 44 Q28 42 32 44" : "M22 40 Q28 38 34 40"} stroke={bodyColorDark} strokeWidth="1.5" fill="none" />
+                <path d={isSleeping ? "M26 46 Q30 44 36 46" : "M24 42 Q30 40 38 42"} stroke={bodyColorDark} strokeWidth="1.5" fill="none" />
+                <path d={isSleeping ? "M28 48 Q32 46 38 48" : "M26 44 Q32 42 40 44"} stroke={bodyColorDark} strokeWidth="1.5" fill="none" />
+              </>
+            )}
+            {catPattern === 'spots' && (
+              <>
+                <circle cx={isSleeping ? '26' : '24'} cy={isSleeping ? '44' : '40'} r="2" fill={bodyColorDark} />
+                <circle cx={isSleeping ? '34' : '32'} cy={isSleeping ? '46' : '42'} r="1.5" fill={bodyColorDark} />
+                <circle cx={isSleeping ? '38' : '38'} cy={isSleeping ? '44' : '40'} r="2" fill={bodyColorDark} />
+                <circle cx={isSleeping ? '30' : '28'} cy={isSleeping ? '48' : '44'} r="1.5" fill={bodyColorDark} />
+              </>
+            )}
+            {catPattern === 'tuxedo' && (
+              <ellipse 
+                cx="32" 
+                cy={isSleeping ? '48' : '46'} 
+                rx={isSleeping ? '6' : '7'} 
+                ry={isSleeping ? '4' : '5'} 
+                fill="#f9fafb" 
+              />
+            )}
+            {catPattern === 'siamese' && (
+              <>
+                <ellipse cx="32" cy={isSleeping ? '46' : '42'} rx={isSleeping ? '12' : '14'} ry={isSleeping ? '8' : '10'} fill={bodyColorDark} style={{ opacity: 0.3 }} />
+              </>
+            )}
+            {catPattern === 'tiger' && (
+              <>
+                <path d={isSleeping ? "M22 44 L24 48" : "M20 38 L22 44"} stroke={bodyColorDark} strokeWidth="2" strokeLinecap="round" />
+                <path d={isSleeping ? "M28 43 L29 49" : "M26 37 L27 45"} stroke={bodyColorDark} strokeWidth="2" strokeLinecap="round" />
+                <path d={isSleeping ? "M34 43 L35 49" : "M34 37 L35 45"} stroke={bodyColorDark} strokeWidth="2" strokeLinecap="round" />
+                <path d={isSleeping ? "M40 44 L42 48" : "M40 38 L42 44"} stroke={bodyColorDark} strokeWidth="2" strokeLinecap="round" />
+              </>
+            )}
+            {catPattern === 'tortie' && (
+              <>
+                <ellipse cx={isSleeping ? '26' : '24'} cy={isSleeping ? '44' : '40'} rx="4" ry="3" fill="#fb923c" style={{ opacity: 0.7 }} />
+                <ellipse cx={isSleeping ? '38' : '38'} cy={isSleeping ? '46' : '42'} rx="3" ry="2" fill="#374151" style={{ opacity: 0.5 }} />
+                <ellipse cx={isSleeping ? '32' : '30'} cy={isSleeping ? '48' : '44'} rx="3" ry="2" fill="#fb923c" style={{ opacity: 0.6 }} />
+              </>
+            )}
+            {catPattern === 'bicolor' && (
+              <ellipse 
+                cx={isSleeping ? '38' : '40'} 
+                cy={isSleeping ? '46' : '42'} 
+                rx={isSleeping ? '8' : '10'} 
+                ry={isSleeping ? '6' : '8'} 
+                fill="#f9fafb" 
+                style={{ opacity: 0.9 }}
+              />
+            )}
+            {catPattern === 'van' && (
+              <>
+                <ellipse cx="32" cy={isSleeping ? '46' : '42'} rx={isSleeping ? '10' : '12'} ry={isSleeping ? '6' : '8'} fill="#f9fafb" style={{ opacity: 0.95 }} />
+              </>
+            )}
+            {catPattern === 'hearts' && (
+              <>
+                <path d={isSleeping ? "M26 45 C24 43 26 41 28 43 C30 41 32 43 30 45 L28 47 Z" : "M24 41 C22 39 24 37 26 39 C28 37 30 39 28 41 L26 43 Z"} fill="#f472b6" style={{ opacity: 0.8 }} />
+                <path d={isSleeping ? "M36 44 C35 43 36 42 37 43 C38 42 39 43 38 44 L37 45 Z" : "M36 40 C35 39 36 38 37 39 C38 38 39 39 38 40 L37 41 Z"} fill="#f472b6" style={{ opacity: 0.7 }} />
+              </>
+            )}
+          </g>
+        )}
+        
         {/* Back legs (visible when not sleeping) */}
         {!isSleeping && (
           <>
@@ -519,6 +592,27 @@ const CatBody = memo(({ state, isDark, costume, catColor }: CatBodyProps) => {
             r="12"
             fill={bodyColor}
           />
+          
+          {/* Head pattern overlays */}
+          {catPattern !== 'none' && (
+            <g className="cat-head-pattern" style={{ opacity: 0.6 }}>
+              {catPattern === 'tabby' && (
+                <path d={isSleeping ? "M28 38 L32 36 L36 38" : "M28 24 L32 22 L36 24"} stroke={bodyColorDark} strokeWidth="1.5" fill="none" />
+              )}
+              {catPattern === 'siamese' && (
+                <>
+                  <ellipse cx="27" cy={isSleeping ? '42' : '28'} rx="4" ry="5" fill={bodyColorDark} style={{ opacity: 0.4 }} />
+                  <ellipse cx="37" cy={isSleeping ? '42' : '28'} rx="4" ry="5" fill={bodyColorDark} style={{ opacity: 0.4 }} />
+                </>
+              )}
+              {catPattern === 'van' && (
+                <circle cx="32" cy={isSleeping ? '38' : '24'} r="5" fill={bodyColor} />
+              )}
+              {catPattern === 'hearts' && (
+                <path d={isSleeping ? "M30 38 C29 37 30 36 31 37 C32 36 33 37 32 38 L31 39 Z" : "M30 24 C29 23 30 22 31 23 C32 22 33 23 32 24 L31 25 Z"} fill="#f472b6" style={{ opacity: 0.7 }} />
+              )}
+            </g>
+          )}
           
           {/* Left ear - smaller cute pointy */}
           <path
