@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +22,7 @@ import {
 import { Category, OLD_CATEGORY_CONFIG } from '@/types/habit';
 import { HabitIconPicker } from './HabitIconPicker';
 import { HabitColorPicker } from './HabitColorPicker';
+import { GentleHabitSuggestion } from './GentleHabitSuggestion';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Badge } from '@/components/ui/badge';
 
@@ -173,6 +175,7 @@ interface AddHabitDialogProps {
 }
 
 export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSave }: AddHabitDialogProps) {
+  const navigate = useNavigate();
   const { isPremium } = usePremium();
   const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState('');
@@ -263,6 +266,16 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
           />
         </div>
       </div>
+
+      {/* Gentle AI suggestion */}
+      {name.trim().length >= 3 && (
+        <GentleHabitSuggestion
+          habitName={name}
+          isPremium={isPremium}
+          onAccept={(gentlerName) => setName(gentlerName)}
+          onUpgrade={() => navigate('/premium')}
+        />
+      )}
 
       {/* Category */}
       <div className="space-y-2">
