@@ -117,27 +117,27 @@ const SOUNDS: Record<SoundType, () => void> = {
     playAudioFile('/audio/cat-purr.mp3', 0.25);
   },
   meow: () => {
-    // Play random kitten mew sound - 35% softer
+    // Play random kitten mew sound - 50% quieter (was 0.32, now ~0.16)
     const randomMew = KITTEN_SOUNDS[Math.floor(Math.random() * KITTEN_SOUNDS.length)];
-    playAudioFile(randomMew, 0.32);
+    playAudioFile(randomMew, 0.16);
   },
   meow_happy: () => {
-    // Play random kitten mew - 35% softer
+    // Play random kitten mew - 50% quieter
     const randomMew = KITTEN_SOUNDS[Math.floor(Math.random() * KITTEN_SOUNDS.length)];
-    playAudioFile(randomMew, 0.39);
+    playAudioFile(randomMew, 0.2);
   },
   meow_curious: () => {
-    // Play random kitten mew - 35% softer
+    // Play random kitten mew - 50% quieter
     const randomMew = KITTEN_SOUNDS[Math.floor(Math.random() * KITTEN_SOUNDS.length)];
-    playAudioFile(randomMew, 0.29);
+    playAudioFile(randomMew, 0.15);
   },
   chirp: () => {
-    // Play kitten chirp - 35% softer
-    playAudioFile(KITTEN_SOUNDS[0], 0.26);
+    // Play kitten chirp - 50% quieter
+    playAudioFile(KITTEN_SOUNDS[0], 0.13);
   },
   trill: () => {
-    // Play kitten trill - 35% softer
-    playAudioFile(KITTEN_SOUNDS[1], 0.29);
+    // Play kitten trill - 50% quieter
+    playAudioFile(KITTEN_SOUNDS[1], 0.15);
   },
   achievement: () => {
     // Triumphant fanfare

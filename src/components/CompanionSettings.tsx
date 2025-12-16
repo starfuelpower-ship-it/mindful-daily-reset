@@ -3,11 +3,11 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Cat, Palette, ChevronRight, Maximize2 } from 'lucide-react';
+import { Cat, Palette, ChevronRight, Maximize2, Volume2, VolumeX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function CompanionSettings() {
-  const { showCompanion, setShowCompanion, catSize, setCatSize } = useCompanion();
+  const { showCompanion, setShowCompanion, catSize, setCatSize, catSoundsEnabled, setCatSoundsEnabled } = useCompanion();
   const navigate = useNavigate();
 
   return (
@@ -53,6 +53,30 @@ export function CompanionSettings() {
               max={2}
               step={0.1}
               className="w-full"
+            />
+          </div>
+
+          {/* Cat Sounds Toggle */}
+          <div className="flex items-center justify-between pt-2 border-t border-border/50">
+            <div className="flex items-center gap-3">
+              {catSoundsEnabled ? (
+                <Volume2 className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <VolumeX className="w-4 h-4 text-muted-foreground" />
+              )}
+              <div>
+                <Label htmlFor="cat-sounds" className="text-sm">
+                  Cat Sounds
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Meows, purrs, and chirps
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="cat-sounds"
+              checked={catSoundsEnabled}
+              onCheckedChange={setCatSoundsEnabled}
             />
           </div>
 
