@@ -272,6 +272,7 @@ export type Database = {
           group_id: string
           id: string
           joined_at: string
+          last_xp_contribution: string | null
           streak: number
           user_id: string
         }
@@ -279,6 +280,7 @@ export type Database = {
           group_id: string
           id?: string
           joined_at?: string
+          last_xp_contribution?: string | null
           streak?: number
           user_id: string
         }
@@ -286,6 +288,7 @@ export type Database = {
           group_id?: string
           id?: string
           joined_at?: string
+          last_xp_contribution?: string | null
           streak?: number
           user_id?: string
         }
