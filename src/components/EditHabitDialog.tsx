@@ -23,6 +23,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Trash2 } from 'lucide-react';
 import { HabitIconPicker } from './HabitIconPicker';
 import { HabitColorPicker } from './HabitColorPicker';
+import { HabitDurationPicker, HabitDuration } from './HabitDurationPicker';
 import { GentleHabitSuggestion } from './GentleHabitSuggestion';
 import { OLD_CATEGORY_CONFIG, Category } from '@/types/habit';
 import { triggerHaptic } from '@/hooks/useSoundEffects';
@@ -33,7 +34,7 @@ interface EditHabitDialogProps {
   habit: CloudHabit | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdate: (id: string, updates: Partial<Pick<CloudHabit, 'name' | 'category' | 'notes' | 'color' | 'icon'>>) => void;
+  onUpdate: (id: string, updates: Partial<Pick<CloudHabit, 'name' | 'category' | 'notes' | 'color' | 'icon' | 'intention_duration' | 'intention_start_date'>>) => void;
   onDelete: (id: string) => void;
 }
 
@@ -51,6 +52,7 @@ export function EditHabitDialog({
   const [notes, setNotes] = useState('');
   const [color, setColor] = useState('');
   const [icon, setIcon] = useState('check-circle');
+  const [intentionDuration, setIntentionDuration] = useState<HabitDuration>('ongoing');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Reset form when habit changes
@@ -61,6 +63,7 @@ export function EditHabitDialog({
       setNotes(habit.notes || '');
       setColor(habit.color || '');
       setIcon(habit.icon || 'check-circle');
+      setIntentionDuration(habit.intention_duration || 'ongoing');
     }
   }, [habit]);
 
@@ -68,12 +71,18 @@ export function EditHabitDialog({
     e.preventDefault();
     if (!habit || !name.trim()) return;
     
+    const today = new Date().toISOString().split('T')[0];
+    const durationChanged = intentionDuration !== (habit.intention_duration || 'ongoing');
+    
     onUpdate(habit.id, { 
       name: name.trim(), 
       category, 
       notes: notes.trim(),
       color: isPremium ? color : undefined,
       icon,
+      intention_duration: intentionDuration === 'ongoing' ? null : intentionDuration,
+      // Reset start date if duration changed to a timed option
+      intention_start_date: durationChanged && intentionDuration !== 'ongoing' ? today : habit.intention_start_date,
     });
     onOpenChange(false);
   };
@@ -163,6 +172,12 @@ export function EditHabitDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Duration/Intention picker */}
+          <HabitDurationPicker
+            value={intentionDuration}
+            onChange={setIntentionDuration}
+          />
 
           <div className="space-y-2">
             <Label htmlFor="edit-notes">Notes (optional)</Label>
