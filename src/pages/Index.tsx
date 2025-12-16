@@ -7,6 +7,7 @@ import { usePoints, POINTS } from '@/contexts/PointsContext';
 import { useCloudHabits, CloudHabit } from '@/hooks/useCloudHabits';
 import { useHabits } from '@/hooks/useHabits';
 import { useUserSettings } from '@/hooks/useUserSettings';
+import { useInAppReview } from '@/hooks/useInAppReview';
 import { CloudHabitCard } from '@/components/CloudHabitCard';
 import { HabitCard } from '@/components/HabitCard';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -47,6 +48,7 @@ const Index = () => {
   const { playSound } = useSoundEffects();
   const { earnPoints, checkDailyBonus, checkWeeklyBonus, currentAnimation, clearAnimation } = usePoints();
   const { showTutorial, completeTutorial } = useTutorial();
+  const { trackHabitCompletion, tryRequestReview } = useInAppReview();
   const dailyBonusChecked = useRef(false);
   const initialLoadComplete = useRef(false);
   const prevCompletedCount = useRef<number | null>(null);
@@ -189,11 +191,22 @@ const Index = () => {
     }
   };
 
-  const handleToggleHabit = (id: string) => {
+  const handleToggleHabit = async (id: string) => {
+    // Find the habit to check if we're completing it
+    const habit = habits.find(h => h.id === id);
+    const isCompleting = habit && !(habit as any).completed_today && !(habit as any).completedToday;
+    
     if (isLoggedIn) {
       cloudHabits.toggleHabit(id);
     } else {
       localHabits.toggleHabit(id);
+    }
+    
+    // Track completion for in-app review (only when completing, not uncompleting)
+    if (isCompleting) {
+      trackHabitCompletion();
+      // Try to request review after tracking (checks criteria internally)
+      setTimeout(() => tryRequestReview(), 1000);
     }
   };
 

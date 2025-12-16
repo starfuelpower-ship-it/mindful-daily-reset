@@ -146,12 +146,15 @@ export const CatCompanion = memo(() => {
     }
   }, [currentReaction, playSound, isCatSleeping]);
 
-  // Handle tap on cat - play random cat sounds only if not sleeping
+  // Handle tap on cat - play soft pop sound + random cat sounds if not sleeping
   const handleCatTap = useCallback(() => {
     lastInteractionRef.current = Date.now(); // Reset interaction timer
     triggerTapReaction();
+    // Always play soft pop on tap (respects sound settings via playSound)
+    playSound('soft_pop');
     if (!isCatSleeping) {
-      playSound(getRandomTapSound());
+      // Also play a random cat sound after a tiny delay
+      setTimeout(() => playSound(getRandomTapSound()), 80);
     }
     triggerHaptic('light');
   }, [triggerTapReaction, playSound, triggerHaptic, isCatSleeping]);

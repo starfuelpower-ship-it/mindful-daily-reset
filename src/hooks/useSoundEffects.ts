@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 
-type SoundType = 'click' | 'success' | 'complete' | 'pop' | 'purr' | 'achievement' | 'button' | 'meow' | 'meow_happy' | 'meow_curious' | 'chirp' | 'trill';
+type SoundType = 'click' | 'success' | 'complete' | 'pop' | 'soft_pop' | 'purr' | 'achievement' | 'button' | 'meow' | 'meow_happy' | 'meow_curious' | 'chirp' | 'trill';
 
 // Create audio context lazily to avoid autoplay restrictions
 let audioContext: AudioContext | null = null;
@@ -95,6 +95,11 @@ const SOUNDS: Record<SoundType, () => void> = {
   pop: () => {
     playTone(600, 0.08, 'sine', 0.1);
     setTimeout(() => playTone(900, 0.06, 'sine', 0.08), 30);
+  },
+  soft_pop: () => {
+    // Soft, cozy pop for cat interactions - gentle and subtle
+    playTone(520, 0.06, 'sine', 0.06);
+    setTimeout(() => playTone(680, 0.04, 'sine', 0.04), 25);
   },
   success: () => {
     playTone(523, 0.1, 'sine', 0.1);
