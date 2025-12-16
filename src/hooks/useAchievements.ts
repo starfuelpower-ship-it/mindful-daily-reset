@@ -129,6 +129,7 @@ export function useAchievements() {
     rewardsVisited?: boolean;
     costumeEquipped?: boolean;
     catInteractions?: number;
+    widgetsViewed?: boolean;
     // Plant-related
     plantStage?: number;
     // Economy-related
@@ -146,6 +147,11 @@ export function useAchievements() {
 
     const hour = context.currentHour ?? new Date().getHours();
     const month = new Date().getMonth();
+
+    // === WIDGETS ACHIEVEMENT ===
+    if (context.widgetsViewed) {
+      await earnAchievement('cozy_companion_nearby');
+    }
     
     // === SECRET ACHIEVEMENTS ===
     
