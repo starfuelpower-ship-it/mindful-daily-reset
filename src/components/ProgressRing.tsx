@@ -60,7 +60,10 @@ export function ProgressRing({
       </svg>
       {showPercentage && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold text-foreground">
+          <span 
+            className="font-bold text-foreground"
+            style={{ fontSize: `${Math.max(size * 0.18, 10)}px` }}
+          >
             {Math.round(progress)}%
           </span>
         </div>
