@@ -1178,6 +1178,7 @@ export type Database = {
         Args: { _group_id: string; _xp_amount: number }
         Returns: Json
       }
+      archive_habit: { Args: { _habit_id: string }; Returns: undefined }
       award_points: {
         Args: { _amount: number; _description?: string; _type: string }
         Returns: Json
@@ -1192,6 +1193,7 @@ export type Database = {
       purchase_costume: { Args: { _costume_id: string }; Returns: Json }
       purchase_decoration: { Args: { _decoration_id: string }; Returns: Json }
       purchase_seed: { Args: { _seed_id: string }; Returns: Json }
+      restore_habit: { Args: { _habit_id: string }; Returns: undefined }
       spend_points: {
         Args: { _amount: number; _description: string }
         Returns: Json

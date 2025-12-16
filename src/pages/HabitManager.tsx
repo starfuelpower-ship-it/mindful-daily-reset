@@ -31,13 +31,21 @@ export default function HabitManager() {
   };
 
   const archiveHabit = async (id: string) => {
-    await supabase.from('habits').update({ archived: true }).eq('id', id);
+    const { error } = await supabase.rpc('archive_habit', { _habit_id: id });
+    if (error) {
+      toast.error('Failed to archive habit');
+      return;
+    }
     refreshHabits();
     toast.success('Archived');
   };
 
   const restoreHabit = async (id: string) => {
-    await supabase.from('habits').update({ archived: false }).eq('id', id);
+    const { error } = await supabase.rpc('restore_habit', { _habit_id: id });
+    if (error) {
+      toast.error('Failed to restore habit');
+      return;
+    }
     setArchivedHabits(prev => prev.filter(h => h.id !== id));
     refreshHabits();
     toast.success('Restored');
