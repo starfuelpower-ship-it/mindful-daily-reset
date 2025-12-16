@@ -120,6 +120,7 @@ const Rewards = () => {
   const handlePurchase = async (costume: Costume) => {
     if (!user) return;
 
+    // Client-side checks for UX only (server validates atomically)
     if (costume.is_premium_only && !isPremium) {
       toast.error('This costume requires Premium!');
       navigate('/premium');
@@ -135,21 +136,46 @@ const Rewards = () => {
     playSound('click');
     triggerHaptic('light');
 
-    const success = await spendPoints(costume.price, `Purchased ${costume.name}`);
-
-    if (success) {
-      await supabase.from('user_costumes').insert({
-        user_id: user.id,
-        costume_id: costume.id,
+    try {
+      // Use secure server-side RPC for atomic purchase
+      const { data, error } = await supabase.rpc('purchase_costume', {
+        _costume_id: costume.id,
       });
 
-      setOwnedCostumes((prev) => new Set([...prev, costume.id]));
-      toast.success(`You unlocked ${costume.name}!`, { icon: '🎉' });
-      playSound('achievement');
-      triggerHaptic('success');
-    }
+      if (error) {
+        console.error('Purchase error:', error);
+        toast.error('Purchase failed. Please try again.');
+        return;
+      }
 
-    setPurchasing(null);
+      const result = data as { success: boolean; error?: string; new_balance?: number; costume_name?: string } | null;
+
+      if (result?.success) {
+        setOwnedCostumes((prev) => new Set([...prev, costume.id]));
+        toast.success(`You unlocked ${costume.name}!`, { icon: '🎉' });
+        playSound('achievement');
+        triggerHaptic('success');
+      } else {
+        // Handle specific error messages from server
+        const errorMsg = result?.error || 'Purchase failed';
+        if (errorMsg === 'Premium required') {
+          toast.error('This costume requires Premium!');
+          navigate('/premium');
+        } else if (errorMsg === 'Insufficient points') {
+          toast.error('Not enough points!');
+        } else if (errorMsg === 'Already owned') {
+          toast.info('You already own this costume!');
+          setOwnedCostumes((prev) => new Set([...prev, costume.id]));
+        } else {
+          toast.error(errorMsg);
+        }
+      }
+    } catch (err) {
+      console.error('Purchase error:', err);
+      toast.error('Purchase failed. Please try again.');
+    } finally {
+      setPurchasing(null);
+    }
   };
 
   const categories = ['all', 'hat', 'accessory', 'outfit'];
