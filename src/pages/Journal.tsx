@@ -7,6 +7,7 @@ import { usePremium } from '@/contexts/PremiumContext';
 import { useHabitData } from '@/hooks/useHabitData';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { PremiumLock } from '@/components/PremiumLock';
+import { GentleReflection } from '@/components/GentleReflection';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
@@ -247,14 +248,21 @@ export default function Journal() {
         </div>
 
         {/* Notes */}
-        <div className="ios-card p-4">
-          <h3 className="font-semibold text-foreground mb-3">Notes</h3>
+        <div className="ios-card p-4 space-y-3">
+          <h3 className="font-semibold text-foreground">Notes</h3>
           <Textarea
             placeholder="Write about your day..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
             className="min-h-[100px] rounded-xl resize-none"
           />
+          {note.trim().length > 10 && (
+            <GentleReflection 
+              content={note} 
+              isPremium={isPremium}
+              onUpgrade={() => navigate('/premium')}
+            />
+          )}
         </div>
 
         {/* Save Button */}
