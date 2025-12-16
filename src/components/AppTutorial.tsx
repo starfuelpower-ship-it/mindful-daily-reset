@@ -14,7 +14,8 @@ import {
   Flame,
   BookOpen,
   Feather,
-  Crown
+  Crown,
+  Smartphone
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -150,6 +151,31 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
             <Crown className="w-3.5 h-3.5 text-amber-500" />
             <span className="text-xs text-muted-foreground">Available with Pro</span>
           </div>
+        </div>
+      ),
+    },
+    {
+      id: 'widgets',
+      icon: <Smartphone className="w-8 h-8" />,
+      title: 'Stay Close',
+      subtitle: 'Optional home screen widgets',
+      color: 'from-sky-400 to-blue-500',
+      content: (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground text-center">
+            Add cozy widgets to keep your cat and progress nearby — only if you want to.
+          </p>
+          <div className="flex justify-center">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-card to-muted/50 border border-border/30 flex items-center justify-center shadow-lg">
+              <div className="text-center">
+                <Cat className="w-6 h-6 text-primary mx-auto mb-1" />
+                <span className="text-[8px] text-muted-foreground">Widget</span>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            Find widgets in Settings → Widgets anytime
+          </p>
         </div>
       ),
     },
