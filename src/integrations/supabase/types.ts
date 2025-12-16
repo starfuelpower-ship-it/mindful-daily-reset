@@ -492,6 +492,9 @@ export type Database = {
           created_at: string | null
           icon: string | null
           id: string
+          intention_duration: string | null
+          intention_ended: boolean | null
+          intention_start_date: string | null
           last_completed_date: string | null
           last_reset_date: string | null
           name: string
@@ -508,6 +511,9 @@ export type Database = {
           created_at?: string | null
           icon?: string | null
           id?: string
+          intention_duration?: string | null
+          intention_ended?: boolean | null
+          intention_start_date?: string | null
           last_completed_date?: string | null
           last_reset_date?: string | null
           name: string
@@ -524,6 +530,9 @@ export type Database = {
           created_at?: string | null
           icon?: string | null
           id?: string
+          intention_duration?: string | null
+          intention_ended?: boolean | null
+          intention_start_date?: string | null
           last_completed_date?: string | null
           last_reset_date?: string | null
           name?: string

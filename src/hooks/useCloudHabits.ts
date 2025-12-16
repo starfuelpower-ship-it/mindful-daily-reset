@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+export type HabitDuration = 'today' | 'few_days' | 'week' | 'month' | 'ongoing' | null;
+
 export interface CloudHabit {
   id: string;
   name: string;
@@ -15,9 +17,22 @@ export interface CloudHabit {
   last_completed_date: string | null;
   last_reset_date: string | null;
   created_at: string;
+  intention_duration: HabitDuration;
+  intention_start_date: string | null;
+  intention_ended: boolean;
 }
 
 const getTodayDate = () => new Date().toISOString().split('T')[0];
+
+const VALID_DURATIONS = ['today', 'few_days', 'week', 'month', 'ongoing'] as const;
+
+// Transform database habit to CloudHabit with proper types
+const transformHabit = (habit: any): CloudHabit => ({
+  ...habit,
+  intention_duration: VALID_DURATIONS.includes(habit.intention_duration) 
+    ? habit.intention_duration 
+    : null,
+});
 
 export function useCloudHabits() {
   const { user } = useAuth();
@@ -74,7 +89,7 @@ export function useCloudHabits() {
           .eq('id', update.id);
       }
 
-      setHabits(processedHabits);
+      setHabits(processedHabits.map(transformHabit));
     } catch (error) {
       console.error('Error fetching habits:', error);
       toast.error('Failed to load habits');
@@ -87,10 +102,18 @@ export function useCloudHabits() {
     fetchHabits();
   }, [fetchHabits]);
 
-  const addHabit = async (name: string, category: string, notes: string, icon?: string, color?: string) => {
+  const addHabit = async (
+    name: string, 
+    category: string, 
+    notes: string, 
+    icon?: string, 
+    color?: string,
+    intentionDuration?: HabitDuration
+  ) => {
     if (!user) return;
 
     try {
+      const today = getTodayDate();
       const { data, error } = await supabase
         .from('habits')
         .insert({
@@ -100,13 +123,16 @@ export function useCloudHabits() {
           notes: notes || null,
           icon: icon || 'check-circle',
           color: color || null,
-          last_reset_date: getTodayDate(),
+          last_reset_date: today,
+          intention_duration: intentionDuration || null,
+          intention_start_date: intentionDuration && intentionDuration !== 'ongoing' ? today : null,
+          intention_ended: false,
         })
         .select()
         .single();
 
       if (error) throw error;
-      setHabits(prev => [...prev, data]);
+      setHabits(prev => [...prev, transformHabit(data)]);
       toast.success('Habit added');
     } catch (error) {
       console.error('Error adding habit:', error);
@@ -114,7 +140,10 @@ export function useCloudHabits() {
     }
   };
 
-  const updateHabit = async (id: string, updates: Partial<Pick<CloudHabit, 'name' | 'category' | 'notes' | 'color' | 'icon'>>) => {
+  const updateHabit = async (
+    id: string, 
+    updates: Partial<Pick<CloudHabit, 'name' | 'category' | 'notes' | 'color' | 'icon' | 'intention_duration' | 'intention_start_date' | 'intention_ended'>>
+  ) => {
     if (!user) return;
 
     try {
@@ -130,6 +159,47 @@ export function useCloudHabits() {
     } catch (error) {
       console.error('Error updating habit:', error);
       toast.error('Failed to update habit');
+    }
+  };
+
+  // Check if habit's intention period has ended
+  const checkIntentionComplete = (habit: CloudHabit): boolean => {
+    if (!habit.intention_duration || habit.intention_duration === 'ongoing' || !habit.intention_start_date) {
+      return false;
+    }
+    if (habit.intention_ended) return false; // Already acknowledged
+
+    const startDate = new Date(habit.intention_start_date);
+    const today = new Date();
+    const daysDiff = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    switch (habit.intention_duration) {
+      case 'today': return daysDiff >= 1;
+      case 'few_days': return daysDiff >= 3;
+      case 'week': return daysDiff >= 7;
+      case 'month': return daysDiff >= 30;
+      default: return false;
+    }
+  };
+
+  // Handle intention completion actions
+  const continueHabit = async (id: string) => {
+    await updateHabit(id, { intention_duration: 'ongoing', intention_ended: true });
+  };
+
+  const letHabitRest = async (id: string) => {
+    await updateHabit(id, { intention_ended: true });
+  };
+
+  const archiveHabit = async (id: string) => {
+    if (!user) return;
+    try {
+      await supabase.rpc('archive_habit', { _habit_id: id });
+      setHabits(prev => prev.filter(h => h.id !== id));
+      toast.success('Habit archived');
+    } catch (error) {
+      console.error('Error archiving habit:', error);
+      toast.error('Failed to archive habit');
     }
   };
 
@@ -263,7 +333,7 @@ export function useCloudHabits() {
 
       if (error) throw error;
       
-      setHabits(prev => [...prev, ...(data || [])]);
+      setHabits(prev => [...prev, ...(data || []).map(transformHabit)]);
       toast.success(`Migrated ${localHabits.length} habits from local storage`);
       
       // Clear local storage after successful migration
@@ -294,5 +364,9 @@ export function useCloudHabits() {
     completedCount,
     totalCount,
     progressPercent,
+    checkIntentionComplete,
+    continueHabit,
+    letHabitRest,
+    archiveHabit,
   };
 }

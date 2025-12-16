@@ -22,6 +22,7 @@ import {
 import { Category, OLD_CATEGORY_CONFIG } from '@/types/habit';
 import { HabitIconPicker } from './HabitIconPicker';
 import { HabitColorPicker } from './HabitColorPicker';
+import { HabitDurationPicker, HabitDuration } from './HabitDurationPicker';
 import { GentleHabitSuggestion } from './GentleHabitSuggestion';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Badge } from '@/components/ui/badge';
@@ -162,7 +163,7 @@ const HABIT_SUGGESTIONS: Record<Category, string[]> = {
 };
 
 interface AddHabitDialogProps {
-  onAdd?: (name: string, category: string, notes: string, icon?: string, color?: string) => void;
+  onAdd?: (name: string, category: string, notes: string, icon?: string, color?: string, intentionDuration?: HabitDuration) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onSave?: (
@@ -170,7 +171,8 @@ interface AddHabitDialogProps {
     category: Category,
     icon: string,
     notes?: string,
-    color?: string
+    color?: string,
+    intentionDuration?: HabitDuration
   ) => Promise<boolean>;
 }
 
@@ -183,6 +185,7 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
   const [icon, setIcon] = useState('check-circle');
   const [color, setColor] = useState('');
   const [notes, setNotes] = useState('');
+  const [intentionDuration, setIntentionDuration] = useState<HabitDuration>('ongoing');
   const [saving, setSaving] = useState(false);
 
   const isControlled = controlledOpen !== undefined;
@@ -195,6 +198,7 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
     setIcon('check-circle');
     setColor('');
     setNotes('');
+    setIntentionDuration('ongoing');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -202,17 +206,18 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
     if (!name.trim()) return;
 
     const finalColor = isPremium ? color : '';
+    const finalDuration = intentionDuration === 'ongoing' ? null : intentionDuration;
 
     if (onSave) {
       setSaving(true);
-      const success = await onSave(name.trim(), category, icon, notes.trim() || undefined, finalColor || undefined);
+      const success = await onSave(name.trim(), category, icon, notes.trim() || undefined, finalColor || undefined, finalDuration);
       setSaving(false);
       if (success) {
         resetForm();
         setOpen(false);
       }
     } else if (onAdd) {
-      onAdd(name.trim(), category, notes.trim(), icon, finalColor);
+      onAdd(name.trim(), category, notes.trim(), icon, finalColor, finalDuration);
       resetForm();
       setOpen(false);
     }
@@ -316,6 +321,12 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
           ))}
         </div>
       </div>
+
+      {/* Duration/Intention picker */}
+      <HabitDurationPicker
+        value={intentionDuration}
+        onChange={setIntentionDuration}
+      />
 
       {/* Notes */}
       <div className="space-y-2">

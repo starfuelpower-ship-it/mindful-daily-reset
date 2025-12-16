@@ -15,6 +15,7 @@ import { PlantGrowth } from '@/components/PlantGrowth';
 import { DaySelector } from '@/components/DaySelector';
 import { AddHabitDialog } from '@/components/AddHabitDialog';
 import { EditHabitDialog } from '@/components/EditHabitDialog';
+import { HabitIntentionCompleteDialog } from '@/components/HabitIntentionCompleteDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { DailyReflectionModal } from '@/components/DailyReflectionModal';
@@ -38,10 +39,12 @@ const Index = () => {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { settings } = useUserSettings();
   const [editingHabit, setEditingHabit] = useState<CloudHabit | null>(null);
+  const [intentionCompleteHabit, setIntentionCompleteHabit] = useState<CloudHabit | null>(null);
   const [hasMigrated, setHasMigrated] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showReflection, setShowReflection] = useState(false);
   const hasShownReflectionToday = useRef(false);
+  const intentionCheckedHabits = useRef<Set<string>>(new Set());
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const { shareData, openShare, closeShare, isOpen: isShareOpen } = useShareMilestone();
   const { triggerReaction } = useCompanion();
@@ -114,6 +117,19 @@ const Index = () => {
       }
     }
   }, [user, hasMigrated, cloudHabits.isLoading]);
+
+  // Check for habits with completed intentions
+  useEffect(() => {
+    if (!isLoggedIn || isLoading || !cloudHabits.checkIntentionComplete) return;
+    
+    for (const habit of cloudHabits.habits) {
+      if (!intentionCheckedHabits.current.has(habit.id) && cloudHabits.checkIntentionComplete(habit)) {
+        intentionCheckedHabits.current.add(habit.id);
+        setIntentionCompleteHabit(habit);
+        break;
+      }
+    }
+  }, [isLoggedIn, isLoading, cloudHabits.habits, cloudHabits.checkIntentionComplete]);
 
   // Check for daily and weekly bonus on load
   useEffect(() => {
@@ -445,6 +461,18 @@ const Index = () => {
 
       {/* Bottom Tab Bar */}
       <BottomTabBar />
+
+      {/* Habit Intention Complete Dialog */}
+      {isLoggedIn && (
+        <HabitIntentionCompleteDialog
+          habit={intentionCompleteHabit}
+          open={!!intentionCompleteHabit}
+          onOpenChange={(open) => !open && setIntentionCompleteHabit(null)}
+          onContinue={cloudHabits.continueHabit}
+          onLetRest={cloudHabits.letHabitRest}
+          onArchive={cloudHabits.archiveHabit}
+        />
+      )}
 
       {/* Edit Dialog */}
       {isLoggedIn && (
