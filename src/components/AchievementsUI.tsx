@@ -1,6 +1,12 @@
-import { Trophy, Lock, Sparkles } from 'lucide-react';
+import { Trophy, Lock, Sparkles, ChevronDown } from 'lucide-react';
 import { useAchievements } from '@/hooks/useAchievements';
 import { cn } from '@/lib/utils';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 interface AchievementsUIProps {
   compact?: boolean;
@@ -37,7 +43,7 @@ export function AchievementsUI({ compact = false }: AchievementsUIProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -56,93 +62,100 @@ export function AchievementsUI({ compact = false }: AchievementsUIProps) {
         </div>
       </div>
 
-      {/* Achievement Categories */}
-      {sortedCategories.map((category) => {
-        const categoryAchievements = achievementsByCategory[category];
-        const visibleAchievements = categoryAchievements.filter(a => 
-          !a.is_hidden || earnedAchievements.has(a.id)
-        );
-        
-        if (visibleAchievements.length === 0) return null;
+      {/* Achievement Categories as Accordions */}
+      <Accordion type="multiple" className="space-y-2">
+        {sortedCategories.map((category) => {
+          const categoryAchievements = achievementsByCategory[category];
+          const visibleAchievements = categoryAchievements.filter(a => 
+            !a.is_hidden || earnedAchievements.has(a.id)
+          );
+          
+          if (visibleAchievements.length === 0) return null;
 
-        const earnedInCategory = visibleAchievements.filter(a => earnedAchievements.has(a.id)).length;
+          const earnedInCategory = visibleAchievements.filter(a => earnedAchievements.has(a.id)).length;
 
-        return (
-          <div key={category} className="space-y-3">
-            {/* Category Header */}
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium text-foreground">
-                {CATEGORY_LABELS[category] || category}
-              </h4>
-              <span className="text-xs text-muted-foreground">
-                {earnedInCategory}/{visibleAchievements.length}
-              </span>
-            </div>
+          return (
+            <AccordionItem 
+              key={category} 
+              value={category}
+              className="border border-border/50 rounded-xl overflow-hidden bg-card/50"
+            >
+              <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/30">
+                <div className="flex items-center justify-between w-full pr-2">
+                  <span className="text-sm font-medium text-foreground">
+                    {CATEGORY_LABELS[category] || category}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {earnedInCategory}/{visibleAchievements.length}
+                  </span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4">
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  {visibleAchievements.map((achievement) => {
+                    const isEarned = earnedAchievements.has(achievement.id);
+                    const isSecret = achievement.is_hidden;
 
-            {/* Achievement Grid */}
-            <div className="grid grid-cols-2 gap-2">
-              {visibleAchievements.map((achievement) => {
-                const isEarned = earnedAchievements.has(achievement.id);
-                const isSecret = achievement.is_hidden;
+                    return (
+                      <div
+                        key={achievement.id}
+                        className={cn(
+                          'relative p-3 rounded-xl border transition-all',
+                          isEarned
+                            ? 'bg-primary/5 border-primary/30'
+                            : 'bg-muted/30 border-border/50'
+                        )}
+                      >
+                        {/* Icon */}
+                        <div
+                          className={cn(
+                            'w-10 h-10 rounded-lg flex items-center justify-center mb-2 text-xl',
+                            isEarned ? 'bg-primary/15' : 'bg-muted'
+                          )}
+                        >
+                          {isEarned ? (
+                            achievement.icon
+                          ) : (
+                            <Lock className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </div>
 
-                return (
-                  <div
-                    key={achievement.id}
-                    className={cn(
-                      'relative p-3 rounded-xl border transition-all',
-                      isEarned
-                        ? 'bg-primary/5 border-primary/30'
-                        : 'bg-muted/30 border-border/50'
-                    )}
-                  >
-                    {/* Icon */}
-                    <div
-                      className={cn(
-                        'w-10 h-10 rounded-lg flex items-center justify-center mb-2 text-xl',
-                        isEarned ? 'bg-primary/15' : 'bg-muted'
-                      )}
-                    >
-                      {isEarned ? (
-                        achievement.icon
-                      ) : (
-                        <Lock className="w-4 h-4 text-muted-foreground" />
-                      )}
-                    </div>
+                        {/* Info */}
+                        <h5 className={cn(
+                          'font-medium text-xs mb-0.5 line-clamp-1',
+                          isEarned ? 'text-foreground' : 'text-muted-foreground'
+                        )}>
+                          {achievement.name}
+                        </h5>
+                        <p className="text-[10px] text-muted-foreground line-clamp-2">
+                          {achievement.description}
+                        </p>
 
-                    {/* Info */}
-                    <h5 className={cn(
-                      'font-medium text-xs mb-0.5 line-clamp-1',
-                      isEarned ? 'text-foreground' : 'text-muted-foreground'
-                    )}>
-                      {achievement.name}
-                    </h5>
-                    <p className="text-[10px] text-muted-foreground line-clamp-2">
-                      {achievement.description}
-                    </p>
+                        {/* Points Badge */}
+                        {isEarned && achievement.points_reward > 0 && (
+                          <div className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] text-primary font-medium">
+                            <Sparkles className="w-3 h-3" />
+                            +{achievement.points_reward}
+                          </div>
+                        )}
 
-                    {/* Points Badge */}
-                    {isEarned && achievement.points_reward > 0 && (
-                      <div className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] text-primary font-medium">
-                        <Sparkles className="w-3 h-3" />
-                        +{achievement.points_reward}
+                        {/* Secret Badge */}
+                        {isSecret && isEarned && (
+                          <div className="absolute bottom-2 right-2">
+                            <span className="text-[9px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                              Secret
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
-
-                    {/* Secret Badge */}
-                    {isSecret && isEarned && (
-                      <div className="absolute bottom-2 right-2">
-                        <span className="text-[9px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                          Secret
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+                    );
+                  })}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
 
       {/* Encouragement Footer */}
       <div className="text-center pt-2">
