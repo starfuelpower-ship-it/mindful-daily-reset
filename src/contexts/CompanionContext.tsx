@@ -7,6 +7,8 @@ export type CompanionType = 'cat' | 'none';
 
 export type CatColor = 'default' | 'orange' | 'gray' | 'cream' | 'brown' | 'black' | 'white' | 'calico';
 
+export type CatPattern = 'none' | 'tabby' | 'spots' | 'tuxedo' | 'siamese' | 'tiger' | 'tortie' | 'bicolor' | 'van' | 'hearts';
+
 export const CAT_COLORS: Record<CatColor, { name: string; body: string; bodyDark: string; innerEar: string }> = {
   default: { name: 'Golden', body: '#fde68a', bodyDark: '#fcd34d', innerEar: '#fbcfe8' },
   orange: { name: 'Orange Tabby', body: '#fb923c', bodyDark: '#ea580c', innerEar: '#fed7aa' },
@@ -18,6 +20,19 @@ export const CAT_COLORS: Record<CatColor, { name: string; body: string; bodyDark
   calico: { name: 'Calico', body: '#fef3c7', bodyDark: '#fdba74', innerEar: '#fce7f3' },
 };
 
+export const CAT_PATTERNS: Record<CatPattern, { name: string; icon: string; description: string }> = {
+  none: { name: 'Solid', icon: '⬤', description: 'Clean solid fur' },
+  tabby: { name: 'Tabby', icon: '≋', description: 'Classic striped pattern' },
+  spots: { name: 'Spotted', icon: '●○', description: 'Cute polka dots' },
+  tuxedo: { name: 'Tuxedo', icon: '◐', description: 'Formal white chest' },
+  siamese: { name: 'Siamese', icon: '◑', description: 'Dark face & paws' },
+  tiger: { name: 'Tiger', icon: '≡', description: 'Bold stripes' },
+  tortie: { name: 'Tortoiseshell', icon: '◈', description: 'Mixed patches' },
+  bicolor: { name: 'Bicolor', icon: '◧', description: 'Half & half' },
+  van: { name: 'Van', icon: '◯', description: 'Color on head & tail' },
+  hearts: { name: 'Hearts', icon: '♡', description: 'Adorable heart marks' },
+};
+
 interface CompanionContextType {
   showCompanion: boolean;
   setShowCompanion: (show: boolean) => void;
@@ -27,6 +42,10 @@ interface CompanionContextType {
   setEquippedCostume: (costume: CostumeType) => Promise<void>;
   catColor: CatColor;
   setCatColor: (color: CatColor) => void;
+  catPattern: CatPattern;
+  setCatPattern: (pattern: CatPattern) => void;
+  previewPattern: CatPattern | null;
+  setPreviewPattern: (pattern: CatPattern | null) => void;
   catSize: number;
   setCatSize: (size: number) => void;
   catSoundsEnabled: boolean;
@@ -42,6 +61,7 @@ const COMPANION_SHOW_KEY = 'daily-reset-show-companion';
 const COMPANION_TYPE_KEY = 'daily-reset-companion-type';
 const EQUIPPED_COSTUME_KEY = 'daily-reset-equipped-costume';
 const CAT_COLOR_KEY = 'daily-reset-cat-color';
+const CAT_PATTERN_KEY = 'daily-reset-cat-pattern';
 const CAT_SIZE_KEY = 'daily-reset-cat-size';
 const CAT_SOUNDS_KEY = 'daily-reset-cat-sounds';
 
@@ -98,6 +118,16 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
     }
     return true;
   });
+
+  const [catPattern, setCatPatternState] = useState<CatPattern>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(CAT_PATTERN_KEY);
+      return (stored as CatPattern) || 'none';
+    }
+    return 'none';
+  });
+
+  const [previewPattern, setPreviewPattern] = useState<CatPattern | null>(null);
 
   const [currentReaction, setCurrentReaction] = useState<'habit_complete' | 'all_complete' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -208,6 +238,10 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(CAT_SOUNDS_KEY, String(catSoundsEnabled));
   }, [catSoundsEnabled]);
 
+  useEffect(() => {
+    localStorage.setItem(CAT_PATTERN_KEY, catPattern);
+  }, [catPattern]);
+
   const setCatColor = useCallback((color: CatColor) => {
     setCatColorState(color);
     localStorage.setItem(CAT_COLOR_KEY, color);
@@ -221,6 +255,11 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
   const setCatSoundsEnabled = useCallback((enabled: boolean) => {
     setCatSoundsEnabledState(enabled);
     localStorage.setItem(CAT_SOUNDS_KEY, String(enabled));
+  }, []);
+
+  const setCatPattern = useCallback((pattern: CatPattern) => {
+    setCatPatternState(pattern);
+    localStorage.setItem(CAT_PATTERN_KEY, pattern);
   }, []);
 
   const setShowCompanion = useCallback(async (show: boolean) => {
@@ -335,6 +374,10 @@ export function CompanionProvider({ children }: { children: React.ReactNode }) {
         setEquippedCostume,
         catColor,
         setCatColor,
+        catPattern,
+        setCatPattern,
+        previewPattern,
+        setPreviewPattern,
         catSize,
         setCatSize,
         catSoundsEnabled,
