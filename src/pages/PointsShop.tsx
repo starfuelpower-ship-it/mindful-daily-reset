@@ -127,6 +127,9 @@ const PointsShop = () => {
             <Sparkles className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-semibold">Point Bundles</h2>
           </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Unlock costumes faster while still earning points naturally.
+          </p>
 
           <div className="space-y-3">
             {POINT_BUNDLES.map((bundle) => {
@@ -232,21 +235,17 @@ const PointsShop = () => {
           </Button>
         </section>
 
-        {/* Apple IAP Notice */}
+        {/* IAP Notice */}
         <div className="text-center text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl">
           {isNativePlatform ? (
             <p>
-              Payment will be charged to your Apple ID account.
-              All purchases are processed securely through the App Store.
+              Payment will be charged to your account.
+              All purchases are processed securely.
             </p>
           ) : (
-            <>
-              <p className="font-medium mb-1">📱 iOS App Required</p>
-              <p>
-                Point bundles can only be purchased through the iOS app.
-                Download the app to unlock this feature.
-              </p>
-            </>
+            <p>
+              Point bundles available in the mobile app. Coming soon to more platforms.
+            </p>
           )}
         </div>
       </div>

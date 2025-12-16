@@ -222,8 +222,8 @@ const Rewards = () => {
               <Coins className="w-5 h-5 text-primary" />
             </div>
             <div className="text-left">
-              <p className="font-semibold text-foreground">Need more points?</p>
-              <p className="text-xs text-muted-foreground">Visit the Points Shop</p>
+              <p className="font-semibold text-foreground">Earn more points</p>
+              <p className="text-xs text-muted-foreground">Complete habits to unlock costumes</p>
             </div>
           </div>
           <Sparkles className="w-5 h-5 text-primary" />
@@ -306,13 +306,10 @@ const Rewards = () => {
             <div className="flex items-center gap-2 mb-4">
               <Crown className="w-5 h-5 text-amber-500" />
               <h2 className="text-lg font-semibold">Premium Exclusive</h2>
-              {!isPremium && (
-                <Badge variant="secondary" className="text-xs">
-                  <Lock className="w-3 h-3 mr-1" />
-                  Premium Only
-                </Badge>
-              )}
             </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              Special costumes for Pro members
+            </p>
             <div className="grid grid-cols-2 gap-3">
               {premiumCostumes.map((costume) => {
                 const owned = ownedCostumes.has(costume.id);
@@ -326,12 +323,15 @@ const Rewards = () => {
                     className={cn(
                       'relative p-4 rounded-2xl border transition-all',
                       owned
-                        ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
-                        : 'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 border-amber-200/50 dark:border-amber-800/50',
-                      !isPremium && 'opacity-75'
+                        ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 shadow-[0_0_15px_rgba(251,191,36,0.2)]'
+                        : 'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 border-amber-200/50 dark:border-amber-800/50 shadow-[0_0_10px_rgba(251,191,36,0.15)]',
+                      !isPremium && 'opacity-80'
                     )}
                   >
-                    <Sparkles className="absolute top-2 right-2 w-4 h-4 text-amber-500" />
+                    {/* Gold crown badge */}
+                    <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg">
+                      <Crown className="w-3.5 h-3.5 text-white" />
+                    </div>
                     {/* Cat preview with costume */}
                     <div className="mb-2">
                       <CatPreviewSmall costume={costumeType} isDark={isDark} />
