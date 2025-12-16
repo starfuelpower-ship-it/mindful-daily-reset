@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, Plus, UserPlus, LogOut, Copy, Crown, Sparkles, Share2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useGroups } from '@/hooks/useGroups';
+import { useGroupMilestones } from '@/hooks/useGroupMilestones';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { PremiumLock } from '@/components/PremiumLock';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -14,6 +15,7 @@ import { GroupChallenges } from '@/components/GroupChallenges';
 import { GroupBadges } from '@/components/GroupBadges';
 import { GroupChat } from '@/components/GroupChat';
 import { GroupAchievements } from '@/components/GroupAchievements';
+import { GroupMilestones } from '@/components/GroupMilestones';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -21,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { triggerHaptic } from '@/hooks/useSoundEffects';
+import { differenceInDays } from 'date-fns';
 
 export default function Groups() {
   const navigate = useNavigate();
@@ -44,6 +47,8 @@ export default function Groups() {
     sendChatMessage,
     refetchActivities 
   } = useGroups();
+
+  const { checkAndAwardMilestones } = useGroupMilestones(currentGroup?.id || null);
   
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
@@ -148,6 +153,24 @@ export default function Groups() {
   const userRank = sortedMembers.findIndex(m => m.user_id === user.id) + 1;
   const userName = currentMember?.profile?.display_name || currentMember?.profile?.email?.split('@')[0] || 'You';
 
+  // Check milestones when group data loads
+  useEffect(() => {
+    if (currentGroup && members.length > 0) {
+      const groupAgeDays = differenceInDays(new Date(), new Date(currentGroup.created_at));
+      const membersWithHabits = members.filter(m => m.streak > 0).length;
+      const uniqueActiveDays = new Set(activities.map(a => 
+        new Date(a.created_at).toDateString()
+      )).size;
+
+      checkAndAwardMilestones({
+        totalMembersWithHabits: membersWithHabits,
+        totalMembers: members.length,
+        uniqueActiveDays,
+        groupAgeDays
+      });
+    }
+  }, [currentGroup, members, activities, checkAndAwardMilestones]);
+
   return (
     <div className="min-h-screen pb-24 bg-background">
       {/* Header */}
@@ -227,13 +250,18 @@ export default function Groups() {
             />
 
             {/* Tabs for different sections */}
-            <Tabs defaultValue="activity" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+            <Tabs defaultValue="milestones" className="w-full">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="milestones">Moments</TabsTrigger>
                 <TabsTrigger value="activity">Feed</TabsTrigger>
                 <TabsTrigger value="challenges">Challenges</TabsTrigger>
                 <TabsTrigger value="badges">Badges</TabsTrigger>
                 <TabsTrigger value="rewards">Rewards</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="milestones" className="mt-4">
+                <GroupMilestones groupId={currentGroup.id} />
+              </TabsContent>
 
               <TabsContent value="activity" className="space-y-4 mt-4">
                 {/* Leaderboard */}

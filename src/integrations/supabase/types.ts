@@ -386,6 +386,71 @@ export type Database = {
           },
         ]
       }
+      group_milestone_definitions: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          icon: string
+          id: string
+          is_seasonal: boolean | null
+          key: string
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          description: string
+          icon?: string
+          id?: string
+          is_seasonal?: boolean | null
+          key: string
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          is_seasonal?: boolean | null
+          key?: string
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      group_milestones: {
+        Row: {
+          achieved_at: string | null
+          group_id: string
+          id: string
+          milestone_key: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          group_id: string
+          id?: string
+          milestone_key: string
+        }
+        Update: {
+          achieved_at?: string | null
+          group_id?: string
+          id?: string
+          milestone_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_milestones_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_reactions: {
         Row: {
           activity_id: string
@@ -1188,6 +1253,10 @@ export type Database = {
         Returns: Json
       }
       archive_habit: { Args: { _habit_id: string }; Returns: undefined }
+      award_group_milestone: {
+        Args: { _group_id: string; _milestone_key: string }
+        Returns: Json
+      }
       award_points: {
         Args: { _amount: number; _description?: string; _type: string }
         Returns: Json
