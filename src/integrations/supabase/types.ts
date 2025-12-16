@@ -791,6 +791,7 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      purchase_costume: { Args: { _costume_id: string }; Returns: Json }
       spend_points: {
         Args: { _amount: number; _description: string }
         Returns: Json
