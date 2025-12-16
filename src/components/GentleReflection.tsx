@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { useAchievements } from '@/hooks/useAchievements';
 import { cn } from '@/lib/utils';
 
 interface GentleReflectionProps {
@@ -20,6 +21,7 @@ export function GentleReflection({ content, isPremium, onUpgrade }: GentleReflec
   const [reflection, setReflection] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
+  const { checkAndAwardAchievements } = useAchievements();
 
   const getReflection = async () => {
     if (!content.trim()) return;
@@ -37,6 +39,8 @@ export function GentleReflection({ content, isPremium, onUpgrade }: GentleReflec
         setReflection(fallback);
       } else {
         setReflection(data.reflection);
+        // Award AI achievement when successfully getting a reflection
+        checkAndAwardAchievements({ aiUsed: true });
       }
     } catch (err) {
       const fallback = FALLBACK_MESSAGES[Math.floor(Math.random() * FALLBACK_MESSAGES.length)];

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePoints } from '@/contexts/PointsContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAchievements } from '@/hooks/useAchievements';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { Button } from '@/components/ui/button';
@@ -71,6 +72,7 @@ const Rewards = () => {
   const { isPremium } = usePremium();
   const { resolvedTheme } = useTheme();
   const { playSound, triggerHaptic } = useSoundEffects();
+  const { checkAndAwardAchievements } = useAchievements();
   const [costumes, setCostumes] = useState<Costume[]>([]);
   const [ownedCostumes, setOwnedCostumes] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -85,6 +87,8 @@ const Rewards = () => {
       return;
     }
     fetchData();
+    // Award achievement for visiting rewards
+    checkAndAwardAchievements({ rewardsVisited: true });
   }, [user]);
 
   const fetchData = async () => {
@@ -155,6 +159,13 @@ const Rewards = () => {
         toast.success(`You unlocked ${costume.name}!`, { icon: '🎉' });
         playSound('achievement');
         triggerHaptic('success');
+        
+        // Award achievement for costume purchase
+        checkAndAwardAchievements({ 
+          costumeEquipped: true, 
+          pointsSpent: true,
+          itemsUnlocked: ownedCostumes.size + 1,
+        });
       } else {
         // Handle specific error messages from server
         const errorMsg = result?.error || 'Purchase failed';

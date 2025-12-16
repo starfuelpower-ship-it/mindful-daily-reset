@@ -1,13 +1,14 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 type BaseTheme = 'light' | 'dark' | 'system';
-type ColorThemeId = 'default' | 'pastel' | 'forest' | 'sunset' | 'moonlight' | 'midnight' | 'moss' | 'stone' | 'lavender' | 'rose';
+type ColorThemeId = 'default' | 'pastel' | 'forest' | 'sunset' | 'moonlight' | 'midnight' | 'moss' | 'stone' | 'lavender' | 'rose' | 'ocean' | 'cream' | 'dusk' | 'teal' | 'earth';
 
 interface ThemeInfo {
   id: ColorThemeId;
   name: string;
   description: string;
   isFree: boolean;
+  unlockedByAchievement?: string;
 }
 
 interface ThemeContextType {
@@ -24,19 +25,24 @@ interface ThemeContextType {
 // Free themes available to all users
 export const FREE_THEMES: ThemeInfo[] = [
   { id: 'default', name: 'Cozy Default', description: 'Warm golden tones', isFree: true },
+  { id: 'cream', name: 'Warm Cream', description: 'Soft and gentle warmth', isFree: true },
 ];
 
-// Premium themes requiring subscription
+// Premium themes - some can be unlocked by achievements
 export const PREMIUM_THEMES: ThemeInfo[] = [
   { id: 'pastel', name: 'Light Pastel', description: 'Soft pinks and creams', isFree: false },
-  { id: 'forest', name: 'Forest Green', description: 'Calm natural tones', isFree: false },
+  { id: 'forest', name: 'Forest Green', description: 'Calm natural tones', isFree: false, unlockedByAchievement: 'garden_keeper' },
   { id: 'sunset', name: 'Sunset Orange', description: 'Warm evening glow', isFree: false },
-  { id: 'moonlight', name: 'Moonlight Blue', description: 'Calm nighttime energy', isFree: false },
+  { id: 'moonlight', name: 'Moonlight Blue', description: 'Calm nighttime energy', isFree: false, unlockedByAchievement: 'midnight_calm' },
   { id: 'midnight', name: 'Midnight Ink', description: 'Quiet and distraction-free', isFree: false },
   { id: 'moss', name: 'Moss Green', description: 'Deep earthy grounding', isFree: false },
-  { id: 'stone', name: 'Rainy Stone', description: 'Cool gray serenity', isFree: false },
+  { id: 'stone', name: 'Rainy Stone', description: 'Cool gray serenity', isFree: false, unlockedByAchievement: 'rainy_day' },
   { id: 'lavender', name: 'Lavender Mist', description: 'Gentle emotional comfort', isFree: false },
   { id: 'rose', name: 'Rose Dusk', description: 'Cozy intimate warmth', isFree: false },
+  { id: 'ocean', name: 'Cool Blue', description: 'Refreshing ocean calm', isFree: false },
+  { id: 'dusk', name: 'Dusk Purple', description: 'Twilight tranquility', isFree: false, unlockedByAchievement: 'early_light' },
+  { id: 'teal', name: 'Muted Teal', description: 'Balanced and grounding', isFree: false },
+  { id: 'earth', name: 'Earthy Brown', description: 'Natural and warm', isFree: false, unlockedByAchievement: 'flourishing' },
 ];
 
 export const ALL_THEMES: ThemeInfo[] = [...FREE_THEMES, ...PREMIUM_THEMES];
@@ -92,7 +98,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     
     // Remove all theme classes
     const themeClasses = ['theme-pastel', 'theme-neon', 'theme-forest', 'theme-sunset', 
-      'theme-moonlight', 'theme-midnight', 'theme-moss', 'theme-stone', 'theme-lavender', 'theme-rose'];
+      'theme-moonlight', 'theme-midnight', 'theme-moss', 'theme-stone', 'theme-lavender', 'theme-rose',
+      'theme-ocean', 'theme-cream', 'theme-dusk', 'theme-teal', 'theme-earth'];
     root.classList.remove(...themeClasses);
     
     // Add the active theme class

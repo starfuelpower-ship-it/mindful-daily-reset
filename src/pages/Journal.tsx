@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useHabitData } from '@/hooks/useHabitData';
+import { useAchievements } from '@/hooks/useAchievements';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { PremiumLock } from '@/components/PremiumLock';
 import { GentleReflection } from '@/components/GentleReflection';
@@ -38,6 +39,7 @@ export default function Journal() {
   const { user } = useAuth();
   const { isPremium } = usePremium();
   const { habits, logs } = useHabitData();
+  const { checkAndAwardAchievements } = useAchievements();
   
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [moodScore, setMoodScore] = useState<number | null>(null);
@@ -130,6 +132,14 @@ export default function Journal() {
 
       toast.success('Journal saved!');
       fetchEntries();
+      
+      // Check achievements for journal entry
+      checkAndAwardAchievements({
+        journalEntry: note.trim().length > 0,
+        journalCount: entries.length + 1,
+        moodLogged: true,
+        stressLogged: true,
+      });
     } catch (error) {
       toast.error('Failed to save');
     } finally {
