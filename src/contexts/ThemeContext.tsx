@@ -24,12 +24,12 @@ interface ThemeContextType {
 // Free themes available to all users
 export const FREE_THEMES: ThemeInfo[] = [
   { id: 'default', name: 'Cozy Default', description: 'Warm golden tones', isFree: true },
-  { id: 'pastel', name: 'Light Pastel', description: 'Soft pinks and creams', isFree: true },
-  { id: 'forest', name: 'Forest Green', description: 'Calm natural tones', isFree: true },
 ];
 
 // Premium themes requiring subscription
 export const PREMIUM_THEMES: ThemeInfo[] = [
+  { id: 'pastel', name: 'Light Pastel', description: 'Soft pinks and creams', isFree: false },
+  { id: 'forest', name: 'Forest Green', description: 'Calm natural tones', isFree: false },
   { id: 'sunset', name: 'Sunset Orange', description: 'Warm evening glow', isFree: false },
   { id: 'moonlight', name: 'Moonlight Blue', description: 'Calm nighttime energy', isFree: false },
   { id: 'midnight', name: 'Midnight Ink', description: 'Quiet and distraction-free', isFree: false },
