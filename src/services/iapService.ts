@@ -2,7 +2,7 @@
  * Cross-Platform In-App Purchases Service
  * 
  * This service handles IAP functionality for both iOS (Apple) and Android (Google Play).
- * Uses @capgo/capacitor-purchases (RevenueCat) for cross-platform IAP.
+ * Uses @revenuecat/purchases-capacitor (RevenueCat) for cross-platform IAP.
  * 
  * IMPORTANT: Before deploying:
  * 1. iOS: Create products in App Store Connect
@@ -105,7 +105,7 @@ class CrossPlatformIAPService {
 
     try {
       // TODO: Initialize RevenueCat with your API key
-      // const { Purchases } = await import('@capgo/capacitor-purchases');
+      // const { Purchases } = await import('@revenuecat/purchases-capacitor');
       // await Purchases.configure({ apiKey: 'YOUR_REVENUECAT_API_KEY' });
       
       console.log(`[IAP] Service initialized for platform: ${this.currentPlatform}`);
@@ -142,7 +142,7 @@ class CrossPlatformIAPService {
 
     try {
       // TODO: Implement real product fetching
-      // const { Purchases } = await import('@capgo/capacitor-purchases');
+      // const { Purchases } = await import('@revenuecat/purchases-capacitor');
       // const offerings = await Purchases.getOfferings();
       // Map offerings to IAPProduct format
       
@@ -170,7 +170,7 @@ class CrossPlatformIAPService {
 
     try {
       // TODO: Implement real purchase flow with RevenueCat
-      // const { Purchases } = await import('@capgo/capacitor-purchases');
+      // const { Purchases } = await import('@revenuecat/purchases-capacitor');
       // const result = await Purchases.purchaseProduct({ productIdentifier: productId });
       
       // For native platforms, return simulated success with platform-specific data
@@ -221,7 +221,7 @@ class CrossPlatformIAPService {
 
     try {
       // TODO: Implement real restore
-      // const { Purchases } = await import('@capgo/capacitor-purchases');
+       // const { Purchases } = await import('@revenuecat/purchases-capacitor');
       // const customerInfo = await Purchases.restorePurchases();
       // Extract purchased product IDs from customerInfo
       
@@ -246,7 +246,7 @@ class CrossPlatformIAPService {
 
     try {
       // TODO: Implement real subscription check
-      // const { Purchases } = await import('@capgo/capacitor-purchases');
+      // const { Purchases } = await import('@revenuecat/purchases-capacitor');
       // const customerInfo = await Purchases.getCustomerInfo();
       // return customerInfo.entitlements.active['premium'] !== undefined;
       
