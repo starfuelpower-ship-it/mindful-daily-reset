@@ -13,12 +13,12 @@ import { toast } from 'sonner';
 // ============================================
 
 const PREMIUM_FEATURES = [
+  { icon: Sparkles, label: 'Gentle reflections', description: 'Kind AI-powered journal insights' },
   { icon: Infinity, label: 'Unlimited habits', description: 'Track as many habits as you want' },
-  { icon: BarChart3, label: 'Advanced statistics', description: 'Full history and detailed insights' },
-  { icon: BookOpen, label: 'Journal history', description: 'Access all past journal entries' },
-  { icon: Users, label: 'Group habits', description: 'Share and compete with friends' },
   { icon: Palette, label: 'Custom themes', description: 'Personalize your app experience' },
-  { icon: Sparkles, label: 'Widgets & more', description: 'Home screen widgets and extras' },
+  { icon: Users, label: 'Group habits', description: 'Share progress with friends' },
+  { icon: BarChart3, label: 'Full statistics', description: 'Complete history and insights' },
+  { icon: BookOpen, label: 'Widgets & extras', description: 'Home screen widgets and more' },
 ];
 
 // ============================================
@@ -30,7 +30,7 @@ const PRICING_PLANS = [
   {
     id: 'monthly' as const,
     name: 'Monthly',
-    price: '$4.99',
+    price: '$7.99',
     period: '/month',
     description: 'Billed monthly',
     popular: false,
@@ -38,15 +38,15 @@ const PRICING_PLANS = [
   {
     id: 'annual' as const,
     name: 'Annual',
-    price: '$29.99',
+    price: '$39.99',
     period: '/year',
-    description: 'Save 50% • 3-day free trial',
+    description: 'Save 58% • 3-day free trial',
     popular: true,
   },
   {
     id: 'lifetime' as const,
     name: 'Lifetime',
-    price: '$79.99',
+    price: '$99.99',
     period: 'one-time',
     description: 'Pay once, own forever',
     popular: false,
@@ -106,8 +106,8 @@ export default function Premium() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-foreground">Unlock Pro</h1>
-            <p className="text-muted-foreground mt-2 text-lg">
-              Become better every day
+            <p className="text-muted-foreground mt-2 text-base px-4">
+              Unlock deeper customization, gentle reflections, and cozy rewards.
             </p>
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function Premium() {
                 Subscription automatically renews unless canceled at least 24 hours before the end of the current period.
               </>
             ) : (
-              'Download the app to unlock Premium features.'
+              'Premium features available in the mobile app.'
             )}
           </p>
           
