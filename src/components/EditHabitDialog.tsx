@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CloudHabit } from '@/hooks/useCloudHabits';
 import { usePremium } from '@/contexts/PremiumContext';
 import {
@@ -22,6 +23,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Trash2 } from 'lucide-react';
 import { HabitIconPicker } from './HabitIconPicker';
 import { HabitColorPicker } from './HabitColorPicker';
+import { GentleHabitSuggestion } from './GentleHabitSuggestion';
 import { OLD_CATEGORY_CONFIG, Category } from '@/types/habit';
 import { triggerHaptic } from '@/hooks/useSoundEffects';
 
@@ -42,6 +44,7 @@ export function EditHabitDialog({
   onUpdate, 
   onDelete 
 }: EditHabitDialogProps) {
+  const navigate = useNavigate();
   const { isPremium } = usePremium();
   const [name, setName] = useState('');
   const [category, setCategory] = useState<string>('Custom');
@@ -128,6 +131,16 @@ export function EditHabitDialog({
               />
             </div>
           </div>
+
+          {/* Gentle AI suggestion */}
+          {name.trim().length >= 3 && (
+            <GentleHabitSuggestion
+              habitName={name}
+              isPremium={isPremium}
+              onAccept={(gentlerName) => setName(gentlerName)}
+              onUpgrade={() => navigate('/premium')}
+            />
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="edit-category">Category</Label>
