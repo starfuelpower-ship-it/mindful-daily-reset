@@ -1,4 +1,4 @@
-import { useCompanion } from '@/contexts/CompanionContext';
+import { useCompanion, CAT_COLORS, CatColor } from '@/contexts/CompanionContext';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Cat, Palette, ChevronRight, Maximize2, Volume2, VolumeX } from 'lucide-
 import { useNavigate } from 'react-router-dom';
 
 export function CompanionSettings() {
-  const { showCompanion, setShowCompanion, catSize, setCatSize, catSoundsEnabled, setCatSoundsEnabled } = useCompanion();
+  const { showCompanion, setShowCompanion, catSize, setCatSize, catSoundsEnabled, setCatSoundsEnabled, catColor, setCatColor } = useCompanion();
   const navigate = useNavigate();
 
   return (
@@ -54,6 +54,37 @@ export function CompanionSettings() {
               step={0.1}
               className="w-full"
             />
+          </div>
+
+          {/* Cat Color Picker */}
+          <div className="space-y-3 pt-2 border-t border-border/50">
+            <div className="flex items-center gap-3">
+              <Palette className="w-4 h-4 text-muted-foreground" />
+              <div>
+                <Label className="text-sm">Cat Color</Label>
+                <p className="text-xs text-muted-foreground">
+                  Choose your cat's fur color
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(CAT_COLORS) as CatColor[]).map((colorKey) => (
+                <button
+                  key={colorKey}
+                  onClick={() => setCatColor(colorKey)}
+                  className={`w-8 h-8 rounded-full border-2 transition-all ${
+                    catColor === colorKey 
+                      ? 'border-primary ring-2 ring-primary/30 scale-110' 
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                  style={{ backgroundColor: CAT_COLORS[colorKey].body }}
+                  title={CAT_COLORS[colorKey].name}
+                />
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Selected: {CAT_COLORS[catColor].name}
+            </p>
           </div>
 
           {/* Cat Sounds Toggle */}
