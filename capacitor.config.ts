@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.53d04b63e0ee43f3822af5b2e6319d75',
+  appId: 'com.cozyhabits.app',
   appName: 'Cozy Habits',
   webDir: 'dist',
   
