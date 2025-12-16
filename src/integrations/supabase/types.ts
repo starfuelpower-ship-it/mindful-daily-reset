@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          icon: string
+          id: string
+          is_hidden: boolean | null
+          key: string
+          name: string
+          points_reward: number | null
+          sort_order: number | null
+          unlock_atmosphere: string | null
+          unlock_behavior: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          description: string
+          icon?: string
+          id?: string
+          is_hidden?: boolean | null
+          key: string
+          name: string
+          points_reward?: number | null
+          sort_order?: number | null
+          unlock_atmosphere?: string | null
+          unlock_behavior?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          is_hidden?: boolean | null
+          key?: string
+          name?: string
+          points_reward?: number | null
+          sort_order?: number | null
+          unlock_atmosphere?: string | null
+          unlock_behavior?: string | null
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           badge_type: string
@@ -74,6 +119,45 @@ export type Database = {
           name?: string
           price?: number
           sort_order?: number | null
+        }
+        Relationships: []
+      }
+      cat_gifts: {
+        Row: {
+          created_at: string | null
+          description: string
+          gift_type: string
+          icon: string
+          id: string
+          key: string
+          name: string
+          rarity: string | null
+          reward_id: string | null
+          reward_points: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          gift_type?: string
+          icon?: string
+          id?: string
+          key: string
+          name: string
+          rarity?: string | null
+          reward_id?: string | null
+          reward_points?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          gift_type?: string
+          icon?: string
+          id?: string
+          key?: string
+          name?: string
+          rarity?: string | null
+          reward_id?: string | null
+          reward_points?: number | null
         }
         Relationships: []
       }
@@ -477,6 +561,99 @@ export type Database = {
         }
         Relationships: []
       }
+      plant_decorations: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          icon: string
+          id: string
+          is_premium: boolean | null
+          key: string
+          name: string
+          price: number | null
+          rarity: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          description: string
+          icon?: string
+          id?: string
+          is_premium?: boolean | null
+          key: string
+          name: string
+          price?: number | null
+          rarity?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          is_premium?: boolean | null
+          key?: string
+          name?: string
+          price?: number | null
+          rarity?: string | null
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      plant_seeds: {
+        Row: {
+          color_palette: string | null
+          created_at: string | null
+          description: string
+          growth_style: string | null
+          icon: string
+          id: string
+          is_premium: boolean | null
+          is_starter: boolean | null
+          key: string
+          name: string
+          preview_image: string | null
+          price: number | null
+          rarity: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          color_palette?: string | null
+          created_at?: string | null
+          description: string
+          growth_style?: string | null
+          icon?: string
+          id?: string
+          is_premium?: boolean | null
+          is_starter?: boolean | null
+          key: string
+          name: string
+          preview_image?: string | null
+          price?: number | null
+          rarity?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          color_palette?: string | null
+          created_at?: string | null
+          description?: string
+          growth_style?: string | null
+          icon?: string
+          id?: string
+          is_premium?: boolean | null
+          is_starter?: boolean | null
+          key?: string
+          name?: string
+          preview_image?: string | null
+          price?: number | null
+          rarity?: string | null
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       point_transactions: {
         Row: {
           amount: number
@@ -537,6 +714,89 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_activity: {
+        Row: {
+          best_streak: number | null
+          current_streak: number | null
+          evening_opens: number | null
+          first_open_at: string | null
+          id: string
+          last_break_return_at: string | null
+          last_open_at: string | null
+          longest_break_days: number | null
+          morning_opens: number | null
+          night_opens: number | null
+          preferred_time: string | null
+          total_app_opens: number | null
+          total_days_active: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          best_streak?: number | null
+          current_streak?: number | null
+          evening_opens?: number | null
+          first_open_at?: string | null
+          id?: string
+          last_break_return_at?: string | null
+          last_open_at?: string | null
+          longest_break_days?: number | null
+          morning_opens?: number | null
+          night_opens?: number | null
+          preferred_time?: string | null
+          total_app_opens?: number | null
+          total_days_active?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          best_streak?: number | null
+          current_streak?: number | null
+          evening_opens?: number | null
+          first_open_at?: string | null
+          id?: string
+          last_break_return_at?: string | null
+          last_open_at?: string | null
+          longest_break_days?: number | null
+          morning_opens?: number | null
+          night_opens?: number | null
+          preferred_time?: string | null
+          total_app_opens?: number | null
+          total_days_active?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -576,6 +836,35 @@ export type Database = {
           },
         ]
       }
+      user_cat_gifts: {
+        Row: {
+          gift_id: string
+          id: string
+          received_at: string | null
+          user_id: string
+        }
+        Insert: {
+          gift_id: string
+          id?: string
+          received_at?: string | null
+          user_id: string
+        }
+        Update: {
+          gift_id?: string
+          id?: string
+          received_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cat_gifts_gift_id_fkey"
+            columns: ["gift_id"]
+            isOneToOne: false
+            referencedRelation: "cat_gifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_costumes: {
         Row: {
           costume_id: string
@@ -601,6 +890,38 @@ export type Database = {
             columns: ["costume_id"]
             isOneToOne: false
             referencedRelation: "cat_costumes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_decorations: {
+        Row: {
+          decoration_id: string
+          id: string
+          is_active: boolean | null
+          obtained_at: string | null
+          user_id: string
+        }
+        Insert: {
+          decoration_id: string
+          id?: string
+          is_active?: boolean | null
+          obtained_at?: string | null
+          user_id: string
+        }
+        Update: {
+          decoration_id?: string
+          id?: string
+          is_active?: boolean | null
+          obtained_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_decorations_decoration_id_fkey"
+            columns: ["decoration_id"]
+            isOneToOne: false
+            referencedRelation: "plant_decorations"
             referencedColumns: ["id"]
           },
         ]
@@ -634,41 +955,117 @@ export type Database = {
           },
         ]
       }
+      user_planted_seed: {
+        Row: {
+          current_phase: string | null
+          id: string
+          planted_at: string | null
+          seed_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          current_phase?: string | null
+          id?: string
+          planted_at?: string | null
+          seed_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          current_phase?: string | null
+          id?: string
+          planted_at?: string | null
+          seed_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_planted_seed_seed_id_fkey"
+            columns: ["seed_id"]
+            isOneToOne: false
+            referencedRelation: "plant_seeds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_points: {
         Row: {
           balance: number
+          coins_earned_today: number | null
           created_at: string | null
           current_streak_bonus: number | null
+          first_habit_bonus_claimed: boolean | null
           id: string
           last_daily_bonus: string | null
+          last_earn_reset_date: string | null
           last_weekly_bonus: string | null
+          lifetime_days_active: number | null
           total_earned: number
           updated_at: string | null
           user_id: string
         }
         Insert: {
           balance?: number
+          coins_earned_today?: number | null
           created_at?: string | null
           current_streak_bonus?: number | null
+          first_habit_bonus_claimed?: boolean | null
           id?: string
           last_daily_bonus?: string | null
+          last_earn_reset_date?: string | null
           last_weekly_bonus?: string | null
+          lifetime_days_active?: number | null
           total_earned?: number
           updated_at?: string | null
           user_id: string
         }
         Update: {
           balance?: number
+          coins_earned_today?: number | null
           created_at?: string | null
           current_streak_bonus?: number | null
+          first_habit_bonus_claimed?: boolean | null
           id?: string
           last_daily_bonus?: string | null
+          last_earn_reset_date?: string | null
           last_weekly_bonus?: string | null
+          lifetime_days_active?: number | null
           total_earned?: number
           updated_at?: string | null
           user_id?: string
         }
         Relationships: []
+      }
+      user_seeds: {
+        Row: {
+          id: string
+          obtained_at: string | null
+          seed_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          obtained_at?: string | null
+          seed_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          obtained_at?: string | null
+          seed_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_seeds_seed_id_fkey"
+            columns: ["seed_id"]
+            isOneToOne: false
+            referencedRelation: "plant_seeds"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_settings: {
         Row: {
@@ -787,15 +1184,19 @@ export type Database = {
       }
       claim_daily_bonus: { Args: never; Returns: Json }
       claim_weekly_bonus: { Args: never; Returns: Json }
+      earn_achievement: { Args: { _achievement_key: string }; Returns: Json }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
       purchase_costume: { Args: { _costume_id: string }; Returns: Json }
+      purchase_decoration: { Args: { _decoration_id: string }; Returns: Json }
+      purchase_seed: { Args: { _seed_id: string }; Returns: Json }
       spend_points: {
         Args: { _amount: number; _description: string }
         Returns: Json
       }
+      track_app_open: { Args: never; Returns: Json }
     }
     Enums: {
       [_ in never]: never

@@ -30,6 +30,8 @@ import Widgets from "./pages/Widgets";
 import Rewards from "./pages/Rewards";
 import CatCustomize from "./pages/CatCustomize";
 import PointsShop from "./pages/PointsShop";
+import GardenShop from "./pages/GardenShop";
+import Achievements from "./pages/Achievements";
 import Install from "./pages/Install";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -70,6 +72,8 @@ const App = () => (
                             <Route path="/rewards" element={<Rewards />} />
                             <Route path="/cat" element={<CatCustomize />} />
                             <Route path="/points-shop" element={<PointsShop />} />
+                            <Route path="/garden-shop" element={<GardenShop />} />
+                            <Route path="/achievements" element={<Achievements />} />
                             <Route path="/install" element={<Install />} />
                             <Route path="/privacy" element={<PrivacyPolicy />} />
                             <Route path="/terms" element={<TermsOfService />} />
