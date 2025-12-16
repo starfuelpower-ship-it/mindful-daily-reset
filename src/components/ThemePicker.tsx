@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
-type ColorThemeId = 'default' | 'pastel' | 'forest' | 'sunset' | 'moonlight' | 'midnight' | 'moss' | 'stone' | 'lavender' | 'rose';
+type ColorThemeId = 'default' | 'pastel' | 'forest' | 'sunset' | 'moonlight' | 'midnight' | 'moss' | 'stone' | 'lavender' | 'rose' | 'ocean' | 'cream' | 'dusk' | 'teal' | 'earth';
 
 const THEME_PREVIEWS: Record<ColorThemeId, { bg: string; primary: string; accent: string }> = {
   default: {
@@ -58,6 +58,31 @@ const THEME_PREVIEWS: Record<ColorThemeId, { bg: string; primary: string; accent
     bg: 'bg-[hsl(350,30%,96%)]',
     primary: 'bg-[hsl(350,50%,60%)]',
     accent: 'bg-[hsl(30,40%,85%)]',
+  },
+  ocean: {
+    bg: 'bg-[hsl(200,30%,96%)]',
+    primary: 'bg-[hsl(200,70%,50%)]',
+    accent: 'bg-[hsl(180,40%,88%)]',
+  },
+  cream: {
+    bg: 'bg-[hsl(40,40%,96%)]',
+    primary: 'bg-[hsl(35,70%,55%)]',
+    accent: 'bg-[hsl(30,35%,90%)]',
+  },
+  dusk: {
+    bg: 'bg-[hsl(280,25%,96%)]',
+    primary: 'bg-[hsl(280,45%,55%)]',
+    accent: 'bg-[hsl(260,30%,88%)]',
+  },
+  teal: {
+    bg: 'bg-[hsl(175,25%,95%)]',
+    primary: 'bg-[hsl(175,50%,40%)]',
+    accent: 'bg-[hsl(160,35%,85%)]',
+  },
+  earth: {
+    bg: 'bg-[hsl(30,25%,95%)]',
+    primary: 'bg-[hsl(25,45%,40%)]',
+    accent: 'bg-[hsl(40,30%,85%)]',
   },
 };
 

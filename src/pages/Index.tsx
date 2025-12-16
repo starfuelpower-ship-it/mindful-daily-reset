@@ -8,6 +8,8 @@ import { useCloudHabits, CloudHabit } from '@/hooks/useCloudHabits';
 import { useHabits } from '@/hooks/useHabits';
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { useInAppReview } from '@/hooks/useInAppReview';
+import { useAchievements } from '@/hooks/useAchievements';
+import { useAmbient } from '@/contexts/AmbientContext';
 import { CloudHabitCard } from '@/components/CloudHabitCard';
 import { HabitCard } from '@/components/HabitCard';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -49,9 +51,11 @@ const Index = () => {
   const { shareData, openShare, closeShare, isOpen: isShareOpen } = useShareMilestone();
   const { triggerReaction } = useCompanion();
   const { playSound } = useSoundEffects();
-  const { earnPoints, checkDailyBonus, checkWeeklyBonus, currentAnimation, clearAnimation } = usePoints();
+  const { earnPoints, checkDailyBonus, checkWeeklyBonus, currentAnimation, clearAnimation, balance } = usePoints();
   const { showTutorial, completeTutorial } = useTutorial();
   const { trackHabitCompletion, tryRequestReview } = useInAppReview();
+  const { checkAndAwardAchievements } = useAchievements();
+  const { ambientMode } = useAmbient();
   const dailyBonusChecked = useRef(false);
   const initialLoadComplete = useRef(false);
   const prevCompletedCount = useRef<number | null>(null);
@@ -211,6 +215,7 @@ const Index = () => {
     // Find the habit to check if we're completing it
     const habit = habits.find(h => h.id === id);
     const isCompleting = habit && !(habit as any).completed_today && !(habit as any).completedToday;
+    const habitStreak = (habit as any)?.streak || 0;
     
     if (isLoggedIn) {
       cloudHabits.toggleHabit(id);
@@ -218,9 +223,20 @@ const Index = () => {
       localHabits.toggleHabit(id);
     }
     
-    // Track completion for in-app review (only when completing, not uncompleting)
-    if (isCompleting) {
+    // Track completion for in-app review and achievements (only when completing)
+    if (isCompleting && isLoggedIn) {
       trackHabitCompletion();
+      
+      // Check achievements with context
+      checkAndAwardAchievements({
+        habitCompleted: true,
+        habitStreak: habitStreak + 1,
+        totalHabitsCompleted: completedCount + 1,
+        ambientMode: ambientMode || undefined,
+        pointsEarned: true,
+        pointsBalance: balance,
+      });
+      
       // Try to request review after tracking (checks criteria internally)
       setTimeout(() => tryRequestReview(), 1000);
     }
