@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useCompanion, CAT_COLORS, CatColor, CAT_PATTERNS, CatPattern } from '@/contexts/CompanionContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Switch } from '@/components/ui/switch';
@@ -26,6 +27,13 @@ export function CompanionSettings() {
   } = useCompanion();
   const { isPremium } = usePremium();
   const navigate = useNavigate();
+
+  // Clear preview pattern when component unmounts (user navigates away)
+  useEffect(() => {
+    return () => {
+      setPreviewPattern(null);
+    };
+  }, [setPreviewPattern]);
 
   const handlePatternSelect = (pattern: CatPattern) => {
     if (pattern === 'none') {
