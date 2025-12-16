@@ -20,15 +20,15 @@ import { Capacitor } from '@capacitor/core';
 
 export const IAP_PRODUCT_IDS = {
   // Subscriptions
-  PREMIUM_MONTHLY: 'app.lovable.53d04b63e0ee43f3822af5b2e6319d75.premium.monthly',
-  PREMIUM_ANNUAL: 'app.lovable.53d04b63e0ee43f3822af5b2e6319d75.premium.annual',
-  PREMIUM_LIFETIME: 'app.lovable.53d04b63e0ee43f3822af5b2e6319d75.premium.lifetime',
+  PREMIUM_MONTHLY: 'com.cozyhabits.app.premium.monthly',
+  PREMIUM_ANNUAL: 'com.cozyhabits.app.premium.annual',
+  PREMIUM_LIFETIME: 'com.cozyhabits.app.premium.lifetime',
   
   // Point Bundles (Consumables)
-  POINTS_SMALL: 'app.lovable.53d04b63e0ee43f3822af5b2e6319d75.points.500',
-  POINTS_MEDIUM: 'app.lovable.53d04b63e0ee43f3822af5b2e6319d75.points.1500',
-  POINTS_LARGE: 'app.lovable.53d04b63e0ee43f3822af5b2e6319d75.points.5000',
-  POINTS_MEGA: 'app.lovable.53d04b63e0ee43f3822af5b2e6319d75.points.12000',
+  POINTS_SMALL: 'com.cozyhabits.app.points.500',
+  POINTS_MEDIUM: 'com.cozyhabits.app.points.1500',
+  POINTS_LARGE: 'com.cozyhabits.app.points.5000',
+  POINTS_MEGA: 'com.cozyhabits.app.points.12000',
 } as const;
 
 export type ProductId = typeof IAP_PRODUCT_IDS[keyof typeof IAP_PRODUCT_IDS];
