@@ -115,7 +115,7 @@ const CatCustomize = () => {
             onClick={() => navigate('/rewards')}
           >
             <ShoppingBag className="w-4 h-4 mr-1" />
-            Store
+            Costumes
           </Button>
         </header>
 
@@ -207,7 +207,7 @@ const CatCustomize = () => {
                 onClick={() => navigate('/rewards')}
               >
                 <ShoppingBag className="w-4 h-4 mr-2" />
-                Visit Rewards Store
+                Visit Store
               </Button>
             </div>
           )}

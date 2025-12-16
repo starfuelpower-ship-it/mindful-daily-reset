@@ -23,36 +23,36 @@ const GENERAL_MESSAGES = [
 const STREAK_MESSAGES = {
   low: [ // 1-3 days
     "Great start! Keep the momentum going!",
-    "You're on a roll! Don't stop now.",
-    "Building that streak brick by brick!",
+    "You're building something special!",
+    "One day at a time — you're doing it!",
   ],
   medium: [ // 4-7 days
-    "Amazing! Your streak is getting stronger!",
-    "You're proving what consistency can do!",
-    "Keep it up! You're doing incredible.",
+    "Your consistency is blooming!",
+    "You're showing up for yourself!",
+    "Beautiful progress — keep going!",
   ],
   high: [ // 8-14 days
-    "Wow! Your dedication is inspiring!",
-    "You're a habit machine! Keep crushing it!",
-    "Your streak is on fire! 🔥",
+    "Your dedication is inspiring!",
+    "Look at you, growing every day!",
+    "Steady and strong! 🌿",
   ],
   legendary: [ // 15+ days
-    "Legendary status! You're unstoppable!",
-    "Your discipline is truly remarkable!",
-    "You've mastered the art of consistency!",
+    "What beautiful consistency!",
+    "Your discipline is remarkable!",
+    "You've made this a part of you!",
   ],
 };
 
 const COMPLETION_MESSAGES = {
   allDone: [
-    "Perfect day! You completed everything!",
-    "All habits done! Time to celebrate! 🎉",
-    "100% today! You're amazing!",
+    "Wonderful day! You completed everything!",
+    "All habits done! Time for rest! 🌿",
+    "100% today! How cozy!",
   ],
   almostDone: [
     "So close! Just a few more to go!",
-    "Almost there! Finish strong!",
-    "You've got this! Final push!",
+    "Almost there! You've got this!",
+    "Nearly done — wonderful progress!",
   ],
   halfDone: [
     "Halfway there! Keep the momentum!",
