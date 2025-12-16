@@ -44,17 +44,21 @@ export const CatCompanion = memo(() => {
   const { playSound, triggerHaptic } = useSoundEffects();
   
   const [dragPosition, setDragPosition] = useState(loadSavedPosition);
+  const [displayPosition, setDisplayPosition] = useState(loadSavedPosition);
   const [walkOffset, setWalkOffset] = useState(0);
   const [scale, setScale] = useState(loadSavedScale);
   const [isDragging, setIsDragging] = useState(false);
   const [isPinching, setIsPinching] = useState(false);
   const [facingLeft, setFacingLeft] = useState(false);
+  const [velocity, setVelocity] = useState({ x: 0, y: 0 });
   
   const containerRef = useRef<HTMLDivElement>(null);
   const initialPinchDistance = useRef<number>(0);
   const initialScale = useRef<number>(DEFAULT_SCALE);
-  const dragStartPos = useRef({ x: 0, y: 0 });
-  const catStartPos = useRef({ x: 0, y: 0 });
+  const lastMoveTime = useRef<number>(0);
+  const lastMovePos = useRef({ x: 0, y: 0 });
+  const animationFrameRef = useRef<number>(0);
+  const targetPositionRef = useRef({ x: 0, y: 0 });
 
   const isDark = resolvedTheme === 'dark';
   const hasCustomPosition = dragPosition.x !== 0 || dragPosition.y !== 0;
@@ -71,13 +75,68 @@ export const CatCompanion = memo(() => {
   // Handle walking animation offset
   useEffect(() => {
     if (currentState === 'walking' && walkDirection !== 0) {
-      const targetOffset = walkDirection * 40; // Walk 40px in the direction
+      const targetOffset = walkDirection * 40;
       setWalkOffset((walkProgress / 100) * targetOffset);
       setFacingLeft(walkDirection < 0);
     } else if (currentState !== 'walking') {
       setWalkOffset(0);
     }
   }, [currentState, walkDirection, walkProgress]);
+
+  // Smooth magnetic following during drag + soft inertia on release
+  useEffect(() => {
+    let lastTime = performance.now();
+    
+    const animate = () => {
+      const now = performance.now();
+      const deltaTime = Math.min((now - lastTime) / 1000, 0.1); // Cap delta to prevent jumps
+      lastTime = now;
+      
+      if (isDragging) {
+        // Magnetic follow: smoothly interpolate toward target position
+        const lerp = 0.25; // Smooth magnetic follow (0.25 = gentle, 0.5 = snappy)
+        setDisplayPosition(prev => ({
+          x: prev.x + (targetPositionRef.current.x - prev.x) * lerp,
+          y: prev.y + (targetPositionRef.current.y - prev.y) * lerp,
+        }));
+      } else if (Math.abs(velocity.x) > 0.5 || Math.abs(velocity.y) > 0.5) {
+        // Soft inertia: continue moving with friction when released
+        const friction = 0.92; // Gentle slowdown
+        const newVelX = velocity.x * friction;
+        const newVelY = velocity.y * friction;
+        
+        const maxX = window.innerWidth - 60;
+        const maxY = window.innerHeight - 140;
+        
+        setDisplayPosition(prev => {
+          const newX = Math.min(maxX, Math.max(-maxX + 120, prev.x + newVelX * deltaTime * 60));
+          const newY = Math.min(0, Math.max(-maxY, prev.y + newVelY * deltaTime * 60));
+          return { x: newX, y: newY };
+        });
+        
+        setVelocity({ x: newVelX, y: newVelY });
+        
+        // Stop when velocity is negligible
+        if (Math.abs(newVelX) < 0.5 && Math.abs(newVelY) < 0.5) {
+          setVelocity({ x: 0, y: 0 });
+          setDragPosition(displayPosition);
+          localStorage.setItem(CAT_POSITION_KEY, JSON.stringify(displayPosition));
+        }
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+    
+    animationFrameRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameRef.current);
+  }, [isDragging, velocity, displayPosition]);
+
+  // Sync display position when not dragging and no velocity
+  useEffect(() => {
+    if (!isDragging && velocity.x === 0 && velocity.y === 0) {
+      setDisplayPosition(dragPosition);
+    }
+  }, [dragPosition, isDragging, velocity]);
 
   // Check if cat is in sleep mode
   const isCatSleeping = currentState === 'sleeping' || currentState === 'loaf' || 
@@ -86,13 +145,10 @@ export const CatCompanion = memo(() => {
 
   // Track last interaction time for idle purring
   const lastInteractionRef = useRef<number>(Date.now());
-  // Track when purr last played to enforce 60 second cooldown
   const lastPurrTimeRef = useRef<number>(0);
-  // Track purr audio element to stop after 3-4 seconds
   const purrAudioRef = useRef<HTMLAudioElement | null>(null);
   
-  // Random purring when sleeping or idle (no interaction for 15+ seconds)
-  // Purr only lasts 3-4 seconds, then stops, with 60 second cooldown before next purr
+  // Random purring when sleeping or idle
   useEffect(() => {
     if (!showCompanion || companionType !== 'cat' || !catSoundsEnabled) return;
     
@@ -102,17 +158,13 @@ export const CatCompanion = memo(() => {
       const timeSinceLastPurr = now - lastPurrTimeRef.current;
       const shouldPurr = isCatSleeping || timeSinceInteraction > 15000;
       
-      // Only purr if 60+ seconds since last purr and conditions met
       if (shouldPurr && timeSinceLastPurr > 60000 && Math.random() < 0.4) {
         lastPurrTimeRef.current = now;
-        
-        // Create audio element for purr so we can stop it after 3-4 seconds
         const purrAudio = new Audio('/audio/cat-purr.mp3');
-        purrAudio.volume = 0.15; // 50% quieter
+        purrAudio.volume = 0.15;
         purrAudioRef.current = purrAudio;
         purrAudio.play().catch(() => {});
         
-        // Stop purr after 3-4 seconds
         const purrDuration = 3000 + Math.random() * 1000;
         setTimeout(() => {
           if (purrAudioRef.current === purrAudio) {
@@ -122,11 +174,10 @@ export const CatCompanion = memo(() => {
           }
         }, purrDuration);
       }
-    }, 10000); // Check every 10 seconds
+    }, 10000);
     
     return () => {
       clearInterval(purrInterval);
-      // Stop any playing purr on cleanup
       if (purrAudioRef.current) {
         purrAudioRef.current.pause();
         purrAudioRef.current = null;
@@ -134,7 +185,7 @@ export const CatCompanion = memo(() => {
     };
   }, [isCatSleeping, showCompanion, companionType, catSoundsEnabled]);
 
-  // Play cat sounds for reactions - only if not sleeping and sounds enabled
+  // Play cat sounds for reactions
   useEffect(() => {
     if (isCatSleeping || !catSoundsEnabled) return;
     
@@ -146,20 +197,31 @@ export const CatCompanion = memo(() => {
     }
   }, [currentReaction, playSound, isCatSleeping, catSoundsEnabled]);
 
-  // Handle tap on cat - play soft pop sound + random cat sounds if not sleeping
+  // Handle tap on cat
   const handleCatTap = useCallback(() => {
-    lastInteractionRef.current = Date.now(); // Reset interaction timer
+    lastInteractionRef.current = Date.now();
     triggerTapReaction();
-    // Always play soft pop on tap (respects sound settings via playSound)
     playSound('soft_pop');
     if (!isCatSleeping && catSoundsEnabled) {
-      // Also play a random cat sound after a tiny delay (50% quieter volume handled in useSoundEffects)
       setTimeout(() => playSound(getRandomTapSound()), 80);
     }
     triggerHaptic('light');
   }, [triggerTapReaction, playSound, triggerHaptic, isCatSleeping, catSoundsEnabled]);
 
-  // Touch handlers for dragging
+  // Calculate velocity from movement
+  const updateVelocity = useCallback((currentX: number, currentY: number) => {
+    const now = performance.now();
+    const dt = now - lastMoveTime.current;
+    if (dt > 0 && dt < 100) {
+      const vx = (currentX - lastMovePos.current.x) / dt * 16; // Normalize to ~60fps
+      const vy = (currentY - lastMovePos.current.y) / dt * 16;
+      setVelocity({ x: vx * 0.5, y: vy * 0.5 }); // Dampen initial velocity
+    }
+    lastMoveTime.current = now;
+    lastMovePos.current = { x: currentX, y: currentY };
+  }, []);
+
+  // Touch handlers for dragging - with expanded hitbox logic built-in
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     e.stopPropagation();
     
@@ -173,15 +235,20 @@ export const CatCompanion = memo(() => {
       initialScale.current = scale;
       setIsPinching(true);
     } else if (e.touches.length === 1) {
+      const touch = e.touches[0];
       setIsDragging(true);
-      dragStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      catStartPos.current = { ...dragPosition };
+      setVelocity({ x: 0, y: 0 }); // Stop any ongoing inertia
+      lastMoveTime.current = performance.now();
+      lastMovePos.current = { x: touch.clientX, y: touch.clientY };
+      
+      // Calculate offset from cat center and set target directly
+      targetPositionRef.current = { ...displayPosition };
       handleCatTap();
     }
-  }, [scale, dragPosition, handleCatTap]);
+  }, [scale, displayPosition, handleCatTap]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    e.preventDefault(); // Prevent scrolling while dragging/pinching
+    e.preventDefault();
     if (isPinching && e.touches.length === 2) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
@@ -193,62 +260,85 @@ export const CatCompanion = memo(() => {
       const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, initialScale.current * scaleChange));
       setScale(newScale);
     } else if (isDragging && e.touches.length === 1) {
-      const deltaX = e.touches[0].clientX - dragStartPos.current.x;
-      const deltaY = e.touches[0].clientY - dragStartPos.current.y;
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - lastMovePos.current.x;
+      const deltaY = touch.clientY - lastMovePos.current.y;
+      
+      updateVelocity(touch.clientX, touch.clientY);
       
       const maxX = window.innerWidth - 60;
       const maxY = window.innerHeight - 140;
       
-      const newX = Math.min(maxX, Math.max(-maxX + 120, catStartPos.current.x + deltaX));
-      const newY = Math.min(0, Math.max(-maxY, catStartPos.current.y + deltaY));
+      // Update target position directly based on delta (finger following)
+      const newX = Math.min(maxX, Math.max(-maxX + 120, targetPositionRef.current.x + deltaX));
+      const newY = Math.min(0, Math.max(-maxY, targetPositionRef.current.y + deltaY));
       
+      targetPositionRef.current = { x: newX, y: newY };
       setDragPosition({ x: newX, y: newY });
       
-      if (Math.abs(deltaX) > 5) {
+      if (Math.abs(deltaX) > 2) {
         setFacingLeft(deltaX < 0);
       }
+      
+      lastMovePos.current = { x: touch.clientX, y: touch.clientY };
     }
-  }, [isPinching, isDragging]);
+  }, [isPinching, isDragging, updateVelocity]);
 
   const handleTouchEnd = useCallback(() => {
-    setIsDragging(false);
+    if (isDragging) {
+      setIsDragging(false);
+      // Velocity is already set from handleTouchMove - inertia will kick in
+      if (velocity.x === 0 && velocity.y === 0) {
+        localStorage.setItem(CAT_POSITION_KEY, JSON.stringify(displayPosition));
+      }
+    }
     setIsPinching(false);
-    localStorage.setItem(CAT_POSITION_KEY, JSON.stringify(dragPosition));
     localStorage.setItem(CAT_SCALE_KEY, String(scale));
-  }, [dragPosition, scale]);
+  }, [isDragging, displayPosition, scale, velocity]);
 
-  // Mouse handlers for desktop
+  // Mouse handlers for desktop - same smooth behavior
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setIsDragging(true);
-    dragStartPos.current = { x: e.clientX, y: e.clientY };
-    catStartPos.current = { ...dragPosition };
+    setVelocity({ x: 0, y: 0 });
+    lastMoveTime.current = performance.now();
+    lastMovePos.current = { x: e.clientX, y: e.clientY };
+    targetPositionRef.current = { ...displayPosition };
     handleCatTap();
-  }, [dragPosition, handleCatTap]);
+  }, [displayPosition, handleCatTap]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging) return;
     
-    const deltaX = e.clientX - dragStartPos.current.x;
-    const deltaY = e.clientY - dragStartPos.current.y;
+    const deltaX = e.clientX - lastMovePos.current.x;
+    const deltaY = e.clientY - lastMovePos.current.y;
+    
+    updateVelocity(e.clientX, e.clientY);
     
     const maxX = window.innerWidth - 60;
     const maxY = window.innerHeight - 140;
     
-    const newX = Math.min(maxX, Math.max(-maxX + 120, catStartPos.current.x + deltaX));
-    const newY = Math.min(0, Math.max(-maxY, catStartPos.current.y + deltaY));
+    const newX = Math.min(maxX, Math.max(-maxX + 120, targetPositionRef.current.x + deltaX));
+    const newY = Math.min(0, Math.max(-maxY, targetPositionRef.current.y + deltaY));
     
+    targetPositionRef.current = { x: newX, y: newY };
     setDragPosition({ x: newX, y: newY });
     
-    if (Math.abs(deltaX) > 5) {
+    if (Math.abs(deltaX) > 2) {
       setFacingLeft(deltaX < 0);
     }
-  }, [isDragging]);
+    
+    lastMovePos.current = { x: e.clientX, y: e.clientY };
+  }, [isDragging, updateVelocity]);
 
   const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    localStorage.setItem(CAT_POSITION_KEY, JSON.stringify(dragPosition));
-  }, [dragPosition]);
+    if (isDragging) {
+      setIsDragging(false);
+      if (velocity.x === 0 && velocity.y === 0) {
+        localStorage.setItem(CAT_POSITION_KEY, JSON.stringify(displayPosition));
+      }
+    }
+  }, [isDragging, displayPosition, velocity]);
 
   // Mouse wheel for scaling on desktop
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -279,7 +369,7 @@ export const CatCompanion = memo(() => {
         className="fixed inset-0 z-30 pointer-events-none"
         aria-hidden="true"
       >
-        {/* Cat container - only this has pointer-events */}
+        {/* Cat container with expanded hitbox for easier grabbing */}
         <div
           ref={containerRef}
           className={cn(
@@ -287,8 +377,13 @@ export const CatCompanion = memo(() => {
             isDragging ? 'cursor-grabbing' : 'cursor-grab'
           )}
           style={{
-            transform: `translate(${walkOffset + dragPosition.x}px, ${dragPosition.y}px) scale(${scale * catSize})`,
-            transition: isDragging || isPinching ? 'none' : currentState === 'walking' ? 'transform 0.05s linear' : 'transform 0.3s ease-out',
+            transform: `translate(${walkOffset + displayPosition.x}px, ${displayPosition.y}px) scale(${scale * catSize})`,
+            // Smooth transitions when not actively dragging
+            transition: isDragging || isPinching || velocity.x !== 0 || velocity.y !== 0 
+              ? 'none' 
+              : currentState === 'walking' 
+                ? 'transform 0.05s linear' 
+                : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -296,12 +391,17 @@ export const CatCompanion = memo(() => {
           onMouseDown={handleMouseDown}
           onWheel={handleWheel}
         >
+          {/* Expanded invisible hitbox - 24px padding around the cat for easier grabbing */}
+          <div 
+            className="absolute -inset-6 rounded-full"
+            aria-hidden="true"
+          />
           <div
             className={cn(
               'relative w-16 h-16',
               facingLeft && 'scale-x-[-1]'
             )}
-            style={{ transition: 'transform 0.2s ease-out' }}
+            style={{ transition: 'transform 0.15s ease-out' }}
           >
             <CatBody 
               state={currentState} 
