@@ -9,7 +9,11 @@ import {
   Flame,
   Sun,
   Moon,
-  X
+  X,
+  Feather,
+  BookOpen,
+  Crown,
+  Monitor
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -35,7 +39,7 @@ const ONBOARDING_KEY = 'daily-reset-onboarding-complete';
 export default function Onboarding() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [step, setStep] = useState(0);
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [selectedHabits, setSelectedHabits] = useState<typeof SUGGESTED_HABITS>([]);
@@ -43,7 +47,14 @@ export default function Onboarding() {
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [direction, setDirection] = useState<'next' | 'prev'>('next');
 
-  const totalSteps = 4; // Condensed from 9 to 4
+  const totalSteps = 5; // Added AI intro step
+
+  // Initialize selectedTheme from current theme
+  useEffect(() => {
+    if (theme) {
+      setSelectedTheme(theme as 'light' | 'dark' | 'system');
+    }
+  }, []);
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -86,10 +97,16 @@ export default function Onboarding() {
     });
   };
 
+  // Apply theme immediately when selected
+  const handleThemeSelect = (newTheme: 'light' | 'dark' | 'system') => {
+    setSelectedTheme(newTheme);
+    setTheme(newTheme);
+  };
+
   const handleComplete = async () => {
     setLoading(true);
     try {
-      setTheme(selectedTheme);
+      // Theme is already applied, just persist it
       localStorage.setItem('daily-reset-theme', selectedTheme);
 
       if (user && selectedHabits.length > 0) {
@@ -163,6 +180,7 @@ export default function Onboarding() {
       'from-amber-400 to-primary',       // Welcome
       'from-emerald-400 to-green-500',   // Choose habits
       'from-violet-400 to-purple-500',   // Theme
+      'from-pink-400 to-rose-500',       // Gentle features (AI)
       'from-rose-400 via-amber-500 to-emerald-400', // Ready
     ];
     return colors[step] || colors[0];
@@ -310,11 +328,11 @@ export default function Onboarding() {
                 {[
                   { value: 'light' as const, icon: Sun, label: 'Light' },
                   { value: 'dark' as const, icon: Moon, label: 'Dark' },
-                  { value: 'system' as const, icon: Heart, label: 'Auto' },
+                  { value: 'system' as const, icon: Monitor, label: 'Auto' },
                 ].map(({ value, icon: Icon, label }) => (
                   <button
                     key={value}
-                    onClick={() => setSelectedTheme(value)}
+                    onClick={() => handleThemeSelect(value)}
                     className={cn(
                       'p-4 rounded-xl border text-center transition-all bg-card',
                       selectedTheme === value
@@ -330,11 +348,61 @@ export default function Onboarding() {
                   </button>
                 ))}
               </div>
+
+              <p className="text-center text-xs text-muted-foreground">
+                Auto follows your device settings
+              </p>
             </div>
           )}
 
-          {/* Step 3: Ready */}
+          {/* Step 3: Gentle Features (AI) */}
           {step === 3 && (
+            <div className="space-y-5">
+              <div className="text-center space-y-2">
+                <div className={cn(
+                  "w-16 h-16 mx-auto rounded-2xl flex items-center justify-center text-white shadow-lg bg-gradient-to-br mb-4",
+                  getStepColor()
+                )}>
+                  <Feather className="w-8 h-8" />
+                </div>
+                <h1 className="text-xl font-bold text-foreground">Gentle Support</h1>
+                <p className="text-sm text-muted-foreground">Optional, when you want it</p>
+              </div>
+
+              <p className="text-sm text-muted-foreground text-center">
+                Soft features are available if you ever want them — they only respond when you tap a button.
+              </p>
+
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border/50">
+                  <BookOpen className="w-5 h-5 text-pink-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Gentle reflections</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Ask for a soft reflection after journaling — never automatic
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border/50">
+                  <Feather className="w-5 h-5 text-pink-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Kind suggestions</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Habits can be gently softened to reduce pressure
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <Crown className="w-4 h-4 text-amber-500" />
+                <span className="text-xs text-foreground">Available with Pro — explore when ready</span>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Ready */}
+          {step === 4 && (
             <div className="space-y-6 text-center">
               <div className={cn(
                 "w-20 h-20 mx-auto rounded-2xl flex items-center justify-center text-white shadow-lg bg-gradient-to-br",
