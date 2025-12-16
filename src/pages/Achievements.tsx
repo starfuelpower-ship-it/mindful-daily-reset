@@ -80,7 +80,7 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
             <div className="flex items-center gap-1 mt-2">
               <Gift className="w-3 h-3 text-amber-500" />
               <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                +{achievement.pointsReward} coins
+                +{achievement.pointsReward} points
               </span>
             </div>
           )}

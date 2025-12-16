@@ -25,11 +25,11 @@ interface DailyReflectionModalProps {
 }
 
 const CELEBRATION_MESSAGES = [
-  "Amazing work today! 🎉",
-  "You crushed it! 💪",
-  "Perfect day! ⭐",
-  "All habits done! 🏆",
-  "Incredible effort! 🌟",
+  "Wonderful work today! 🎉",
+  "You showed up! 💚",
+  "A cozy day complete! ⭐",
+  "All habits done! 🌿",
+  "Beautifully done! 🌟",
 ];
 
 export function DailyReflectionModal({ 

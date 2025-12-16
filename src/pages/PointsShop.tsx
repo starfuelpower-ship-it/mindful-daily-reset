@@ -99,8 +99,8 @@ const PointsShop = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">Points Shop</h1>
-            <p className="text-sm text-muted-foreground">Get more points for costumes!</p>
+            <h1 className="text-2xl font-bold text-foreground">Get Points</h1>
+            <p className="text-sm text-muted-foreground">Support your cozy journey</p>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30">
             <Coins className="w-4 h-4 text-amber-600" />
