@@ -10,6 +10,10 @@ interface AmbientContextType {
   setAmbientMode: (mode: AmbientMode) => void;
   visualsEnabled: boolean;
   setVisualsEnabled: (enabled: boolean) => void;
+  soundsEnabled: boolean;
+  setSoundsEnabled: (enabled: boolean) => void;
+  soundVolume: number;
+  setSoundVolume: (value: number) => void;
   intensity: number; // 0-100
   setIntensity: (value: number) => void;
   isLoading: boolean;
@@ -21,6 +25,8 @@ const AmbientContext = createContext<AmbientContextType | undefined>(undefined);
 // Local storage keys for guests
 const AMBIENT_MODE_KEY = 'daily-reset-ambient-mode';
 const AMBIENT_VISUALS_KEY = 'daily-reset-ambient-visuals';
+const AMBIENT_SOUNDS_KEY = 'daily-reset-ambient-sounds';
+const AMBIENT_SOUND_VOLUME_KEY = 'daily-reset-ambient-sound-volume';
 const AMBIENT_INTENSITY_KEY = 'daily-reset-ambient-intensity';
 
 // Get seasonal ambient mode based on current month
@@ -58,6 +64,22 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
     return true;
   });
 
+  const [localSoundsEnabled, setLocalSoundsEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(AMBIENT_SOUNDS_KEY);
+      return stored === null ? false : stored === 'true'; // Default off
+    }
+    return false;
+  });
+
+  const [localSoundVolume, setLocalSoundVolume] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(AMBIENT_SOUND_VOLUME_KEY);
+      return stored ? parseInt(stored, 10) : 35; // Default 35%
+    }
+    return 35;
+  });
+
   const [localIntensity, setLocalIntensity] = useState(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(AMBIENT_INTENSITY_KEY);
@@ -73,9 +95,11 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
     if (user && settings && !initialized.current) {
       const mode = (settings as any).ambient_mode as AmbientMode || 'autumn_leaves';
       const visuals = (settings as any).ambient_visuals_enabled ?? true;
+      const sounds = (settings as any).ambient_sounds_enabled ?? false;
       
       setLocalMode(mode);
       setLocalVisualsEnabled(visuals);
+      setLocalSoundsEnabled(sounds);
       initialized.current = true;
     }
   }, [user, settings, resolvedTheme]);
@@ -92,6 +116,18 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(AMBIENT_VISUALS_KEY, String(localVisualsEnabled));
     }
   }, [localVisualsEnabled, user]);
+
+  useEffect(() => {
+    if (!user) {
+      localStorage.setItem(AMBIENT_SOUNDS_KEY, String(localSoundsEnabled));
+    }
+  }, [localSoundsEnabled, user]);
+
+  useEffect(() => {
+    if (!user) {
+      localStorage.setItem(AMBIENT_SOUND_VOLUME_KEY, String(localSoundVolume));
+    }
+  }, [localSoundVolume, user]);
 
   useEffect(() => {
     if (!user) {
@@ -113,6 +149,18 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
     }
   }, [updateSettings, user]);
 
+  const setSoundsEnabled = useCallback(async (enabled: boolean) => {
+    setLocalSoundsEnabled(enabled);
+    if (user) {
+      await updateSettings({ ambient_sounds_enabled: enabled } as any);
+    }
+  }, [updateSettings, user]);
+
+  const setSoundVolume = useCallback((value: number) => {
+    setLocalSoundVolume(value);
+    // Note: volume is stored locally only, not in database
+  }, []);
+
   const setIntensity = useCallback((value: number) => {
     setLocalIntensity(value);
     // Note: intensity is stored locally only, not in database
@@ -121,10 +169,12 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
   const turnOffAllAmbience = useCallback(async () => {
     setLocalMode('off');
     setLocalVisualsEnabled(false);
+    setLocalSoundsEnabled(false);
     if (user) {
       await updateSettings({
         ambient_mode: 'off',
         ambient_visuals_enabled: false,
+        ambient_sounds_enabled: false,
       } as any);
     }
   }, [updateSettings, user]);
@@ -136,6 +186,10 @@ export function AmbientProvider({ children }: { children: React.ReactNode }) {
         setAmbientMode,
         visualsEnabled: localVisualsEnabled,
         setVisualsEnabled,
+        soundsEnabled: localSoundsEnabled,
+        setSoundsEnabled,
+        soundVolume: localSoundVolume,
+        setSoundVolume,
         intensity: localIntensity,
         setIntensity,
         isLoading: loading,

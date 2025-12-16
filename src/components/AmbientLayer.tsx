@@ -23,8 +23,9 @@ const RainEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
     window.addEventListener('resize', resize);
 
     const intensityFactor = intensity / 100;
-    const baseDropCount = isDark ? 15 : 20;
-    const dropCount = Math.round(baseDropCount + (intensityFactor * 30));
+    // Increased drop count for better visibility
+    const baseDropCount = isDark ? 25 : 40;
+    const dropCount = Math.round(baseDropCount + (intensityFactor * 50));
     
     const drops: { x: number; y: number; speed: number; length: number; opacity: number }[] = [];
     const splashes: { x: number; y: number; radius: number; opacity: number; maxRadius: number }[] = [];
@@ -41,13 +42,14 @@ const RainEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
     }
 
     for (let i = 0; i < dropCount; i++) {
-      const baseOpacity = isDark ? 0.03 : 0.15;
-      const maxOpacity = isDark ? 0.12 : 0.45;
+      // Increased opacity range for better visibility
+      const baseOpacity = isDark ? 0.08 : 0.25;
+      const maxOpacity = isDark ? 0.25 : 0.65;
       drops.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        speed: 2 + Math.random() * 2,
-        length: 12 + Math.random() * 18,
+        speed: 2.5 + Math.random() * 2.5,
+        length: 15 + Math.random() * 22,
         opacity: baseOpacity + (Math.random() * (maxOpacity - baseOpacity) * intensityFactor),
       });
     }
@@ -136,13 +138,14 @@ const RainEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
 
 RainEffect.displayName = 'RainEffect';
 
-// Sun rays effect component with flickering
+// Sun rays effect component with improved dynamic animations
 const SunRaysEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: number }) => {
   const intensityFactor = intensity / 100;
-  const rayCount = Math.round(3 + intensityFactor * 4);
+  const rayCount = Math.round(4 + intensityFactor * 4);
   
-  const baseOpacity = isDark ? 0.01 : 0.06;
-  const maxOpacity = isDark ? 0.04 : 0.18;
+  // Increased base opacity for better visibility
+  const baseOpacity = isDark ? 0.03 : 0.12;
+  const maxOpacity = isDark ? 0.08 : 0.35;
   const opacityRange = maxOpacity - baseOpacity;
   
   return (
@@ -152,64 +155,107 @@ const SunRaysEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity:
           key={i}
           className="absolute"
           style={{
-            top: '-40%',
-            right: `${8 + i * 14}%`,
-            width: isDark ? '120px' : '140px',
-            height: '200%',
+            top: '-50%',
+            right: `${5 + i * 12}%`,
+            width: isDark ? '140px' : '180px',
+            height: '250%',
             background: isDark
               ? `linear-gradient(
                   135deg,
-                  rgba(255, 250, 230, ${baseOpacity + (i * 0.005 * intensityFactor) + (opacityRange * intensityFactor * 0.3)}) 0%,
-                  rgba(255, 235, 180, ${baseOpacity * 0.8 + (opacityRange * intensityFactor * 0.2)}) 50%,
+                  rgba(255, 250, 230, ${baseOpacity + (i * 0.008 * intensityFactor) + (opacityRange * intensityFactor * 0.4)}) 0%,
+                  rgba(255, 235, 180, ${baseOpacity * 0.6 + (opacityRange * intensityFactor * 0.25)}) 50%,
                   transparent 100%
                 )`
               : `linear-gradient(
                   135deg,
-                  rgba(233, 214, 148, ${baseOpacity + (i * 0.015 * intensityFactor) + (opacityRange * intensityFactor * 0.5)}) 0%,
-                  rgba(233, 214, 148, ${baseOpacity * 0.5 + (opacityRange * intensityFactor * 0.3)}) 50%,
+                  rgba(255, 230, 160, ${baseOpacity + (i * 0.02 * intensityFactor) + (opacityRange * intensityFactor * 0.6)}) 0%,
+                  rgba(255, 220, 140, ${baseOpacity * 0.4 + (opacityRange * intensityFactor * 0.35)}) 50%,
                   transparent 100%
                 )`,
-            transform: `rotate(${22 + i * 8}deg)`,
-            filter: isDark ? 'blur(30px)' : 'blur(25px)',
-            animation: `sunRayFade${i} ${5 + i * 1.5}s ease-in-out infinite, sunRayFlicker ${0.8 + i * 0.2}s ease-in-out infinite`,
-            animationDelay: `${i * 0.8}s`,
+            transform: `rotate(${18 + i * 10}deg)`,
+            filter: isDark ? 'blur(35px)' : 'blur(30px)',
+            animation: `sunRayMove${i} ${8 + i * 2}s ease-in-out infinite, sunRayPulse ${3 + i * 0.5}s ease-in-out infinite`,
+            animationDelay: `${i * 1.2}s`,
+          }}
+        />
+      ))}
+      {/* Additional floating light particles for more dynamic feel */}
+      {[...Array(Math.round(3 * intensityFactor))].map((_, i) => (
+        <div
+          key={`particle-${i}`}
+          className="absolute rounded-full"
+          style={{
+            top: `${20 + i * 25}%`,
+            right: `${10 + i * 20}%`,
+            width: '100px',
+            height: '100px',
+            background: isDark
+              ? `radial-gradient(circle, rgba(255, 250, 200, ${0.08 * intensityFactor}) 0%, transparent 70%)`
+              : `radial-gradient(circle, rgba(255, 240, 180, ${0.2 * intensityFactor}) 0%, transparent 70%)`,
+            animation: `sunParticleFloat ${6 + i * 2}s ease-in-out infinite`,
+            animationDelay: `${i * 1.5}s`,
           }}
         />
       ))}
       <style>{`
-        @keyframes sunRayFade0 {
-          0%, 100% { opacity: ${0.4 + intensityFactor * 0.3}; transform: rotate(22deg) scaleY(1); }
-          50% { opacity: ${0.7 + intensityFactor * 0.3}; transform: rotate(22deg) scaleY(1.02); }
+        @keyframes sunRayMove0 {
+          0%, 100% { 
+            opacity: ${0.5 + intensityFactor * 0.4}; 
+            transform: rotate(18deg) translateX(0) scaleY(1); 
+          }
+          25% { 
+            opacity: ${0.7 + intensityFactor * 0.3}; 
+            transform: rotate(20deg) translateX(5px) scaleY(1.02); 
+          }
+          50% { 
+            opacity: ${0.6 + intensityFactor * 0.4}; 
+            transform: rotate(18deg) translateX(0) scaleY(1.03); 
+          }
+          75% { 
+            opacity: ${0.8 + intensityFactor * 0.2}; 
+            transform: rotate(16deg) translateX(-5px) scaleY(1.01); 
+          }
         }
-        @keyframes sunRayFade1 {
-          0%, 100% { opacity: ${0.35 + intensityFactor * 0.35}; transform: rotate(30deg) scaleY(1); }
-          50% { opacity: ${0.65 + intensityFactor * 0.35}; transform: rotate(30deg) scaleY(1.03); }
+        @keyframes sunRayMove1 {
+          0%, 100% { opacity: ${0.45 + intensityFactor * 0.45}; transform: rotate(28deg) translateX(0) scaleY(1); }
+          33% { opacity: ${0.7 + intensityFactor * 0.3}; transform: rotate(30deg) translateX(8px) scaleY(1.03); }
+          66% { opacity: ${0.55 + intensityFactor * 0.4}; transform: rotate(26deg) translateX(-8px) scaleY(1.02); }
         }
-        @keyframes sunRayFade2 {
-          0%, 100% { opacity: ${0.3 + intensityFactor * 0.4}; transform: rotate(38deg) scaleY(1); }
-          50% { opacity: ${0.6 + intensityFactor * 0.4}; transform: rotate(38deg) scaleY(1.02); }
+        @keyframes sunRayMove2 {
+          0%, 100% { opacity: ${0.4 + intensityFactor * 0.5}; transform: rotate(38deg) translateX(0) scaleY(1); }
+          50% { opacity: ${0.75 + intensityFactor * 0.25}; transform: rotate(40deg) translateX(6px) scaleY(1.04); }
         }
-        @keyframes sunRayFade3 {
-          0%, 100% { opacity: ${0.35 + intensityFactor * 0.35}; transform: rotate(46deg) scaleY(1); }
-          50% { opacity: ${0.7 + intensityFactor * 0.3}; transform: rotate(46deg) scaleY(1.01); }
+        @keyframes sunRayMove3 {
+          0%, 100% { opacity: ${0.45 + intensityFactor * 0.45}; transform: rotate(48deg) translateX(0) scaleY(1); }
+          40% { opacity: ${0.65 + intensityFactor * 0.35}; transform: rotate(50deg) translateX(10px) scaleY(1.02); }
+          80% { opacity: ${0.8 + intensityFactor * 0.2}; transform: rotate(46deg) translateX(-6px) scaleY(1.03); }
         }
-        @keyframes sunRayFade4 {
-          0%, 100% { opacity: ${0.3 + intensityFactor * 0.4}; transform: rotate(54deg) scaleY(1); }
-          50% { opacity: ${0.65 + intensityFactor * 0.35}; transform: rotate(54deg) scaleY(1.02); }
+        @keyframes sunRayMove4 {
+          0%, 100% { opacity: ${0.4 + intensityFactor * 0.5}; transform: rotate(58deg) translateX(0) scaleY(1); }
+          50% { opacity: ${0.7 + intensityFactor * 0.3}; transform: rotate(60deg) translateX(7px) scaleY(1.02); }
         }
-        @keyframes sunRayFade5 {
-          0%, 100% { opacity: ${0.35 + intensityFactor * 0.35}; transform: rotate(62deg) scaleY(1); }
-          50% { opacity: ${0.6 + intensityFactor * 0.4}; transform: rotate(62deg) scaleY(1.03); }
+        @keyframes sunRayMove5 {
+          0%, 100% { opacity: ${0.45 + intensityFactor * 0.45}; transform: rotate(68deg) translateX(0) scaleY(1); }
+          35% { opacity: ${0.65 + intensityFactor * 0.35}; transform: rotate(70deg) translateX(5px) scaleY(1.03); }
+          70% { opacity: ${0.75 + intensityFactor * 0.25}; transform: rotate(66deg) translateX(-5px) scaleY(1.01); }
         }
-        @keyframes sunRayFade6 {
-          0%, 100% { opacity: ${0.3 + intensityFactor * 0.4}; transform: rotate(70deg) scaleY(1); }
-          50% { opacity: ${0.65 + intensityFactor * 0.35}; transform: rotate(70deg) scaleY(1.01); }
+        @keyframes sunRayMove6 {
+          0%, 100% { opacity: ${0.4 + intensityFactor * 0.5}; transform: rotate(78deg) translateX(0) scaleY(1); }
+          50% { opacity: ${0.7 + intensityFactor * 0.3}; transform: rotate(80deg) translateX(8px) scaleY(1.02); }
         }
-        @keyframes sunRayFlicker {
-          0%, 100% { filter: blur(25px) brightness(1); }
-          25% { filter: blur(24px) brightness(1.05); }
-          50% { filter: blur(26px) brightness(0.95); }
-          75% { filter: blur(25px) brightness(1.02); }
+        @keyframes sunRayMove7 {
+          0%, 100% { opacity: ${0.45 + intensityFactor * 0.45}; transform: rotate(88deg) translateX(0) scaleY(1); }
+          50% { opacity: ${0.65 + intensityFactor * 0.35}; transform: rotate(90deg) translateX(6px) scaleY(1.03); }
+        }
+        @keyframes sunRayPulse {
+          0%, 100% { filter: blur(30px) brightness(1); }
+          50% { filter: blur(28px) brightness(1.15); }
+        }
+        @keyframes sunParticleFloat {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+          25% { transform: translate(10px, -15px) scale(1.1); opacity: 0.8; }
+          50% { transform: translate(20px, 0) scale(1); opacity: 0.7; }
+          75% { transform: translate(10px, 15px) scale(1.15); opacity: 0.9; }
         }
       `}</style>
     </div>
@@ -238,8 +284,9 @@ const SnowEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
     window.addEventListener('resize', resize);
 
     const intensityFactor = intensity / 100;
-    const baseFlakeCount = isDark ? 10 : 15;
-    const flakeCount = Math.round(baseFlakeCount + (intensityFactor * 25));
+    // Increased flake count for better visibility
+    const baseFlakeCount = isDark ? 20 : 35;
+    const flakeCount = Math.round(baseFlakeCount + (intensityFactor * 40));
 
     const flakes: { x: number; y: number; speed: number; size: number; opacity: number; drift: number }[] = [];
     
@@ -248,13 +295,14 @@ const SnowEffect = memo(({ isDark, intensity }: { isDark: boolean; intensity: nu
     const snowPile: number[] = new Array(pileSegments).fill(0).map(() => Math.random() * 3);
 
     for (let i = 0; i < flakeCount; i++) {
-      const baseOpacity = isDark ? 0.04 : 0.2;
-      const maxOpacity = isDark ? 0.15 : 0.5;
+      // Increased opacity for better visibility
+      const baseOpacity = isDark ? 0.1 : 0.35;
+      const maxOpacity = isDark ? 0.35 : 0.75;
       flakes.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        speed: 0.3 + Math.random() * 0.4,
-        size: isDark ? (1.5 + Math.random() * 2) : (2 + Math.random() * 2.5),
+        speed: 0.4 + Math.random() * 0.5,
+        size: isDark ? (2 + Math.random() * 2.5) : (2.5 + Math.random() * 3),
         opacity: baseOpacity + (Math.random() * (maxOpacity - baseOpacity) * intensityFactor),
         drift: Math.random() * 0.3 - 0.15,
       });

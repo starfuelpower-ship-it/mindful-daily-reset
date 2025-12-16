@@ -39,7 +39,7 @@ const loadSavedScale = () => {
 };
 
 export const CatCompanion = memo(() => {
-  const { showCompanion, companionType, currentReaction, equippedCostume, catColor, catSize } = useCompanion();
+  const { showCompanion, companionType, currentReaction, equippedCostume, catColor, catSize, catSoundsEnabled } = useCompanion();
   const { resolvedTheme } = useTheme();
   const { playSound, triggerHaptic } = useSoundEffects();
   
@@ -94,7 +94,7 @@ export const CatCompanion = memo(() => {
   // Random purring when sleeping or idle (no interaction for 15+ seconds)
   // Purr only lasts 3-4 seconds, then stops, with 60 second cooldown before next purr
   useEffect(() => {
-    if (!showCompanion || companionType !== 'cat') return;
+    if (!showCompanion || companionType !== 'cat' || !catSoundsEnabled) return;
     
     const purrInterval = setInterval(() => {
       const now = Date.now();
@@ -108,7 +108,7 @@ export const CatCompanion = memo(() => {
         
         // Create audio element for purr so we can stop it after 3-4 seconds
         const purrAudio = new Audio('/audio/cat-purr.mp3');
-        purrAudio.volume = 0.25;
+        purrAudio.volume = 0.15; // 50% quieter
         purrAudioRef.current = purrAudio;
         purrAudio.play().catch(() => {});
         
@@ -132,11 +132,11 @@ export const CatCompanion = memo(() => {
         purrAudioRef.current = null;
       }
     };
-  }, [isCatSleeping, showCompanion, companionType]);
+  }, [isCatSleeping, showCompanion, companionType, catSoundsEnabled]);
 
-  // Play cat sounds for reactions - only if not sleeping
+  // Play cat sounds for reactions - only if not sleeping and sounds enabled
   useEffect(() => {
-    if (isCatSleeping) return;
+    if (isCatSleeping || !catSoundsEnabled) return;
     
     if (currentReaction === 'habit_complete') {
       playSound(getHabitCompleteSound());
@@ -144,7 +144,7 @@ export const CatCompanion = memo(() => {
       playSound('achievement');
       setTimeout(() => playSound('meow_happy'), 300);
     }
-  }, [currentReaction, playSound, isCatSleeping]);
+  }, [currentReaction, playSound, isCatSleeping, catSoundsEnabled]);
 
   // Handle tap on cat - play soft pop sound + random cat sounds if not sleeping
   const handleCatTap = useCallback(() => {
@@ -152,12 +152,12 @@ export const CatCompanion = memo(() => {
     triggerTapReaction();
     // Always play soft pop on tap (respects sound settings via playSound)
     playSound('soft_pop');
-    if (!isCatSleeping) {
-      // Also play a random cat sound after a tiny delay
+    if (!isCatSleeping && catSoundsEnabled) {
+      // Also play a random cat sound after a tiny delay (50% quieter volume handled in useSoundEffects)
       setTimeout(() => playSound(getRandomTapSound()), 80);
     }
     triggerHaptic('light');
-  }, [triggerTapReaction, playSound, triggerHaptic, isCatSleeping]);
+  }, [triggerTapReaction, playSound, triggerHaptic, isCatSleeping, catSoundsEnabled]);
 
   // Touch handlers for dragging
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
