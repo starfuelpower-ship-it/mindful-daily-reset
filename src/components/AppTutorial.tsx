@@ -11,7 +11,10 @@ import {
   Heart,
   Check,
   Plus,
-  Flame
+  Flame,
+  BookOpen,
+  Feather,
+  Crown
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -36,7 +39,7 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
 
-  // Condensed to 4 steps
+  // 5 steps including AI features introduction
   const tutorialSteps: TutorialStep[] = [
     {
       id: 'welcome',
@@ -112,6 +115,40 @@ export function AppTutorial({ onComplete }: AppTutorialProps) {
             <p className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-amber-500" /> Reacts when you complete habits</p>
             <p className="flex items-center gap-2"><Cat className="w-4 h-4 text-primary" /> Tap for cute sounds & animations</p>
             <p className="flex items-center gap-2"><Coins className="w-4 h-4 text-amber-500" /> Earn points for outfits</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'gentle-features',
+      icon: <Feather className="w-8 h-8" />,
+      title: 'Gentle Support',
+      subtitle: 'Optional, when you want it',
+      color: 'from-violet-400 to-purple-500',
+      content: (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground text-center">
+            Soft features are here if you ever want them — never automatic, always optional.
+          </p>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+              <BookOpen className="w-5 h-5 text-violet-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Gentle reflections</p>
+                <p className="text-xs text-muted-foreground">Ask for a soft reflection after journaling</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+              <Feather className="w-5 h-5 text-violet-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Kind suggestions</p>
+                <p className="text-xs text-muted-foreground">Habits can be gently softened to reduce pressure</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 pt-1">
+            <Crown className="w-3.5 h-3.5 text-amber-500" />
+            <span className="text-xs text-muted-foreground">Available with Pro</span>
           </div>
         </div>
       ),
