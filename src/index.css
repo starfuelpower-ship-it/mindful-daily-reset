@@ -159,46 +159,6 @@
     --gradient-card: linear-gradient(135deg, hsl(330 20% 14%) 0%, hsl(330 20% 16%) 100%);
   }
 
-  /* Premium Theme: Dark Neon */
-  .theme-neon:not(.dark) {
-    --background: 260 20% 96%;
-    --foreground: 260 30% 15%;
-    --card: 260 15% 99%;
-    --card-foreground: 260 30% 15%;
-    --primary: 280 100% 65%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 180 80% 92%;
-    --secondary-foreground: 180 60% 25%;
-    --muted: 260 15% 92%;
-    --muted-foreground: 260 15% 45%;
-    --accent: 180 100% 88%;
-    --accent-foreground: 180 80% 25%;
-    --border: 260 15% 88%;
-    --ring: 280 100% 65%;
-    --gradient-pastel: linear-gradient(180deg, hsl(260 20% 96%) 0%, hsl(280 30% 94%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(260 15% 99%) 0%, hsl(260 15% 97%) 100%);
-  }
-
-  .theme-neon.dark {
-    --background: 260 30% 8%;
-    --foreground: 260 10% 95%;
-    --card: 260 30% 12%;
-    --card-foreground: 260 10% 95%;
-    --primary: 280 100% 65%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 260 30% 16%;
-    --secondary-foreground: 260 10% 85%;
-    --muted: 260 25% 18%;
-    --muted-foreground: 260 10% 55%;
-    --accent: 180 100% 45%;
-    --accent-foreground: 0 0% 100%;
-    --border: 260 25% 20%;
-    --ring: 280 100% 65%;
-    --gradient-pastel: linear-gradient(180deg, hsl(260 30% 8%) 0%, hsl(280 40% 10%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(260 30% 12%) 0%, hsl(260 30% 14%) 100%);
-    --shadow-soft: 0 2px 12px -2px hsl(280 100% 65% / 0.2);
-    --shadow-card: 0 4px 20px -4px hsl(280 100% 65% / 0.25);
-  }
 
   /* Premium Theme: Forest Green */
   .theme-forest:not(.dark) {
@@ -276,6 +236,240 @@
     --ring: 25 85% 55%;
     --gradient-pastel: linear-gradient(180deg, hsl(25 30% 8%) 0%, hsl(35 25% 10%) 100%);
     --gradient-card: linear-gradient(135deg, hsl(25 30% 12%) 0%, hsl(25 30% 14%) 100%);
+  }
+
+  /* Premium Theme: Moonlight Blue - Calm nighttime energy */
+  .theme-moonlight:not(.dark) {
+    --background: 220 25% 95%;
+    --foreground: 220 20% 15%;
+    --card: 220 20% 98%;
+    --card-foreground: 220 20% 15%;
+    --primary: 220 60% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 35% 92%;
+    --secondary-foreground: 200 30% 25%;
+    --muted: 220 20% 92%;
+    --muted-foreground: 220 15% 45%;
+    --accent: 200 40% 85%;
+    --accent-foreground: 200 35% 25%;
+    --border: 220 20% 88%;
+    --ring: 220 60% 60%;
+    --gradient-pastel: linear-gradient(180deg, hsl(220 25% 95%) 0%, hsl(200 30% 94%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(220 20% 98%) 0%, hsl(220 20% 96%) 100%);
+  }
+
+  .theme-moonlight.dark {
+    --background: 220 25% 10%;
+    --foreground: 220 10% 95%;
+    --card: 220 25% 14%;
+    --card-foreground: 220 10% 95%;
+    --primary: 220 65% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 25% 18%;
+    --secondary-foreground: 220 10% 85%;
+    --muted: 220 20% 20%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 200 40% 30%;
+    --accent-foreground: 200 40% 95%;
+    --border: 220 20% 22%;
+    --ring: 220 65% 55%;
+    --gradient-pastel: linear-gradient(180deg, hsl(220 25% 10%) 0%, hsl(230 20% 12%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(220 25% 14%) 0%, hsl(220 25% 16%) 100%);
+  }
+
+  /* Premium Theme: Midnight Ink - Quiet distraction-free */
+  .theme-midnight:not(.dark) {
+    --background: 230 15% 94%;
+    --foreground: 230 20% 15%;
+    --card: 230 12% 97%;
+    --card-foreground: 230 20% 15%;
+    --primary: 230 50% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 260 25% 92%;
+    --secondary-foreground: 260 20% 25%;
+    --muted: 230 15% 92%;
+    --muted-foreground: 230 12% 45%;
+    --accent: 260 30% 88%;
+    --accent-foreground: 260 25% 25%;
+    --border: 230 15% 88%;
+    --ring: 230 50% 55%;
+    --gradient-pastel: linear-gradient(180deg, hsl(230 15% 94%) 0%, hsl(260 20% 93%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(230 12% 97%) 0%, hsl(230 12% 95%) 100%);
+  }
+
+  .theme-midnight.dark {
+    --background: 230 20% 8%;
+    --foreground: 230 10% 95%;
+    --card: 230 20% 11%;
+    --card-foreground: 230 10% 95%;
+    --primary: 230 50% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 230 20% 14%;
+    --secondary-foreground: 230 10% 85%;
+    --muted: 230 18% 16%;
+    --muted-foreground: 230 10% 50%;
+    --accent: 260 30% 25%;
+    --accent-foreground: 260 30% 95%;
+    --border: 230 18% 18%;
+    --ring: 230 50% 55%;
+    --gradient-pastel: linear-gradient(180deg, hsl(230 20% 8%) 0%, hsl(240 18% 10%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(230 20% 11%) 0%, hsl(230 20% 13%) 100%);
+  }
+
+  /* Premium Theme: Moss Green - Deep earthy grounding */
+  .theme-moss:not(.dark) {
+    --background: 130 15% 95%;
+    --foreground: 130 20% 15%;
+    --card: 130 12% 98%;
+    --card-foreground: 130 20% 15%;
+    --primary: 140 40% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 100 25% 92%;
+    --secondary-foreground: 100 25% 25%;
+    --muted: 130 12% 92%;
+    --muted-foreground: 130 12% 45%;
+    --accent: 100 30% 85%;
+    --accent-foreground: 100 30% 25%;
+    --border: 130 12% 88%;
+    --ring: 140 40% 35%;
+    --gradient-pastel: linear-gradient(180deg, hsl(130 15% 95%) 0%, hsl(100 20% 94%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(130 12% 98%) 0%, hsl(130 12% 96%) 100%);
+  }
+
+  .theme-moss.dark {
+    --background: 130 20% 8%;
+    --foreground: 130 10% 95%;
+    --card: 130 20% 12%;
+    --card-foreground: 130 10% 95%;
+    --primary: 140 45% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 130 20% 16%;
+    --secondary-foreground: 130 10% 85%;
+    --muted: 130 18% 18%;
+    --muted-foreground: 130 10% 55%;
+    --accent: 100 30% 28%;
+    --accent-foreground: 100 30% 95%;
+    --border: 130 18% 20%;
+    --ring: 140 45% 40%;
+    --gradient-pastel: linear-gradient(180deg, hsl(130 20% 8%) 0%, hsl(140 15% 10%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(130 20% 12%) 0%, hsl(130 20% 14%) 100%);
+  }
+
+  /* Premium Theme: Rainy Stone - Cool gray serenity */
+  .theme-stone:not(.dark) {
+    --background: 210 15% 95%;
+    --foreground: 210 15% 15%;
+    --card: 210 12% 98%;
+    --card-foreground: 210 15% 15%;
+    --primary: 210 20% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 12% 92%;
+    --secondary-foreground: 200 12% 25%;
+    --muted: 210 12% 92%;
+    --muted-foreground: 210 10% 45%;
+    --accent: 200 15% 85%;
+    --accent-foreground: 200 15% 25%;
+    --border: 210 12% 88%;
+    --ring: 210 20% 50%;
+    --gradient-pastel: linear-gradient(180deg, hsl(210 15% 95%) 0%, hsl(200 12% 94%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(210 12% 98%) 0%, hsl(210 12% 96%) 100%);
+  }
+
+  .theme-stone.dark {
+    --background: 210 15% 10%;
+    --foreground: 210 8% 95%;
+    --card: 210 15% 14%;
+    --card-foreground: 210 8% 95%;
+    --primary: 210 25% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 15% 18%;
+    --secondary-foreground: 210 8% 85%;
+    --muted: 210 12% 20%;
+    --muted-foreground: 210 8% 55%;
+    --accent: 200 15% 30%;
+    --accent-foreground: 200 15% 95%;
+    --border: 210 12% 22%;
+    --ring: 210 25% 55%;
+    --gradient-pastel: linear-gradient(180deg, hsl(210 15% 10%) 0%, hsl(200 12% 12%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(210 15% 14%) 0%, hsl(210 15% 16%) 100%);
+  }
+
+  /* Premium Theme: Lavender Mist - Gentle emotional comfort */
+  .theme-lavender:not(.dark) {
+    --background: 270 30% 97%;
+    --foreground: 270 20% 15%;
+    --card: 270 25% 99%;
+    --card-foreground: 270 20% 15%;
+    --primary: 270 50% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 35% 94%;
+    --secondary-foreground: 40 30% 25%;
+    --muted: 270 20% 93%;
+    --muted-foreground: 270 15% 45%;
+    --accent: 40 40% 90%;
+    --accent-foreground: 40 35% 25%;
+    --border: 270 20% 90%;
+    --ring: 270 50% 65%;
+    --gradient-pastel: linear-gradient(180deg, hsl(270 30% 97%) 0%, hsl(40 30% 96%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(270 25% 99%) 0%, hsl(270 25% 97%) 100%);
+  }
+
+  .theme-lavender.dark {
+    --background: 270 20% 10%;
+    --foreground: 270 10% 95%;
+    --card: 270 20% 14%;
+    --card-foreground: 270 10% 95%;
+    --primary: 270 55% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 270 20% 18%;
+    --secondary-foreground: 270 10% 85%;
+    --muted: 270 18% 20%;
+    --muted-foreground: 270 10% 55%;
+    --accent: 40 35% 35%;
+    --accent-foreground: 40 35% 95%;
+    --border: 270 18% 22%;
+    --ring: 270 55% 60%;
+    --gradient-pastel: linear-gradient(180deg, hsl(270 20% 10%) 0%, hsl(280 18% 12%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(270 20% 14%) 0%, hsl(270 20% 16%) 100%);
+  }
+
+  /* Premium Theme: Rose Dusk - Cozy intimate warmth */
+  .theme-rose:not(.dark) {
+    --background: 350 30% 97%;
+    --foreground: 350 20% 15%;
+    --card: 350 25% 99%;
+    --card-foreground: 350 20% 15%;
+    --primary: 350 50% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 35% 93%;
+    --secondary-foreground: 30 30% 25%;
+    --muted: 350 20% 93%;
+    --muted-foreground: 350 15% 45%;
+    --accent: 30 40% 88%;
+    --accent-foreground: 30 35% 25%;
+    --border: 350 20% 90%;
+    --ring: 350 50% 60%;
+    --gradient-pastel: linear-gradient(180deg, hsl(350 30% 97%) 0%, hsl(30 30% 96%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(350 25% 99%) 0%, hsl(350 25% 97%) 100%);
+  }
+
+  .theme-rose.dark {
+    --background: 350 20% 10%;
+    --foreground: 350 10% 95%;
+    --card: 350 20% 14%;
+    --card-foreground: 350 10% 95%;
+    --primary: 350 55% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 350 20% 18%;
+    --secondary-foreground: 350 10% 85%;
+    --muted: 350 18% 20%;
+    --muted-foreground: 350 10% 55%;
+    --accent: 30 35% 35%;
+    --accent-foreground: 30 35% 95%;
+    --border: 350 18% 22%;
+    --ring: 350 55% 55%;
+    --gradient-pastel: linear-gradient(180deg, hsl(350 20% 10%) 0%, hsl(0 18% 12%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(350 20% 14%) 0%, hsl(350 20% 16%) 100%);
   }
 }
 

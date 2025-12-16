@@ -1,36 +1,63 @@
 import { useState } from 'react';
 import { Check, Lock, Eye, EyeOff } from 'lucide-react';
-import { useTheme, PREMIUM_THEMES } from '@/contexts/ThemeContext';
+import { useTheme, FREE_THEMES, PREMIUM_THEMES, ALL_THEMES } from '@/contexts/ThemeContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
-const THEME_PREVIEWS = {
+type ColorThemeId = 'default' | 'pastel' | 'forest' | 'sunset' | 'moonlight' | 'midnight' | 'moss' | 'stone' | 'lavender' | 'rose';
+
+const THEME_PREVIEWS: Record<ColorThemeId, { bg: string; primary: string; accent: string }> = {
   default: {
-    bg: 'bg-[hsl(20,50%,98%)]',
+    bg: 'bg-[hsl(35,45%,95%)]',
     primary: 'bg-[hsl(43,90%,58%)]',
-    accent: 'bg-[hsl(180,50%,90%)]',
+    accent: 'bg-[hsl(165,45%,88%)]',
   },
   pastel: {
     bg: 'bg-[hsl(330,30%,97%)]',
     primary: 'bg-[hsl(330,70%,70%)]',
     accent: 'bg-[hsl(200,60%,90%)]',
   },
-  neon: {
-    bg: 'bg-[hsl(260,30%,12%)]',
-    primary: 'bg-[hsl(280,100%,65%)]',
-    accent: 'bg-[hsl(180,100%,50%)]',
-  },
   forest: {
-    bg: 'bg-[hsl(140,20%,95%)]',
+    bg: 'bg-[hsl(140,20%,96%)]',
     primary: 'bg-[hsl(150,50%,45%)]',
     accent: 'bg-[hsl(80,40%,85%)]',
   },
   sunset: {
-    bg: 'bg-[hsl(30,40%,96%)]',
+    bg: 'bg-[hsl(30,40%,97%)]',
     primary: 'bg-[hsl(25,90%,55%)]',
     accent: 'bg-[hsl(45,80%,85%)]',
+  },
+  moonlight: {
+    bg: 'bg-[hsl(220,25%,94%)]',
+    primary: 'bg-[hsl(220,60%,60%)]',
+    accent: 'bg-[hsl(200,40%,85%)]',
+  },
+  midnight: {
+    bg: 'bg-[hsl(230,20%,12%)]',
+    primary: 'bg-[hsl(230,50%,55%)]',
+    accent: 'bg-[hsl(260,30%,30%)]',
+  },
+  moss: {
+    bg: 'bg-[hsl(130,15%,94%)]',
+    primary: 'bg-[hsl(140,40%,35%)]',
+    accent: 'bg-[hsl(100,30%,80%)]',
+  },
+  stone: {
+    bg: 'bg-[hsl(210,15%,94%)]',
+    primary: 'bg-[hsl(210,20%,50%)]',
+    accent: 'bg-[hsl(200,15%,85%)]',
+  },
+  lavender: {
+    bg: 'bg-[hsl(270,30%,96%)]',
+    primary: 'bg-[hsl(270,50%,65%)]',
+    accent: 'bg-[hsl(40,40%,92%)]',
+  },
+  rose: {
+    bg: 'bg-[hsl(350,30%,96%)]',
+    primary: 'bg-[hsl(350,50%,60%)]',
+    accent: 'bg-[hsl(30,40%,85%)]',
   },
 };
 
@@ -40,15 +67,17 @@ export const ThemePicker = () => {
   const navigate = useNavigate();
   const [isPreviewing, setIsPreviewing] = useState(false);
 
-  const handleThemeSelect = (themeId: 'default' | 'pastel' | 'neon' | 'forest' | 'sunset') => {
-    if (themeId === 'default' || isPremium) {
+  const handleThemeSelect = (themeId: ColorThemeId) => {
+    const theme = ALL_THEMES.find(t => t.id === themeId);
+    if (theme?.isFree || isPremium) {
       setColorTheme(themeId);
       setIsPreviewing(false);
     }
   };
 
-  const handlePreview = (themeId: 'default' | 'pastel' | 'neon' | 'forest' | 'sunset') => {
-    if (!isPremium && themeId !== 'default') {
+  const handlePreview = (themeId: ColorThemeId) => {
+    const theme = ALL_THEMES.find(t => t.id === themeId);
+    if (!isPremium && !theme?.isFree) {
       setPreviewTheme(themeId);
       setIsPreviewing(true);
     }
@@ -60,6 +89,70 @@ export const ThemePicker = () => {
   };
 
   const activeTheme = previewTheme || colorTheme;
+
+  const renderThemeCard = (theme: typeof ALL_THEMES[0], isLocked: boolean) => {
+    const preview = THEME_PREVIEWS[theme.id];
+    const isActive = activeTheme === theme.id;
+
+    return (
+      <div
+        key={theme.id}
+        className={cn(
+          "relative p-3 rounded-xl border-2 transition-all",
+          isActive
+            ? "border-primary bg-primary/5"
+            : "border-border",
+          isLocked ? "cursor-default" : "cursor-pointer hover:border-primary/50"
+        )}
+        onClick={() => !isLocked && handleThemeSelect(theme.id)}
+      >
+        {/* Theme Preview Swatch */}
+        <div className={cn(
+          "w-full h-12 rounded-lg mb-2 flex items-center justify-center gap-1 p-2",
+          preview.bg
+        )}>
+          <div className={cn("w-4 h-4 rounded-full", preview.primary)} />
+          <div className={cn("w-3 h-3 rounded-full", preview.accent)} />
+        </div>
+
+        <p className="font-medium text-xs text-foreground truncate">{theme.name}</p>
+        <p className="text-[10px] text-muted-foreground truncate">{theme.description}</p>
+
+        {/* Active Check */}
+        {isActive && !previewTheme && (
+          <div className="absolute top-2 right-2">
+            <Check className="w-4 h-4 text-primary" />
+          </div>
+        )}
+
+        {/* Preview indicator */}
+        {previewTheme === theme.id && (
+          <div className="absolute top-2 right-2">
+            <Eye className="w-4 h-4 text-primary animate-pulse" />
+          </div>
+        )}
+
+        {/* Lock / Preview Button for non-premium */}
+        {isLocked && previewTheme !== theme.id && (
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px] rounded-xl flex flex-col items-center justify-center gap-1">
+            <Lock className="w-4 h-4 text-muted-foreground" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-[10px] px-2 gap-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePreview(theme.id);
+              }}
+            >
+              <Eye className="w-3 h-3" />
+              Preview
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -78,27 +171,11 @@ export const ThemePicker = () => {
         )}
       </div>
 
-      {/* Default Theme */}
-      <div
-        onClick={() => handleThemeSelect('default')}
-        className={cn(
-          "relative p-3 rounded-xl border-2 cursor-pointer transition-all",
-          activeTheme === 'default' && !previewTheme
-            ? "border-primary bg-primary/5"
-            : "border-border hover:border-primary/50"
-        )}
-      >
-        <div className="flex items-center gap-3">
-          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", THEME_PREVIEWS.default.bg)}>
-            <div className={cn("w-5 h-5 rounded-full", THEME_PREVIEWS.default.primary)} />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-sm text-foreground">Default</p>
-            <p className="text-xs text-muted-foreground">Standard theme</p>
-          </div>
-          {activeTheme === 'default' && !previewTheme && (
-            <Check className="w-5 h-5 text-primary" />
-          )}
+      {/* Free Themes */}
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground font-medium">Free Themes</p>
+        <div className="grid grid-cols-3 gap-2">
+          {FREE_THEMES.map((theme) => renderThemeCard(theme, false))}
         </div>
       </div>
 
@@ -110,70 +187,7 @@ export const ThemePicker = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          {PREMIUM_THEMES.map((theme) => {
-            const preview = THEME_PREVIEWS[theme.id];
-            const isActive = activeTheme === theme.id;
-            const isLocked = !isPremium;
-
-            return (
-              <div
-                key={theme.id}
-                className={cn(
-                  "relative p-3 rounded-xl border-2 transition-all",
-                  isActive
-                    ? "border-primary bg-primary/5"
-                    : "border-border",
-                  isLocked ? "cursor-default" : "cursor-pointer hover:border-primary/50"
-                )}
-                onClick={() => !isLocked && handleThemeSelect(theme.id)}
-              >
-                {/* Theme Preview Swatch */}
-                <div className={cn(
-                  "w-full h-12 rounded-lg mb-2 flex items-center justify-center gap-1 p-2",
-                  preview.bg
-                )}>
-                  <div className={cn("w-4 h-4 rounded-full", preview.primary)} />
-                  <div className={cn("w-3 h-3 rounded-full", preview.accent)} />
-                </div>
-
-                <p className="font-medium text-xs text-foreground truncate">{theme.name}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{theme.description}</p>
-
-                {/* Active Check */}
-                {isActive && !previewTheme && (
-                  <div className="absolute top-2 right-2">
-                    <Check className="w-4 h-4 text-primary" />
-                  </div>
-                )}
-
-                {/* Preview indicator */}
-                {previewTheme === theme.id && (
-                  <div className="absolute top-2 right-2">
-                    <Eye className="w-4 h-4 text-primary animate-pulse" />
-                  </div>
-                )}
-
-                {/* Lock / Preview Button for non-premium (hide when this theme is being previewed) */}
-                {isLocked && previewTheme !== theme.id && (
-                  <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px] rounded-xl flex flex-col items-center justify-center gap-1">
-                    <Lock className="w-4 h-4 text-muted-foreground" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 text-[10px] px-2 gap-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePreview(theme.id);
-                      }}
-                    >
-                      <Eye className="w-3 h-3" />
-                      Preview
-                    </Button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {PREMIUM_THEMES.map((theme) => renderThemeCard(theme, !isPremium))}
         </div>
       </div>
 
@@ -192,7 +206,7 @@ export const ThemePicker = () => {
       {isPreviewing && previewTheme && (
         <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
           <p className="text-sm font-medium text-foreground mb-2">
-            Previewing: {PREMIUM_THEMES.find(t => t.id === previewTheme)?.name}
+            Previewing: {ALL_THEMES.find(t => t.id === previewTheme)?.name}
           </p>
           <div className="flex gap-2 justify-center">
             <Button

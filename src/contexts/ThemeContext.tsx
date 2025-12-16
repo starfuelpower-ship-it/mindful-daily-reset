@@ -1,26 +1,45 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 type BaseTheme = 'light' | 'dark' | 'system';
-type PremiumTheme = 'pastel' | 'neon' | 'forest' | 'sunset';
-type ColorTheme = PremiumTheme | 'default';
+type ColorThemeId = 'default' | 'pastel' | 'forest' | 'sunset' | 'moonlight' | 'midnight' | 'moss' | 'stone' | 'lavender' | 'rose';
+
+interface ThemeInfo {
+  id: ColorThemeId;
+  name: string;
+  description: string;
+  isFree: boolean;
+}
 
 interface ThemeContextType {
   theme: BaseTheme;
   setTheme: (theme: BaseTheme) => void;
   resolvedTheme: 'light' | 'dark';
-  colorTheme: ColorTheme;
-  setColorTheme: (theme: ColorTheme) => void;
-  previewTheme: ColorTheme | null;
-  setPreviewTheme: (theme: ColorTheme | null) => void;
+  colorTheme: ColorThemeId;
+  setColorTheme: (theme: ColorThemeId) => void;
+  previewTheme: ColorThemeId | null;
+  setPreviewTheme: (theme: ColorThemeId | null) => void;
   resetPreview: () => void;
 }
 
-export const PREMIUM_THEMES: { id: PremiumTheme; name: string; description: string }[] = [
-  { id: 'pastel', name: 'Light Pastel', description: 'Soft pinks and creams' },
-  { id: 'neon', name: 'Dark Neon', description: 'Vibrant cyberpunk vibes' },
-  { id: 'forest', name: 'Forest Green', description: 'Calm natural tones' },
-  { id: 'sunset', name: 'Sunset Orange', description: 'Warm evening glow' },
+// Free themes available to all users
+export const FREE_THEMES: ThemeInfo[] = [
+  { id: 'default', name: 'Cozy Default', description: 'Warm golden tones', isFree: true },
+  { id: 'pastel', name: 'Light Pastel', description: 'Soft pinks and creams', isFree: true },
+  { id: 'forest', name: 'Forest Green', description: 'Calm natural tones', isFree: true },
 ];
+
+// Premium themes requiring subscription
+export const PREMIUM_THEMES: ThemeInfo[] = [
+  { id: 'sunset', name: 'Sunset Orange', description: 'Warm evening glow', isFree: false },
+  { id: 'moonlight', name: 'Moonlight Blue', description: 'Calm nighttime energy', isFree: false },
+  { id: 'midnight', name: 'Midnight Ink', description: 'Quiet and distraction-free', isFree: false },
+  { id: 'moss', name: 'Moss Green', description: 'Deep earthy grounding', isFree: false },
+  { id: 'stone', name: 'Rainy Stone', description: 'Cool gray serenity', isFree: false },
+  { id: 'lavender', name: 'Lavender Mist', description: 'Gentle emotional comfort', isFree: false },
+  { id: 'rose', name: 'Rose Dusk', description: 'Cozy intimate warmth', isFree: false },
+];
+
+export const ALL_THEMES: ThemeInfo[] = [...FREE_THEMES, ...PREMIUM_THEMES];
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -30,12 +49,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return (stored as BaseTheme) || 'system';
   });
 
-  const [colorTheme, setColorThemeState] = useState<ColorTheme>(() => {
+  const [colorTheme, setColorThemeState] = useState<ColorThemeId>(() => {
     const stored = localStorage.getItem('daily-reset-color-theme');
-    return (stored as ColorTheme) || 'default';
+    return (stored as ColorThemeId) || 'default';
   });
 
-  const [previewTheme, setPreviewTheme] = useState<ColorTheme | null>(null);
+  const [previewTheme, setPreviewTheme] = useState<ColorThemeId | null>(null);
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
   const resetPreview = useCallback(() => setPreviewTheme(null), []);
@@ -72,7 +91,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const activeTheme = previewTheme || colorTheme;
     
     // Remove all theme classes
-    root.classList.remove('theme-pastel', 'theme-neon', 'theme-forest', 'theme-sunset');
+    const themeClasses = ['theme-pastel', 'theme-neon', 'theme-forest', 'theme-sunset', 
+      'theme-moonlight', 'theme-midnight', 'theme-moss', 'theme-stone', 'theme-lavender', 'theme-rose'];
+    root.classList.remove(...themeClasses);
     
     // Add the active theme class
     if (activeTheme !== 'default') {
@@ -90,7 +111,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('daily-reset-color-theme', colorTheme);
   }, [colorTheme]);
 
-  const setColorTheme = (newTheme: ColorTheme) => {
+  const setColorTheme = (newTheme: ColorThemeId) => {
     setColorThemeState(newTheme);
     setPreviewTheme(null); // Clear preview when setting actual theme
   };
