@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -176,6 +176,18 @@ interface AddHabitDialogProps {
   ) => Promise<boolean>;
 }
 
+// Memoized suggestion badge to prevent re-renders
+const SuggestionBadge = memo(({ suggestion, onClick }: { suggestion: string; onClick: () => void }) => (
+  <Badge
+    variant="secondary"
+    className="cursor-pointer hover:bg-primary/20 transition-colors text-xs py-1 px-2"
+    onClick={onClick}
+  >
+    {suggestion}
+  </Badge>
+));
+SuggestionBadge.displayName = 'SuggestionBadge';
+
 export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSave }: AddHabitDialogProps) {
   const navigate = useNavigate();
   const { isPremium } = usePremium();
@@ -192,14 +204,14 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
   const open = isControlled ? controlledOpen : internalOpen;
   const setOpen = isControlled ? onOpenChange! : setInternalOpen;
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setName('');
     setCategory('Health');
     setIcon('check-circle');
     setColor('');
     setNotes('');
     setIntentionDuration('ongoing');
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,20 +235,42 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
     }
   };
 
-  const handleOpenChange = (newOpen: boolean) => {
+  const handleOpenChange = useCallback((newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) {
       resetForm();
     }
-  };
+  }, [setOpen, resetForm]);
 
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = useCallback((suggestion: string) => {
     setName(suggestion);
-  };
+  }, []);
+
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  }, []);
+
+  const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNotes(e.target.value);
+  }, []);
+
+  const handleCategoryChange = useCallback((v: string) => {
+    setCategory(v as Category);
+  }, []);
+
+  const handleAcceptSuggestion = useCallback((gentlerName: string) => {
+    setName(gentlerName);
+  }, []);
+
+  const handleUpgrade = useCallback(() => {
+    navigate('/premium');
+  }, [navigate]);
 
   const suggestions = HABIT_SUGGESTIONS[category];
 
-  const DialogBody = () => (
+  // Form content rendered inline - NOT as a separate function component
+  // This prevents remounting and focus loss issues
+  const formContent = (
     <form onSubmit={handleSubmit} className="space-y-5 pt-2">
       {/* Icon and Color pickers */}
       <div className="flex items-start gap-3">
@@ -260,14 +294,14 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
           />
         </div>
         <div className="flex-1 space-y-1.5">
-          <Label htmlFor="name" className="text-xs">Habit Name</Label>
+          <Label htmlFor="add-habit-name" className="text-xs">Habit Name</Label>
           <Input
-            id="name"
+            id="add-habit-name"
             placeholder="e.g., Morning workout"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={handleNameChange}
             className="h-14 rounded-xl text-base"
-            autoFocus
+            autoComplete="off"
           />
         </div>
       </div>
@@ -277,15 +311,15 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
         <GentleHabitSuggestion
           habitName={name}
           isPremium={isPremium}
-          onAccept={(gentlerName) => setName(gentlerName)}
-          onUpgrade={() => navigate('/premium')}
+          onAccept={handleAcceptSuggestion}
+          onUpgrade={handleUpgrade}
         />
       )}
 
       {/* Category */}
       <div className="space-y-2">
         <Label>Category</Label>
-        <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
+        <Select value={category} onValueChange={handleCategoryChange}>
           <SelectTrigger className="h-12 rounded-xl">
             <SelectValue />
           </SelectTrigger>
@@ -310,14 +344,11 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
         <Label className="text-xs text-muted-foreground">Quick suggestions</Label>
         <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
           {suggestions.map((suggestion) => (
-            <Badge
+            <SuggestionBadge
               key={suggestion}
-              variant="secondary"
-              className="cursor-pointer hover:bg-primary/20 transition-colors text-xs py-1 px-2"
+              suggestion={suggestion}
               onClick={() => handleSuggestionClick(suggestion)}
-            >
-              {suggestion}
-            </Badge>
+            />
           ))}
         </div>
       </div>
@@ -328,16 +359,17 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
         onChange={setIntentionDuration}
       />
 
-      {/* Notes */}
+      {/* Notes - separate from title, stable identity */}
       <div className="space-y-2">
-        <Label htmlFor="notes">Notes (optional)</Label>
+        <Label htmlFor="add-habit-notes">Notes (optional)</Label>
         <Textarea
-          id="notes"
+          id="add-habit-notes"
           placeholder="Add any notes or details..."
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={handleNotesChange}
           className="rounded-xl resize-none"
           rows={2}
+          autoComplete="off"
         />
       </div>
 
@@ -361,7 +393,7 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
               Add New Habit
             </DialogTitle>
           </DialogHeader>
-          <DialogBody />
+          {formContent}
         </DialogContent>
       </Dialog>
     );
@@ -379,7 +411,7 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
         <DialogHeader>
           <DialogTitle className="text-xl">Add New Habit</DialogTitle>
         </DialogHeader>
-        <DialogBody />
+        {formContent}
       </DialogContent>
     </Dialog>
   );
