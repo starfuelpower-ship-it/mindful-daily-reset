@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CloudHabit } from '@/hooks/useCloudHabits';
 import { usePremium } from '@/contexts/PremiumContext';
@@ -67,7 +67,27 @@ export function EditHabitDialog({
     }
   }, [habit]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  }, []);
+
+  const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNotes(e.target.value);
+  }, []);
+
+  const handleCategoryChange = useCallback((value: string) => {
+    setCategory(value);
+  }, []);
+
+  const handleAcceptSuggestion = useCallback((gentlerName: string) => {
+    setName(gentlerName);
+  }, []);
+
+  const handleUpgrade = useCallback(() => {
+    navigate('/premium');
+  }, [navigate]);
+
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (!habit || !name.trim()) return;
     
@@ -85,20 +105,20 @@ export function EditHabitDialog({
       intention_start_date: durationChanged && intentionDuration !== 'ongoing' ? today : habit.intention_start_date,
     });
     onOpenChange(false);
-  };
+  }, [habit, name, category, notes, color, icon, intentionDuration, isPremium, onUpdate, onOpenChange]);
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = useCallback(() => {
     triggerHaptic('warning');
     setShowDeleteConfirm(true);
-  };
+  }, []);
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = useCallback(() => {
     if (!habit) return;
     triggerHaptic('heavy');
     onDelete(habit.id);
     setShowDeleteConfirm(false);
     onOpenChange(false);
-  };
+  }, [habit, onDelete, onOpenChange]);
 
   if (!habit) return null;
 
@@ -130,13 +150,14 @@ export function EditHabitDialog({
               />
             </div>
             <div className="flex-1 space-y-1.5">
-              <Label htmlFor="edit-name" className="text-xs">Habit Name</Label>
+              <Label htmlFor="edit-habit-name" className="text-xs">Habit Name</Label>
               <Input
-                id="edit-name"
+                id="edit-habit-name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={handleNameChange}
                 placeholder="e.g., Morning meditation"
                 className="h-14 rounded-xl"
+                autoComplete="off"
               />
             </div>
           </div>
@@ -146,15 +167,15 @@ export function EditHabitDialog({
             <GentleHabitSuggestion
               habitName={name}
               isPremium={isPremium}
-              onAccept={(gentlerName) => setName(gentlerName)}
-              onUpgrade={() => navigate('/premium')}
+              onAccept={handleAcceptSuggestion}
+              onUpgrade={handleUpgrade}
             />
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="edit-category">Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="edit-category" className="rounded-xl">
+            <Label htmlFor="edit-habit-category">Category</Label>
+            <Select value={category} onValueChange={handleCategoryChange}>
+              <SelectTrigger id="edit-habit-category" className="rounded-xl">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-card border-border z-50">
@@ -179,15 +200,17 @@ export function EditHabitDialog({
             onChange={setIntentionDuration}
           />
 
+          {/* Notes - separate input with stable identity */}
           <div className="space-y-2">
-            <Label htmlFor="edit-notes">Notes (optional)</Label>
+            <Label htmlFor="edit-habit-notes">Notes (optional)</Label>
             <Textarea
-              id="edit-notes"
+              id="edit-habit-notes"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={handleNotesChange}
               placeholder="Add any notes..."
               rows={3}
               className="rounded-xl resize-none"
+              autoComplete="off"
             />
           </div>
 
