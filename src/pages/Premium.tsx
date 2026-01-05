@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Crown, Check, ArrowLeft, Sparkles, BarChart3, Palette, Users, Infinity, BookOpen, RotateCcw } from 'lucide-react';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAppleIAP } from '@/hooks/useAppleIAP';
+import { useRevenueCat } from '@/hooks/useRevenueCat';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -22,9 +22,8 @@ const PREMIUM_FEATURES = [
 ];
 
 // ============================================
-// PRICING PLANS
+// PRICING PLANS (Fallback - prices fetched from RevenueCat when available)
 // ============================================
-// Prices are fetched from App Store via IAP
 
 const PRICING_PLANS = [
   {
@@ -57,7 +56,13 @@ export default function Premium() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isPremium } = usePremium();
-  const { purchaseSubscription, restorePurchases, isLoading, isNativePlatform } = useAppleIAP();
+  const { 
+    purchaseSubscription, 
+    restorePurchases, 
+    isLoading, 
+    isNativePlatform,
+    getPriceForPlan,
+  } = useRevenueCat();
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual' | 'lifetime'>('annual');
 
   const handleUpgrade = async () => {
@@ -75,6 +80,16 @@ export default function Premium() {
 
   const handleRestore = async () => {
     await restorePurchases();
+  };
+
+  // Get dynamic price from RevenueCat or use fallback
+  const getDisplayPrice = (planId: 'monthly' | 'annual' | 'lifetime'): string => {
+    const dynamicPrice = getPriceForPlan(planId);
+    if (dynamicPrice) return dynamicPrice;
+    
+    // Fallback to hardcoded prices
+    const fallback = PRICING_PLANS.find(p => p.id === planId);
+    return fallback?.price || '';
   };
 
   if (isPremium) {
@@ -158,7 +173,7 @@ export default function Premium() {
                   <p className="text-xs text-muted-foreground">{plan.description}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-2xl font-bold text-foreground">{plan.price}</span>
+                  <span className="text-2xl font-bold text-foreground">{getDisplayPrice(plan.id)}</span>
                   <span className="text-sm text-muted-foreground">{plan.period}</span>
                 </div>
               </div>

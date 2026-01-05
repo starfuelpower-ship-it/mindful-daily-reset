@@ -1,6 +1,8 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
+import { Capacitor } from '@capacitor/core';
+import { revenueCatService, PREMIUM_ENTITLEMENT } from '@/services/revenueCatService';
 
 type Platform = 'apple' | 'google' | 'web';
 
@@ -23,7 +25,12 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const isNative = Capacitor.isNativePlatform();
+  const initialized = useRef(false);
 
+  /**
+   * Check premium status from RevenueCat (native) or database (web/fallback)
+   */
   const fetchPremiumStatus = useCallback(async () => {
     if (!user) {
       setIsPremium(false);
@@ -32,6 +39,32 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     }
     
     try {
+      // On native platforms, check RevenueCat first (source of truth)
+      if (isNative) {
+        // Initialize RevenueCat with user ID
+        await revenueCatService.initialize(user.id);
+        await revenueCatService.logIn(user.id);
+        
+        const customerInfo = await revenueCatService.getCustomerInfo();
+        const hasRevenueCatPremium = revenueCatService.isPremiumActive(customerInfo);
+        
+        console.log('[Premium] RevenueCat premium status:', hasRevenueCatPremium);
+        
+        if (hasRevenueCatPremium) {
+          setIsPremium(true);
+          
+          // Sync to database if not already synced
+          await supabase
+            .from('profiles')
+            .update({ is_premium: true })
+            .eq('id', user.id);
+            
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      // Fallback: Check database (for web or if RevenueCat returns false)
       const { data, error } = await supabase
         .from('profiles')
         .select('is_premium, premium_expires_at')
@@ -50,11 +83,25 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, isNative]);
 
   useEffect(() => {
-    fetchPremiumStatus();
+    if (!initialized.current) {
+      fetchPremiumStatus();
+      initialized.current = true;
+    }
   }, [fetchPremiumStatus]);
+
+  // Re-check when user changes
+  useEffect(() => {
+    if (user) {
+      fetchPremiumStatus();
+    } else {
+      setIsPremium(false);
+      setIsLoading(false);
+      initialized.current = false;
+    }
+  }, [user?.id]);
 
   /**
    * Activates premium status via secure server-side verification.
@@ -74,6 +121,28 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     }
 
     try {
+      // For RevenueCat purchases, we trust the SDK's customer info
+      // Just sync the status to our database
+      if (isNative) {
+        const customerInfo = await revenueCatService.getCustomerInfo();
+        const hasRevenueCatPremium = revenueCatService.isPremiumActive(customerInfo);
+        
+        if (hasRevenueCatPremium) {
+          // Update database
+          await supabase
+            .from('profiles')
+            .update({ 
+              is_premium: true,
+              // For subscriptions, we could set expiry from customerInfo
+            })
+            .eq('id', user.id);
+            
+          setIsPremium(true);
+          return true;
+        }
+      }
+
+      // Fallback: Call edge function for verification (legacy flow)
       const { data, error } = await supabase.functions.invoke('verify-premium-purchase', {
         body: { planId, transactionId, receipt, purchaseToken, platform }
       });
@@ -94,7 +163,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       console.error('Error activating premium:', error);
       return false;
     }
-  }, [user]);
+  }, [user, isNative]);
 
   const refreshPremiumStatus = useCallback(async () => {
     await fetchPremiumStatus();
