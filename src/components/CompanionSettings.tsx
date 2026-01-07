@@ -25,7 +25,7 @@ export function CompanionSettings() {
     previewPattern,
     setPreviewPattern
   } = useCompanion();
-  const { isPremium } = usePremium();
+  const { isPremium, isLoading: premiumLoading } = usePremium();
   const navigate = useNavigate();
 
   // Clear preview pattern when component unmounts (user navigates away)
@@ -42,7 +42,8 @@ export function CompanionSettings() {
       return;
     }
     
-    if (isPremium) {
+    // While loading, allow selection (assume premium if loading)
+    if (isPremium || premiumLoading) {
       setCatPattern(pattern);
       setPreviewPattern(null);
     } else {
@@ -147,7 +148,7 @@ export function CompanionSettings() {
                 <div>
                   <div className="flex items-center gap-2">
                     <Label className="text-sm">Fur Pattern</Label>
-                    {!isPremium && (
+                    {!isPremium && !premiumLoading && (
                       <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                         <Lock className="w-2.5 h-2.5 mr-0.5" />
                         Premium
@@ -155,7 +156,7 @@ export function CompanionSettings() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {isPremium ? 'Add unique markings to your cat' : 'Preview patterns & upgrade to keep'}
+                    {isPremium || premiumLoading ? 'Add unique markings to your cat' : 'Preview patterns & upgrade to keep'}
                   </p>
                 </div>
               </div>
@@ -164,7 +165,7 @@ export function CompanionSettings() {
               {(Object.keys(CAT_PATTERNS) as CatPattern[]).map((patternKey) => {
                 const pattern = CAT_PATTERNS[patternKey];
                 const isSelected = displayPattern === patternKey;
-                const isLocked = !isPremium && patternKey !== 'none';
+                const isLocked = !isPremium && !premiumLoading && patternKey !== 'none';
                 
                 return (
                   <button
@@ -190,7 +191,7 @@ export function CompanionSettings() {
                 );
               })}
             </div>
-            {previewPattern && !isPremium && (
+            {previewPattern && !isPremium && !premiumLoading && (
               <p className="text-xs text-primary animate-pulse text-center">
                 Previewing {CAT_PATTERNS[previewPattern].name} pattern
               </p>
