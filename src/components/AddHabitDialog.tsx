@@ -190,7 +190,7 @@ SuggestionBadge.displayName = 'SuggestionBadge';
 
 export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSave }: AddHabitDialogProps) {
   const navigate = useNavigate();
-  const { isPremium } = usePremium();
+  const { isPremium, isLoading: premiumLoading } = usePremium();
   const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState('');
   const [category, setCategory] = useState<Category>('Health');
@@ -199,6 +199,9 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
   const [notes, setNotes] = useState('');
   const [intentionDuration, setIntentionDuration] = useState<HabitDuration>('ongoing');
   const [saving, setSaving] = useState(false);
+
+  // Treat as premium while loading to avoid flash of locked state
+  const effectivelyPremium = isPremium || premiumLoading;
 
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
@@ -217,7 +220,7 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
     e.preventDefault();
     if (!name.trim()) return;
 
-    const finalColor = isPremium ? color : '';
+    const finalColor = effectivelyPremium ? color : '';
     const finalDuration = intentionDuration === 'ongoing' ? null : intentionDuration;
 
     if (onSave) {
@@ -289,7 +292,7 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
           <HabitColorPicker 
             value={color} 
             onChange={setColor}
-            isPremium={isPremium}
+            isPremium={effectivelyPremium}
             showPremiumLock={true}
           />
         </div>
@@ -310,7 +313,7 @@ export function AddHabitDialog({ onAdd, open: controlledOpen, onOpenChange, onSa
       {name.trim().length >= 3 && (
         <GentleHabitSuggestion
           habitName={name}
-          isPremium={isPremium}
+          isPremium={effectivelyPremium}
           onAccept={handleAcceptSuggestion}
           onUpgrade={handleUpgrade}
         />

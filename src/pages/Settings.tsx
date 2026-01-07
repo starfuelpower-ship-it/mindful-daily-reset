@@ -29,7 +29,7 @@ import {
 export default function Settings() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { isPremium } = usePremium();
+  const { isPremium, isLoading: premiumLoading } = usePremium();
   const { resetTutorial } = useTutorial();
   const { handleRateApp } = useInAppReview();
   const { exportAsJSON, exportAsCSV } = useDataExport();
@@ -91,7 +91,7 @@ export default function Settings() {
 
         <div className="space-y-6">
           {/* Premium Banner */}
-          {!isPremium && (
+          {!isPremium && !premiumLoading && (
             <button
               onClick={() => navigate('/premium')}
               className="w-full bg-gradient-to-r from-primary/20 to-accent rounded-2xl p-4 border border-primary/30 text-left transition-all hover:shadow-md active:scale-[0.99]"
@@ -238,15 +238,15 @@ export default function Settings() {
             <h2 className="text-sm font-medium text-muted-foreground px-1">Premium Features</h2>
             <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
               <button
-                onClick={() => isPremium ? navigate('/stats') : navigate('/premium')}
+                onClick={() => (isPremium || premiumLoading) ? navigate('/stats') : navigate('/premium')}
                 className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-b border-border/50"
               >
                 <div className="flex items-center gap-3">
                   <BarChart3 className="w-5 h-5 text-muted-foreground" />
                   <span className="text-foreground">Weekly Stats</span>
                 </div>
-                {!isPremium && <Crown className="w-4 h-4 text-primary" />}
-                {isPremium && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
+                {!isPremium && !premiumLoading && <Crown className="w-4 h-4 text-primary" />}
+                {(isPremium || premiumLoading) && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
               </button>
 
               <button
@@ -264,14 +264,14 @@ export default function Settings() {
               </button>
 
               <button
-                onClick={() => !isPremium && navigate('/premium')}
+                onClick={() => !isPremium && !premiumLoading && navigate('/premium')}
                 className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <Sparkles className="w-5 h-5 text-muted-foreground" />
                   <span className="text-foreground">Unlimited Reminders</span>
                 </div>
-                {!isPremium && <Crown className="w-4 h-4 text-primary" />}
+                {!isPremium && !premiumLoading && <Crown className="w-4 h-4 text-primary" />}
               </button>
             </div>
           </div>
