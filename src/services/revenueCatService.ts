@@ -257,8 +257,26 @@ class RevenueCatService {
   }
 
   /**
+   * Fetch products from the store
+   */
+  async getProducts(productIds: string[]): Promise<any[]> {
+    if (!this.isNative || !this.Purchases) {
+      return [];
+    }
+
+    try {
+      const result = await this.Purchases.getProducts({ productIdentifiers: productIds });
+      console.log('[RevenueCat] Fetched products:', result.products?.length || 0);
+      return result.products || [];
+    } catch (error) {
+      console.error('[RevenueCat] Failed to fetch products:', error);
+      return [];
+    }
+  }
+
+  /**
    * Purchase a product by ID directly (fallback if no offerings)
-   * Requires productCategory: SUBSCRIPTION for subscriptions, NON_CONSUMABLE for lifetime
+   * First fetches the actual product from the store, then purchases it
    */
   async purchaseProduct(productId: string): Promise<{
     success: boolean;
@@ -272,19 +290,21 @@ class RevenueCatService {
     }
 
     try {
-      // Determine product category based on product ID
-      // Lifetime is NON_CONSUMABLE, others are SUBSCRIPTION
-      const isLifetime = productId === REVENUECAT_PRODUCT_IDS.PREMIUM_LIFETIME;
-      const productCategory = isLifetime ? 'NON_CONSUMABLE' : 'SUBSCRIPTION';
+      console.log('[RevenueCat] Fetching product from store:', productId);
       
-      console.log('[RevenueCat] Purchasing product:', productId, 'category:', productCategory);
+      // First, fetch the actual product from the store
+      const products = await this.getProducts([productId]);
       
-      const result = await this.Purchases.purchaseStoreProduct({
-        product: { 
-          identifier: productId,
-          productCategory: productCategory,
-        }
-      });
+      if (!products || products.length === 0) {
+        console.error('[RevenueCat] Product not found in store:', productId);
+        return { success: false, error: 'The product is not available for purchase.' };
+      }
+      
+      const product = products[0];
+      console.log('[RevenueCat] Found product:', product.identifier, 'price:', product.priceString);
+      
+      // Purchase the actual store product
+      const result = await this.Purchases.purchaseStoreProduct({ product });
       
       this.cachedCustomerInfo = result.customerInfo;
       
