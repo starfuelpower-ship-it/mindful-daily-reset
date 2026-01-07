@@ -1074,8 +1074,10 @@ export type Database = {
           id: string
           last_daily_bonus: string | null
           last_earn_reset_date: string | null
+          last_freeze_refill: string | null
           last_weekly_bonus: string | null
           lifetime_days_active: number | null
+          streak_freezes_available: number | null
           total_earned: number
           updated_at: string | null
           user_id: string
@@ -1089,8 +1091,10 @@ export type Database = {
           id?: string
           last_daily_bonus?: string | null
           last_earn_reset_date?: string | null
+          last_freeze_refill?: string | null
           last_weekly_bonus?: string | null
           lifetime_days_active?: number | null
+          streak_freezes_available?: number | null
           total_earned?: number
           updated_at?: string | null
           user_id: string
@@ -1104,8 +1108,10 @@ export type Database = {
           id?: string
           last_daily_bonus?: string | null
           last_earn_reset_date?: string | null
+          last_freeze_refill?: string | null
           last_weekly_bonus?: string | null
           lifetime_days_active?: number | null
+          streak_freezes_available?: number | null
           total_earned?: number
           updated_at?: string | null
           user_id?: string
@@ -1261,6 +1267,7 @@ export type Database = {
         Args: { _amount: number; _description?: string; _type: string }
         Returns: Json
       }
+      check_streak_freeze_refill: { Args: never; Returns: Json }
       claim_daily_bonus: { Args: never; Returns: Json }
       claim_weekly_bonus: { Args: never; Returns: Json }
       earn_achievement: { Args: { _achievement_key: string }; Returns: Json }
@@ -1277,6 +1284,7 @@ export type Database = {
         Returns: Json
       }
       track_app_open: { Args: never; Returns: Json }
+      use_streak_freeze: { Args: never; Returns: Json }
     }
     Enums: {
       [_ in never]: never

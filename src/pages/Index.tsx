@@ -10,6 +10,7 @@ import { useUserSettings } from '@/hooks/useUserSettings';
 import { useInAppReview } from '@/hooks/useInAppReview';
 import { useAchievements } from '@/hooks/useAchievements';
 import { useAmbient } from '@/contexts/AmbientContext';
+import { useHaptics } from '@/hooks/useHaptics';
 import { CloudHabitCard } from '@/components/CloudHabitCard';
 import { HabitCard } from '@/components/HabitCard';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -29,10 +30,14 @@ import { PointsDisplay } from '@/components/PointsDisplay';
 import { PointsEarnedAnimation } from '@/components/PointsEarnedAnimation';
 import { AppTutorial, useTutorial } from '@/components/AppTutorial';
 import { UserDisplay } from '@/components/UserDisplay';
+import { HabitCategoryFilter } from '@/components/HabitCategoryFilter';
+import { StreakFreezeButton } from '@/components/StreakFreezeButton';
+import { HabitListSkeleton, ProgressSkeleton } from '@/components/HabitSkeletons';
 import { Button } from '@/components/ui/button';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
 import { format } from 'date-fns';
+import { Category } from '@/types/habit';
 
 const ONBOARDING_KEY = 'daily-reset-onboarding-complete';
 
@@ -45,6 +50,7 @@ const Index = () => {
   const [intentionCompleteHabit, setIntentionCompleteHabit] = useState<CloudHabit | null>(null);
   const [hasMigrated, setHasMigrated] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
   const [showReflection, setShowReflection] = useState(false);
   const hasShownReflectionToday = useRef(false);
   const intentionCheckedHabits = useRef<Set<string>>(new Set());
@@ -57,6 +63,7 @@ const Index = () => {
   const { trackHabitCompletion, tryAutoRequestReview } = useInAppReview();
   const { checkAndAwardAchievements } = useAchievements();
   const { ambientMode } = useAmbient();
+  const { trigger: triggerHaptics } = useHaptics();
   const dailyBonusChecked = useRef(false);
   const initialLoadComplete = useRef(false);
   const prevCompletedCount = useRef<number | null>(null);
@@ -73,29 +80,34 @@ const Index = () => {
 
   // Use cloud or local based on auth status
   const isLoggedIn = !!user;
-  const habits = isLoggedIn ? cloudHabits.habits : localHabits.habits;
+  const allHabits = isLoggedIn ? cloudHabits.habits : localHabits.habits;
   const isLoading = authLoading || (isLoggedIn ? cloudHabits.isLoading : localHabits.isLoading);
-  const completedCount = isLoggedIn ? cloudHabits.completedCount : localHabits.completedCount;
-  const totalCount = isLoggedIn ? cloudHabits.totalCount : localHabits.totalCount;
-  const progressPercent = isLoggedIn ? cloudHabits.progressPercent : localHabits.progressPercent;
   const isViewingPastDay = isLoggedIn ? cloudHabits.isViewingPastDay : false;
+  
+  // Filter habits by category
+  const habits = useMemo(() => {
+    if (selectedCategory === 'All') return allHabits;
+    return allHabits.filter(h => h.category === selectedCategory);
+  }, [allHabits, selectedCategory]);
+  
+  const completedCount = habits.filter(h => (h as any).completed_today || (h as any).completedToday).length;
+  const totalCount = habits.length;
+  const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   // Calculate total completions for plant growth (cumulative progress)
   const totalCompletions = useMemo(() => {
-    // Use completed count as a base, in real implementation this would come from database
-    // For now, simulate with sum of streaks + today's completions
-    const currentHabits = isLoggedIn ? cloudHabits.habits : localHabits.habits;
-    if (currentHabits.length === 0) return 0;
-    const streakSum = currentHabits.reduce((sum, h) => sum + ((h as any).streak || 0), 0);
-    return streakSum + completedCount;
-  }, [isLoggedIn, cloudHabits.habits, localHabits.habits, completedCount]);
+    // Use completed count as a base - use allHabits for plant growth
+    if (allHabits.length === 0) return 0;
+    const streakSum = allHabits.reduce((sum, h) => sum + ((h as any).streak || 0), 0);
+    const allCompleted = allHabits.filter(h => (h as any).completed_today || (h as any).completedToday).length;
+    return streakSum + allCompleted;
+  }, [allHabits]);
 
-  // Calculate best streak for display
+  // Calculate best streak for display - use allHabits
   const bestStreak = useMemo(() => {
-    const currentHabits = isLoggedIn ? cloudHabits.habits : localHabits.habits;
-    if (currentHabits.length === 0) return 0;
-    return Math.max(...currentHabits.map(h => (h as any).streak || 0), 0);
-  }, [isLoggedIn, cloudHabits.habits, localHabits.habits]);
+    if (allHabits.length === 0) return 0;
+    return Math.max(...allHabits.map(h => (h as any).streak || 0), 0);
+  }, [allHabits]);
 
   // Check if new user needs onboarding (guests only - logged in users checked in Onboarding)
   useEffect(() => {
@@ -219,6 +231,9 @@ const Index = () => {
     const isCompleting = habit && !(habit as any).completed_today && !(habit as any).completedToday;
     const habitStreak = (habit as any)?.streak || 0;
     
+    // Trigger haptic feedback
+    triggerHaptics(isCompleting ? 'success' : 'light');
+    
     if (isLoggedIn) {
       cloudHabits.toggleHabit(id);
     } else {
@@ -282,8 +297,15 @@ const Index = () => {
 
   if (isLoading || !onboardingChecked) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <RefreshCw className="w-6 h-6 text-primary animate-spin" />
+      <div className="min-h-screen bg-background">
+        <div className="max-w-lg mx-auto px-4 pt-6 pb-40">
+          <div className="mb-8">
+            <div className="h-8 w-32 bg-muted rounded animate-pulse mb-2" />
+            <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+          </div>
+          <ProgressSkeleton />
+          <HabitListSkeleton count={4} />
+        </div>
       </div>
     );
   }
@@ -429,10 +451,23 @@ const Index = () => {
                 </span>
               )}
             </div>
-            <span className="text-sm text-muted-foreground">
-              {completedCount}/{totalCount} done
-            </span>
+            <div className="flex items-center gap-2">
+              {isLoggedIn && <StreakFreezeButton />}
+              <span className="text-sm text-muted-foreground">
+                {completedCount}/{totalCount} done
+              </span>
+            </div>
           </div>
+          
+          {/* Category Filter */}
+          {allHabits.length > 3 && (
+            <div className="mb-3">
+              <HabitCategoryFilter 
+                selectedCategory={selectedCategory} 
+                onCategoryChange={setSelectedCategory} 
+              />
+            </div>
+          )}
           
           {habits.length === 0 ? (
             <EmptyState />
