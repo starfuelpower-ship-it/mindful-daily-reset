@@ -54,7 +54,7 @@ const Index = () => {
   const { playSound } = useSoundEffects();
   const { earnPoints, checkDailyBonus, checkWeeklyBonus, currentAnimation, clearAnimation, balance } = usePoints();
   const { showTutorial, completeTutorial } = useTutorial();
-  const { trackHabitCompletion, tryRequestReview } = useInAppReview();
+  const { trackHabitCompletion, tryAutoRequestReview } = useInAppReview();
   const { checkAndAwardAchievements } = useAchievements();
   const { ambientMode } = useAmbient();
   const dailyBonusChecked = useRef(false);
@@ -240,7 +240,7 @@ const Index = () => {
       });
       
       // Try to request review after tracking (checks criteria internally)
-      setTimeout(() => tryRequestReview(), 1000);
+      setTimeout(() => tryAutoRequestReview(), 1000);
     }
   };
 

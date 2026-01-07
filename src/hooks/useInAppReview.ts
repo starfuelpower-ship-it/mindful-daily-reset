@@ -1,14 +1,18 @@
 import { useEffect, useCallback } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { toast } from 'sonner';
 
 const REVIEW_STORAGE_KEY = 'cozy_habits_review_data';
-const MIN_HABITS_COMPLETED = 5;
-const MIN_APP_OPENS = 3;
+const MIN_HABITS_COMPLETED = 7;
+const MIN_ACTIVE_DAYS = 3;
+
+// Google Play Store listing URL for fallback
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=app.lovable.53d04b63e0ee43f3822af5b2e6319d75';
 
 interface ReviewData {
   habitsCompleted: number;
-  appOpens: number;
-  hasRequestedReview: boolean;
+  activeDays: string[]; // ISO date strings of days with completions
+  hasRequestedAutoReview: boolean; // For automatic one-time prompt
   lastRequestDate?: string;
 }
 
@@ -19,45 +23,68 @@ const getReviewData = (): ReviewData => {
       return JSON.parse(stored);
     }
   } catch {}
-  return { habitsCompleted: 0, appOpens: 0, hasRequestedReview: false };
+  return { habitsCompleted: 0, activeDays: [], hasRequestedAutoReview: false };
 };
 
 const saveReviewData = (data: ReviewData) => {
   localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(data));
 };
 
-export function useInAppReview() {
-  // Track app opens on mount
-  useEffect(() => {
-    const data = getReviewData();
-    data.appOpens = (data.appOpens || 0) + 1;
-    saveReviewData(data);
-  }, []);
+const getTodayDateString = (): string => {
+  return new Date().toISOString().split('T')[0];
+};
 
+export function useInAppReview() {
+  // Track habit completion with day tracking
   const trackHabitCompletion = useCallback(() => {
     const data = getReviewData();
     data.habitsCompleted = (data.habitsCompleted || 0) + 1;
+    
+    // Track unique active days
+    const today = getTodayDateString();
+    if (!data.activeDays) {
+      data.activeDays = [];
+    }
+    if (!data.activeDays.includes(today)) {
+      data.activeDays.push(today);
+    }
+    
     saveReviewData(data);
   }, []);
 
-  const shouldRequestReview = useCallback((): boolean => {
+  // Check if user is eligible for automatic review prompt
+  const isEligibleForAutoReview = useCallback((): boolean => {
     const data = getReviewData();
     
-    // Don't request if already requested
-    if (data.hasRequestedReview) {
+    // Never show if already prompted once
+    if (data.hasRequestedAutoReview) {
       return false;
     }
 
-    // Check if user meets criteria
-    const meetsHabitCriteria = data.habitsCompleted >= MIN_HABITS_COMPLETED;
-    const meetsOpenCriteria = data.appOpens >= MIN_APP_OPENS;
+    // Check criteria: 7 habits OR 3 separate days
+    const meetsHabitCriteria = (data.habitsCompleted || 0) >= MIN_HABITS_COMPLETED;
+    const meetsDayCriteria = (data.activeDays?.length || 0) >= MIN_ACTIVE_DAYS;
 
-    return meetsHabitCriteria && meetsOpenCriteria;
+    return meetsHabitCriteria || meetsDayCriteria;
   }, []);
 
-  const requestReview = useCallback(async () => {
+  // Open Play Store as fallback
+  const openPlayStore = useCallback(() => {
+    try {
+      window.open(PLAY_STORE_URL, '_blank');
+    } catch (error) {
+      console.error('Failed to open Play Store:', error);
+    }
+  }, []);
+
+  // Request review with fallback to Play Store
+  const requestReview = useCallback(async (isManualTrigger: boolean = false) => {
+    // On web, just open Play Store
     if (!Capacitor.isNativePlatform()) {
-      console.log('In-app review only available on native platforms');
+      if (isManualTrigger) {
+        openPlayStore();
+        toast.success('Thanks for supporting Cozy Habits! 💚');
+      }
       return;
     }
 
@@ -66,25 +93,53 @@ export function useInAppReview() {
       const { InAppReview } = await import('@capacitor-community/in-app-review');
       await InAppReview.requestReview();
       
-      // Mark as requested
-      const data = getReviewData();
-      data.hasRequestedReview = true;
-      data.lastRequestDate = new Date().toISOString();
-      saveReviewData(data);
+      // Show thank you message for manual triggers
+      if (isManualTrigger) {
+        toast.success('Thanks for supporting Cozy Habits! 💚');
+      }
     } catch (error) {
-      console.error('Failed to request in-app review:', error);
+      console.error('In-app review not available, falling back to Play Store:', error);
+      // Fallback to Play Store if in-app review fails
+      if (isManualTrigger) {
+        openPlayStore();
+        toast.success('Thanks for supporting Cozy Habits! 💚');
+      }
     }
-  }, []);
+  }, [openPlayStore]);
 
-  const tryRequestReview = useCallback(async () => {
-    if (shouldRequestReview()) {
-      await requestReview();
+  // Manual rate button handler (always available)
+  const handleRateApp = useCallback(async () => {
+    await requestReview(true);
+  }, [requestReview]);
+
+  // Automatic one-time review prompt (only triggers once per user)
+  const tryAutoRequestReview = useCallback(async () => {
+    if (!isEligibleForAutoReview()) {
+      return;
     }
-  }, [shouldRequestReview, requestReview]);
+
+    // Mark as requested BEFORE attempting (to ensure one-time only)
+    const data = getReviewData();
+    data.hasRequestedAutoReview = true;
+    data.lastRequestDate = new Date().toISOString();
+    saveReviewData(data);
+
+    // Only attempt on native platform
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { InAppReview } = await import('@capacitor-community/in-app-review');
+        await InAppReview.requestReview();
+      } catch (error) {
+        // Silently fail for automatic prompts - don't annoy user
+        console.log('Auto review prompt not shown:', error);
+      }
+    }
+  }, [isEligibleForAutoReview]);
 
   return {
     trackHabitCompletion,
-    tryRequestReview,
-    requestReview,
+    tryAutoRequestReview,
+    handleRateApp,
+    isEligibleForAutoReview,
   };
 }
