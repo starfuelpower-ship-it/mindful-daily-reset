@@ -12,7 +12,8 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { ArrowLeft, Coins, Crown, Sparkles, Gift, Zap, Star, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Point bundle definitions
+// TEMPORARILY HIDDEN - Point bundle definitions
+// These are hidden from UI but logic is preserved
 // Prices are fetched from App Store via IAP
 const POINT_BUNDLES = [
   {
@@ -55,6 +56,9 @@ const POINT_BUNDLES = [
     bonus: '+2000 bonus',
   },
 ];
+
+// Flag to hide coin bundle purchases temporarily
+const HIDE_COIN_BUNDLES = true;
 
 const PointsShop = () => {
   const navigate = useNavigate();
@@ -121,83 +125,85 @@ const PointsShop = () => {
           </div>
         )}
 
-        {/* Point Bundles */}
-        <section className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold">Point Bundles</h2>
-          </div>
-          <p className="text-xs text-muted-foreground mb-4">
-            Unlock costumes faster while still earning points naturally.
-          </p>
+        {/* Point Bundles - Temporarily Hidden */}
+        {!HIDE_COIN_BUNDLES && (
+          <section className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold">Point Bundles</h2>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              Unlock costumes faster while still earning points naturally.
+            </p>
 
-          <div className="space-y-3">
-            {POINT_BUNDLES.map((bundle) => {
-              const Icon = bundle.icon;
-              const isProcessing = purchasing === bundle.id || iapLoading;
+            <div className="space-y-3">
+              {POINT_BUNDLES.map((bundle) => {
+                const Icon = bundle.icon;
+                const isProcessing = purchasing === bundle.id || iapLoading;
 
-              return (
-                <div
-                  key={bundle.id}
-                  className={cn(
-                    'relative p-4 rounded-2xl border transition-all',
-                    bundle.popular
-                      ? 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/30 ring-2 ring-primary/20'
-                      : 'bg-card border-border hover:border-primary/50'
-                  )}
-                >
-                  {bundle.popular && (
-                    <Badge className="absolute -top-2 right-4 bg-primary text-primary-foreground">
-                      Most Popular
-                    </Badge>
-                  )}
+                return (
+                  <div
+                    key={bundle.id}
+                    className={cn(
+                      'relative p-4 rounded-2xl border transition-all',
+                      bundle.popular
+                        ? 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/30 ring-2 ring-primary/20'
+                        : 'bg-card border-border hover:border-primary/50'
+                    )}
+                  >
+                    {bundle.popular && (
+                      <Badge className="absolute -top-2 right-4 bg-primary text-primary-foreground">
+                        Most Popular
+                      </Badge>
+                    )}
 
-                  <div className="flex items-center gap-4">
-                    {/* Icon */}
-                    <div className={cn(
-                      'w-14 h-14 rounded-xl flex items-center justify-center bg-gradient-to-br',
-                      bundle.color
-                    )}>
-                      <Icon className="w-7 h-7 text-white" />
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground">{bundle.name}</h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
-                          {bundle.points.toLocaleString()}
-                        </span>
-                        <Coins className="w-4 h-4 text-amber-500" />
-                        {bundle.bonus && (
-                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                            {bundle.bonus}
-                          </Badge>
-                        )}
+                    <div className="flex items-center gap-4">
+                      {/* Icon */}
+                      <div className={cn(
+                        'w-14 h-14 rounded-xl flex items-center justify-center bg-gradient-to-br',
+                        bundle.color
+                      )}>
+                        <Icon className="w-7 h-7 text-white" />
                       </div>
-                    </div>
 
-                    {/* Price Button */}
-                    <Button
-                      onClick={() => handlePurchase(bundle)}
-                      disabled={isProcessing}
-                      className={cn(
-                        'min-w-[80px]',
-                        bundle.popular && 'bg-primary hover:bg-primary/90'
-                      )}
-                    >
-                      {isProcessing && purchasing === bundle.id ? (
-                        <span className="animate-pulse">...</span>
-                      ) : (
-                        bundle.price
-                      )}
-                    </Button>
+                      {/* Info */}
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground">{bundle.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                            {bundle.points.toLocaleString()}
+                          </span>
+                          <Coins className="w-4 h-4 text-amber-500" />
+                          {bundle.bonus && (
+                            <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                              {bundle.bonus}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Price Button */}
+                      <Button
+                        onClick={() => handlePurchase(bundle)}
+                        disabled={isProcessing}
+                        className={cn(
+                          'min-w-[80px]',
+                          bundle.popular && 'bg-primary hover:bg-primary/90'
+                        )}
+                      >
+                        {isProcessing && purchasing === bundle.id ? (
+                          <span className="animate-pulse">...</span>
+                        ) : (
+                          bundle.price
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Earn Points Info */}
         <section className="ios-card p-4 mb-6">

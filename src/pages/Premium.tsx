@@ -55,7 +55,7 @@ const PRICING_PLANS = [
 export default function Premium() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isPremium } = usePremium();
+  const { isPremium, isFinalizing, refreshPremiumStatus, restorePurchases: restoreFromContext } = usePremium();
   const { 
     purchaseSubscription, 
     restorePurchases, 
@@ -74,12 +74,25 @@ export default function Premium() {
 
     const success = await purchaseSubscription(selectedPlan);
     if (success) {
+      // Refresh premium status from context to ensure UI updates
+      await refreshPremiumStatus();
       navigate('/');
     }
   };
 
   const handleRestore = async () => {
-    await restorePurchases();
+    // Try both RevenueCat hook and context restore
+    const success = await restorePurchases();
+    if (success) {
+      await refreshPremiumStatus();
+      navigate('/');
+    } else {
+      // Fallback to context restore
+      const contextSuccess = await restoreFromContext();
+      if (contextSuccess) {
+        navigate('/');
+      }
+    }
   };
 
   // Get dynamic price from RevenueCat or use fallback
@@ -96,6 +109,9 @@ export default function Premium() {
     navigate('/');
     return null;
   }
+
+  // Show finalizing state when purchase is processing
+  const showFinalizing = isFinalizing || isLoading;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
@@ -192,11 +208,14 @@ export default function Premium() {
         <div className="space-y-4 pt-4">
           <Button
             onClick={handleUpgrade}
-            disabled={isLoading}
+            disabled={showFinalizing}
             className="w-full h-14 text-lg font-semibold rounded-2xl shadow-lg shadow-primary/30"
           >
-            {isLoading ? (
-              'Processing...'
+            {showFinalizing ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin">⏳</span>
+                Finalizing purchase...
+              </span>
             ) : (
               <>
                 <Crown className="w-5 h-5 mr-2" />
@@ -224,7 +243,7 @@ export default function Premium() {
             <span>•</span>
             <button 
               onClick={handleRestore}
-              disabled={isLoading}
+              disabled={showFinalizing}
               className="hover:text-foreground flex items-center gap-1"
             >
               <RotateCcw className="w-3 h-3" />

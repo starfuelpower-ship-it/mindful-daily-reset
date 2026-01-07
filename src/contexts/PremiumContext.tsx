@@ -9,6 +9,7 @@ type Platform = 'apple' | 'google' | 'web';
 interface PremiumContextType {
   isPremium: boolean;
   isLoading: boolean;
+  isFinalizing: boolean;
   activatePremium: (
     planId: string, 
     transactionId: string, 
@@ -17,29 +18,36 @@ interface PremiumContextType {
     platform?: Platform
   ) => Promise<boolean>;
   refreshPremiumStatus: () => Promise<void>;
+  restorePurchases: () => Promise<boolean>;
 }
 
 const PremiumContext = createContext<PremiumContextType | undefined>(undefined);
+
+// Maximum retry attempts for checking entitlement after purchase
+const MAX_ENTITLEMENT_RETRIES = 5;
+const RETRY_DELAY_MS = 2000;
 
 export function PremiumProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFinalizing, setIsFinalizing] = useState(false);
   const isNative = Capacitor.isNativePlatform();
   const initialized = useRef(false);
 
   /**
    * Check premium status from RevenueCat (native) or database (web/fallback)
+   * This is the source of truth for premium status.
    */
-  const fetchPremiumStatus = useCallback(async () => {
+  const fetchPremiumStatus = useCallback(async (): Promise<boolean> => {
     if (!user) {
       setIsPremium(false);
       setIsLoading(false);
-      return;
+      return false;
     }
     
     try {
-      // On native platforms, check RevenueCat first (source of truth)
+      // On native platforms, ALWAYS check RevenueCat first (source of truth)
       if (isNative) {
         // Initialize RevenueCat with user ID
         await revenueCatService.initialize(user.id);
@@ -50,21 +58,21 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
         
         console.log('[Premium] RevenueCat premium status:', hasRevenueCatPremium);
         
+        setIsPremium(hasRevenueCatPremium);
+        
+        // Sync to database if premium is active
         if (hasRevenueCatPremium) {
-          setIsPremium(true);
-          
-          // Sync to database if not already synced
           await supabase
             .from('profiles')
             .update({ is_premium: true })
             .eq('id', user.id);
-            
-          setIsLoading(false);
-          return;
         }
+          
+        setIsLoading(false);
+        return hasRevenueCatPremium;
       }
       
-      // Fallback: Check database (for web or if RevenueCat returns false)
+      // Fallback: Check database (for web only)
       const { data, error } = await supabase
         .from('profiles')
         .select('is_premium, premium_expires_at')
@@ -77,14 +85,20 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
         const isActive = data.is_premium && 
           (!data.premium_expires_at || new Date(data.premium_expires_at) > new Date());
         setIsPremium(isActive);
+        setIsLoading(false);
+        return isActive;
       }
+      
+      setIsLoading(false);
+      return false;
     } catch (error) {
       console.error('Error fetching premium status:', error);
-    } finally {
       setIsLoading(false);
+      return false;
     }
   }, [user, isNative]);
 
+  // Initialize on mount
   useEffect(() => {
     if (!initialized.current) {
       fetchPremiumStatus();
@@ -104,9 +118,32 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   }, [user?.id]);
 
   /**
+   * Retry checking entitlement after purchase with exponential backoff
+   */
+  const checkEntitlementWithRetry = useCallback(async (retries = 0): Promise<boolean> => {
+    if (!isNative || !user) return false;
+    
+    const customerInfo = await revenueCatService.getCustomerInfo();
+    const hasEntitlement = revenueCatService.isPremiumActive(customerInfo);
+    
+    if (hasEntitlement) {
+      console.log('[Premium] Entitlement confirmed after', retries, 'retries');
+      return true;
+    }
+    
+    if (retries < MAX_ENTITLEMENT_RETRIES) {
+      console.log('[Premium] Entitlement not yet active, retrying in', RETRY_DELAY_MS, 'ms...');
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+      return checkEntitlementWithRetry(retries + 1);
+    }
+    
+    console.log('[Premium] Max retries reached, entitlement not active');
+    return false;
+  }, [isNative, user]);
+
+  /**
    * Activates premium status via secure server-side verification.
-   * This function calls the edge function which verifies the purchase
-   * and updates the database with service role permissions.
+   * Premium ONLY unlocks when RevenueCat confirms the entitlement is active.
    */
   const activatePremium = useCallback(async (
     planId: string, 
@@ -121,28 +158,32 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // For RevenueCat purchases, we trust the SDK's customer info
-      // Just sync the status to our database
+      // For RevenueCat purchases, verify entitlement is actually active
       if (isNative) {
-        const customerInfo = await revenueCatService.getCustomerInfo();
-        const hasRevenueCatPremium = revenueCatService.isPremiumActive(customerInfo);
+        setIsFinalizing(true);
         
-        if (hasRevenueCatPremium) {
-          // Update database
+        // Check entitlement with retry logic
+        const hasEntitlement = await checkEntitlementWithRetry();
+        
+        if (hasEntitlement) {
+          // Sync to database
           await supabase
             .from('profiles')
-            .update({ 
-              is_premium: true,
-              // For subscriptions, we could set expiry from customerInfo
-            })
+            .update({ is_premium: true })
             .eq('id', user.id);
             
           setIsPremium(true);
+          setIsFinalizing(false);
           return true;
         }
+        
+        // Entitlement not found after retries
+        setIsFinalizing(false);
+        console.error('[Premium] Purchase completed but entitlement not active');
+        return false;
       }
 
-      // Fallback: Call edge function for verification (legacy flow)
+      // Web fallback: Call edge function for verification (legacy flow)
       const { data, error } = await supabase.functions.invoke('verify-premium-purchase', {
         body: { planId, transactionId, receipt, purchaseToken, platform }
       });
@@ -161,6 +202,44 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       return false;
     } catch (error) {
       console.error('Error activating premium:', error);
+      setIsFinalizing(false);
+      return false;
+    }
+  }, [user, isNative, checkEntitlementWithRetry]);
+
+  /**
+   * Restore purchases - checks RevenueCat for existing entitlements
+   */
+  const restorePurchases = useCallback(async (): Promise<boolean> => {
+    if (!user || !isNative) {
+      return false;
+    }
+
+    try {
+      setIsLoading(true);
+      const result = await revenueCatService.restorePurchases();
+      
+      if (result.success && result.customerInfo) {
+        const hasPremium = revenueCatService.isPremiumActive(result.customerInfo);
+        
+        if (hasPremium) {
+          // Sync to database
+          await supabase
+            .from('profiles')
+            .update({ is_premium: true })
+            .eq('id', user.id);
+            
+          setIsPremium(true);
+          setIsLoading(false);
+          return true;
+        }
+      }
+      
+      setIsLoading(false);
+      return false;
+    } catch (error) {
+      console.error('Error restoring purchases:', error);
+      setIsLoading(false);
       return false;
     }
   }, [user, isNative]);
@@ -170,7 +249,14 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   }, [fetchPremiumStatus]);
 
   return (
-    <PremiumContext.Provider value={{ isPremium, isLoading, activatePremium, refreshPremiumStatus }}>
+    <PremiumContext.Provider value={{ 
+      isPremium, 
+      isLoading, 
+      isFinalizing,
+      activatePremium, 
+      refreshPremiumStatus,
+      restorePurchases,
+    }}>
       {children}
     </PremiumContext.Provider>
   );

@@ -13,6 +13,7 @@ import { QuotesProvider } from "@/contexts/QuotesContext";
 import { PointsProvider } from "@/contexts/PointsContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AmbientLayer } from "@/components/AmbientLayer";
+import { GlobalAmbientAudio } from "@/components/GlobalAmbientAudio";
 import { CatCompanion } from "@/components/CatCompanion";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { ThemePreviewReset } from "@/components/ThemePreviewReset";
@@ -57,6 +58,7 @@ const App = () => (
                           <ThemePreviewReset />
                           <OfflineIndicator />
                           <AmbientLayer />
+                          <GlobalAmbientAudio />
                           <CatCompanion />
                           <Routes>
                             <Route path="/" element={<Index />} />

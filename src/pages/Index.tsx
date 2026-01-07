@@ -28,6 +28,7 @@ import { CatCompanionIntro } from '@/components/CatCompanionIntro';
 import { PointsDisplay } from '@/components/PointsDisplay';
 import { PointsEarnedAnimation } from '@/components/PointsEarnedAnimation';
 import { AppTutorial, useTutorial } from '@/components/AppTutorial';
+import { UserDisplay } from '@/components/UserDisplay';
 import { Button } from '@/components/ui/button';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
@@ -302,6 +303,9 @@ const Index = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {/* Username Display - Only when logged in */}
+            <UserDisplay />
+            
             {/* Points Display */}
             <PointsDisplay />
             

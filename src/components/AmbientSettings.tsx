@@ -1,5 +1,4 @@
 import { useAmbient, AmbientMode } from '@/contexts/AmbientContext';
-import { useAmbientAudio } from '@/hooks/useAmbientAudio';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
@@ -31,9 +30,8 @@ export function AmbientSettings() {
     turnOffAllAmbience,
   } = useAmbient();
 
-  // Use ambient audio hook
-  useAmbientAudio(ambientMode, soundsEnabled, soundVolume / 100);
-
+  // Note: Ambient audio is now handled globally in GlobalAmbientAudio component
+  // This ensures sounds persist across all screens
   const getIntensityLabel = (value: number) => {
     if (value <= 25) return 'Subtle';
     if (value <= 50) return 'Light';
