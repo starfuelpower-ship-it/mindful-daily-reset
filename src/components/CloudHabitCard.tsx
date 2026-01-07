@@ -19,6 +19,7 @@ interface CloudHabitCardProps {
   confettiEnabled?: boolean;
   soundEnabled?: boolean;
   onComplete?: () => void;
+  readOnly?: boolean; // When viewing past days
 }
 
 // Completion sound
@@ -85,6 +86,7 @@ export function CloudHabitCard({
   confettiEnabled = true,
   soundEnabled = true,
   onComplete,
+  readOnly = false,
 }: CloudHabitCardProps) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationStreak, setCelebrationStreak] = useState(0);
@@ -102,6 +104,7 @@ export function CloudHabitCard({
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (readOnly) return; // Don't allow toggling past days
     
     const wasCompleted = habit.completed_today;
     const isNowComplete = !wasCompleted;
@@ -166,20 +169,22 @@ export function CloudHabitCard({
   return (
     <div
       className={cn(
-        'group relative overflow-hidden cursor-pointer',
+        'group relative overflow-hidden',
+        readOnly ? 'cursor-default' : 'cursor-pointer',
         'bg-card rounded-2xl p-4',
         'border border-border/50',
         'shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)]',
-        'hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)]',
+        !readOnly && 'hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)]',
         'transition-all duration-300 ease-out',
         isAnimating && 'scale-[1.02]',
-        habit.completed_today && 'bg-accent/40 border-primary/20'
+        habit.completed_today && 'bg-accent/40 border-primary/20',
+        readOnly && 'opacity-80'
       )}
       style={{ 
         animationDelay: `${index * 50}ms`,
         borderColor: habit.color ? `${habit.color}30` : undefined,
       }}
-      onClick={() => onEdit(habit)}
+      onClick={() => !readOnly && onEdit(habit)}
     >
       {/* Celebration Animation */}
       {showCelebration && (
@@ -298,18 +303,21 @@ export function CloudHabitCard({
           {/* Checkbox */}
           <button
             onClick={handleToggle}
+            disabled={readOnly}
             className={cn(
               'w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300',
-              'hover:scale-110 active:scale-95',
+              !readOnly && 'hover:scale-110 active:scale-95',
               habit.completed_today
                 ? 'border-transparent shadow-md'
-                : 'border-muted-foreground/30 hover:border-primary/50 bg-transparent'
+                : 'border-muted-foreground/30 bg-transparent',
+              !readOnly && !habit.completed_today && 'hover:border-primary/50',
+              readOnly && 'cursor-not-allowed'
             )}
             style={habit.completed_today ? {
               backgroundColor: habitColor,
               boxShadow: `0 4px 12px -2px ${habitColor}40`,
             } : undefined}
-            aria-label={habit.completed_today ? 'Mark incomplete' : 'Mark complete'}
+            aria-label={readOnly ? 'Completed on this day' : (habit.completed_today ? 'Mark incomplete' : 'Mark complete')}
           >
             <Check 
               className={cn(

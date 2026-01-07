@@ -65,8 +65,8 @@ const Index = () => {
   const confettiEnabled = settings?.confetti_enabled ?? true;
   const soundEnabled = settings?.sound_enabled ?? true;
 
-  // Cloud habits (for logged-in users)
-  const cloudHabits = useCloudHabits();
+  // Cloud habits (for logged-in users) - pass selectedDate for historical view
+  const cloudHabits = useCloudHabits(selectedDate);
   
   // Local habits (for guests)
   const localHabits = useHabits();
@@ -78,6 +78,7 @@ const Index = () => {
   const completedCount = isLoggedIn ? cloudHabits.completedCount : localHabits.completedCount;
   const totalCount = isLoggedIn ? cloudHabits.totalCount : localHabits.totalCount;
   const progressPercent = isLoggedIn ? cloudHabits.progressPercent : localHabits.progressPercent;
+  const isViewingPastDay = isLoggedIn ? cloudHabits.isViewingPastDay : false;
 
   // Calculate total completions for plant growth (cumulative progress)
   const totalCompletions = useMemo(() => {
@@ -420,7 +421,14 @@ const Index = () => {
         {/* Habits List */}
         <section className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-foreground">Habits</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-foreground">Habits</h2>
+              {isViewingPastDay && (
+                <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                  View only
+                </span>
+              )}
+            </div>
             <span className="text-sm text-muted-foreground">
               {completedCount}/{totalCount} done
             </span>
@@ -446,6 +454,7 @@ const Index = () => {
                       confettiEnabled={confettiEnabled}
                       soundEnabled={soundEnabled}
                       onComplete={checkAllComplete}
+                      readOnly={isViewingPastDay}
                     />
                   </div>
                 ))
@@ -471,12 +480,14 @@ const Index = () => {
           )}
         </section>
 
-        {/* Fixed Add Button */}
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
-          <div className="max-w-lg mx-auto pointer-events-auto">
-            <AddHabitDialog onAdd={handleAddHabit} />
+        {/* Fixed Add Button - hide when viewing past days */}
+        {!isViewingPastDay && (
+          <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+            <div className="max-w-lg mx-auto pointer-events-auto">
+              <AddHabitDialog onAdd={handleAddHabit} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Bottom Tab Bar */}

@@ -9,6 +9,7 @@ import { CompanionSettings } from '@/components/CompanionSettings';
 import { MusicSettings } from '@/components/MusicSettings';
 import { NotificationSettings } from '@/components/NotificationSettings';
 import { AchievementsUI } from '@/components/AchievementsUI';
+import { CatCompanion } from '@/components/CatCompanion';
 import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music, Bell, Trophy, MessageCircle, Mail, HelpCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTutorial } from '@/components/AppTutorial';
@@ -358,6 +359,9 @@ export default function Settings() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Cat Companion - visible on settings too */}
+      <CatCompanion />
     </div>
   );
 }

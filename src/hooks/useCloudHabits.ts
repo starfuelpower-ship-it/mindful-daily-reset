@@ -34,11 +34,18 @@ const transformHabit = (habit: any): CloudHabit => ({
     : null,
 });
 
-export function useCloudHabits() {
+export function useCloudHabits(selectedDate?: Date) {
   const { user } = useAuth();
   const [habits, setHabits] = useState<CloudHabit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  
+  // Check if viewing a past date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const viewDate = selectedDate ? new Date(selectedDate) : today;
+  viewDate.setHours(0, 0, 0, 0);
+  const isViewingPastDay = viewDate < today;
 
   const fetchHabits = useCallback(async () => {
     if (!user) {
@@ -48,55 +55,81 @@ export function useCloudHabits() {
     }
 
     try {
-      const { data, error } = await supabase
+      // Fetch all habits
+      const { data: habitsData, error: habitsError } = await supabase
         .from('habits')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (habitsError) throw habitsError;
 
-      const today = getTodayDate();
+      const todayStr = getTodayDate();
+      const selectedDateStr = viewDate.toISOString().split('T')[0];
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = yesterday.toISOString().split('T')[0];
       
-      const habitsToUpdate: { id: string; streak: number }[] = [];
-      
-      const processedHabits = (data || []).map(habit => {
-        // Check if habit needs midnight reset
-        if (habit.last_reset_date !== today && habit.completed_today) {
-          // Calculate if streak should break (missed yesterday)
-          const streakBroken = habit.last_completed_date !== yesterdayStr && habit.last_completed_date !== today;
-          const newStreak = streakBroken ? 0 : habit.streak;
-          
-          habitsToUpdate.push({ id: habit.id, streak: newStreak });
-          return { ...habit, completed_today: false, last_reset_date: today, streak: newStreak };
-        }
-        // Check if streak should break even if not completed today
-        if (habit.last_completed_date && habit.last_completed_date !== yesterdayStr && habit.last_completed_date !== today && habit.streak > 0) {
-          habitsToUpdate.push({ id: habit.id, streak: 0 });
-          return { ...habit, streak: 0, last_reset_date: today };
-        }
-        return habit;
-      });
+      // If viewing a past day, fetch completions for that specific date
+      if (isViewingPastDay) {
+        const { data: completions, error: completionsError } = await supabase
+          .from('habit_completions')
+          .select('habit_id')
+          .eq('user_id', user.id)
+          .eq('completed_at', selectedDateStr);
+        
+        if (completionsError) throw completionsError;
+        
+        const completedHabitIds = new Set(completions?.map(c => c.habit_id) || []);
+        
+        // Filter habits that existed on that date and set their completion status
+        const processedHabits = (habitsData || [])
+          .filter(habit => new Date(habit.created_at) <= viewDate) // Only show habits that existed on that day
+          .map(habit => ({
+            ...habit,
+            completed_today: completedHabitIds.has(habit.id),
+          }));
+        
+        setHabits(processedHabits.map(transformHabit));
+      } else {
+        // Today's view - normal logic with midnight reset
+        const habitsToUpdate: { id: string; streak: number }[] = [];
+        
+        const processedHabits = (habitsData || []).map(habit => {
+          // Check if habit needs midnight reset
+          if (habit.last_reset_date !== todayStr && habit.completed_today) {
+            // Calculate if streak should break (missed yesterday)
+            const streakBroken = habit.last_completed_date !== yesterdayStr && habit.last_completed_date !== todayStr;
+            const newStreak = streakBroken ? 0 : habit.streak;
+            
+            habitsToUpdate.push({ id: habit.id, streak: newStreak });
+            return { ...habit, completed_today: false, last_reset_date: todayStr, streak: newStreak };
+          }
+          // Check if streak should break even if not completed today
+          if (habit.last_completed_date && habit.last_completed_date !== yesterdayStr && habit.last_completed_date !== todayStr && habit.streak > 0) {
+            habitsToUpdate.push({ id: habit.id, streak: 0 });
+            return { ...habit, streak: 0, last_reset_date: todayStr };
+          }
+          return habit;
+        });
 
-      // Batch update habits that need reset
-      for (const update of habitsToUpdate) {
-        await supabase
-          .from('habits')
-          .update({ completed_today: false, last_reset_date: today, streak: update.streak })
-          .eq('id', update.id);
+        // Batch update habits that need reset
+        for (const update of habitsToUpdate) {
+          await supabase
+            .from('habits')
+            .update({ completed_today: false, last_reset_date: todayStr, streak: update.streak })
+            .eq('id', update.id);
+        }
+
+        setHabits(processedHabits.map(transformHabit));
       }
-
-      setHabits(processedHabits.map(transformHabit));
     } catch (error) {
       console.error('Error fetching habits:', error);
       toast.error('Failed to load habits');
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, isViewingPastDay, viewDate]);
 
   useEffect(() => {
     fetchHabits();
@@ -355,6 +388,7 @@ export function useCloudHabits() {
     habits,
     isLoading,
     isSyncing,
+    isViewingPastDay,
     addHabit,
     updateHabit,
     toggleHabit,
