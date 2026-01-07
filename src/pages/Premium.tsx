@@ -18,7 +18,7 @@ const PREMIUM_FEATURES = [
   { icon: Palette, label: 'Custom themes', description: 'Personalize your app experience' },
   { icon: Users, label: 'Group habits', description: 'Share progress with friends' },
   { icon: BarChart3, label: 'Full statistics', description: 'Complete history and insights' },
-  { icon: BookOpen, label: 'Widgets & extras', description: 'Home screen widgets and more' },
+  { icon: BookOpen, label: 'Premium extras', description: 'Exclusive content and features' },
 ];
 
 // ============================================
