@@ -1,10 +1,8 @@
-import { Lock, Flame, Leaf, CheckCircle2, Heart, Sparkles, Cat } from 'lucide-react';
-import { usePremium } from '@/contexts/PremiumContext';
-import { useNavigate } from 'react-router-dom';
+import { Flame, Leaf, CheckCircle2, Heart, Sparkles, Cat } from 'lucide-react';
 import { useAchievements } from '@/hooks/useAchievements';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface WidgetProps {
   className?: string;
@@ -170,45 +168,24 @@ const LargeWidget = ({ className }: WidgetProps) => (
   </div>
 );
 
-// Widget with premium lock overlay
-const LockedWidget = ({ 
+// Widget preview card - no longer locked behind premium since it's just a preview
+const PreviewWidget = ({ 
   children, 
-  size 
 }: { 
   children: React.ReactNode; 
-  size: 'small' | 'medium' | 'large';
 }) => {
-  const { isPremium } = usePremium();
-  const navigate = useNavigate();
-
-  if (isPremium) {
-    return <>{children}</>;
-  }
-
   return (
     <div className="relative">
-      <div className="opacity-60 blur-[2px] pointer-events-none">
-        {children}
-      </div>
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/40 backdrop-blur-[1px] rounded-[22px]">
-        <Lock className="w-6 h-6 text-muted-foreground mb-2" />
-        <p className="text-xs text-muted-foreground font-medium mb-2">Premium</p>
-        <Button
-          size="sm"
-          variant="secondary"
-          className="h-7 text-xs px-3"
-          onClick={() => navigate('/premium')}
-        >
-          Unlock
-        </Button>
+      {children}
+      {/* Preview badge overlay */}
+      <div className="absolute top-2 right-2 bg-muted/90 backdrop-blur-sm text-xs font-medium px-2 py-0.5 rounded-full text-muted-foreground">
+        Preview
       </div>
     </div>
   );
 };
 
 export const WidgetPreviews = () => {
-  const { isPremium } = usePremium();
-  const navigate = useNavigate();
   const { checkAndAwardAchievements } = useAchievements();
 
   // Award achievement for visiting widgets page
@@ -216,13 +193,19 @@ export const WidgetPreviews = () => {
     checkAndAwardAchievements({ widgetsViewed: true });
   }, [checkAndAwardAchievements]);
 
+  const handleWidgetTap = () => {
+    toast("Widgets are not available yet — coming soon! 🚧", {
+      description: "We're working on real Android home screen widgets.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with warm copy */}
       <div className="text-center">
-        <h2 className="text-lg font-semibold text-foreground">Home Screen Widgets</h2>
+        <h2 className="text-lg font-semibold text-foreground">Widget Design Previews</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Keep your cat and progress gently close
+          Here's what we're planning for home screen widgets
         </p>
       </div>
 
@@ -232,10 +215,10 @@ export const WidgetPreviews = () => {
           <span className="text-sm font-medium text-foreground">Small</span>
           <span className="text-xs text-muted-foreground">• A gentle reminder</span>
         </div>
-        <div className="flex justify-center">
-          <LockedWidget size="small">
+        <div className="flex justify-center" onClick={handleWidgetTap}>
+          <PreviewWidget>
             <SmallWidget />
-          </LockedWidget>
+          </PreviewWidget>
         </div>
       </div>
 
@@ -245,10 +228,10 @@ export const WidgetPreviews = () => {
           <span className="text-sm font-medium text-foreground">Medium</span>
           <span className="text-xs text-muted-foreground">• See your progress</span>
         </div>
-        <div className="flex justify-center overflow-x-auto pb-2 -mx-4 px-4">
-          <LockedWidget size="medium">
+        <div className="flex justify-center overflow-x-auto pb-2 -mx-4 px-4" onClick={handleWidgetTap}>
+          <PreviewWidget>
             <MediumWidget />
-          </LockedWidget>
+          </PreviewWidget>
         </div>
       </div>
 
@@ -258,36 +241,22 @@ export const WidgetPreviews = () => {
           <span className="text-sm font-medium text-foreground">Large</span>
           <span className="text-xs text-muted-foreground">• Your cozy companion</span>
         </div>
-        <div className="flex justify-center overflow-x-auto pb-2 -mx-4 px-4">
-          <LockedWidget size="large">
+        <div className="flex justify-center overflow-x-auto pb-2 -mx-4 px-4" onClick={handleWidgetTap}>
+          <PreviewWidget>
             <LargeWidget />
-          </LockedWidget>
+          </PreviewWidget>
         </div>
       </div>
 
-      {/* Instructions / CTA with warm messaging */}
-      {isPremium ? (
-        <div className="bg-primary/10 rounded-xl p-4 text-center">
-          <p className="text-sm text-foreground font-medium">
-            Add widgets to keep your companion nearby
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Long press your home screen → Add Widget → Cozy Habits
-          </p>
-        </div>
-      ) : (
-        <div className="bg-muted rounded-xl p-4 text-center">
-          <p className="text-sm text-foreground font-medium mb-1">
-            Premium Cozy Experience
-          </p>
-          <p className="text-xs text-muted-foreground mb-3">
-            Keep your habits and cat gently present on your home screen
-          </p>
-          <Button onClick={() => navigate('/premium')} className="w-full">
-            Explore Premium
-          </Button>
-        </div>
-      )}
+      {/* Coming Soon CTA */}
+      <div className="bg-muted/50 rounded-xl p-4 text-center border border-border/50">
+        <p className="text-sm text-foreground font-medium mb-1">
+          🎯 Feature in Development
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Real Android home screen widgets are coming soon. We'll notify you when they're ready!
+        </p>
+      </div>
     </div>
   );
 };

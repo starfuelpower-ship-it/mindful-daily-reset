@@ -250,10 +250,12 @@ export default function Settings() {
               >
                 <div className="flex items-center gap-3">
                   <LayoutGrid className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-foreground">Home Screen Widgets</span>
+                  <div className="flex flex-col items-start">
+                    <span className="text-foreground">Home Screen Widgets</span>
+                    <span className="text-xs text-muted-foreground">Coming Soon</span>
+                  </div>
                 </div>
-                {!isPremium && <Crown className="w-4 h-4 text-primary" />}
-                {isPremium && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </button>
 
               <button
