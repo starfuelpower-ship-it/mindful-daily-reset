@@ -112,17 +112,23 @@ export default function Settings() {
           )}
 
           {isPremium && (
-            <div className="bg-gradient-to-r from-primary/20 to-accent rounded-2xl p-4 border border-primary/30">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                  <Crown className="w-5 h-5 text-primary-foreground" />
+            <button
+              onClick={() => navigate('/manage-premium')}
+              className="w-full bg-gradient-to-r from-primary/20 to-accent rounded-2xl p-4 border border-primary/30 text-left transition-all hover:shadow-md active:scale-[0.99]"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                    <Crown className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">Premium Active</h3>
+                    <p className="text-sm text-muted-foreground">Manage your subscription</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Premium Active</h3>
-                  <p className="text-sm text-muted-foreground">You have access to all features</p>
-                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </div>
-            </div>
+            </button>
           )}
 
           {/* Account Section */}

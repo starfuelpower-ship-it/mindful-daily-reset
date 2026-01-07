@@ -36,6 +36,7 @@ import Achievements from "./pages/Achievements";
 import Install from "./pages/Install";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import ManagePremium from "./pages/ManagePremium";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -92,6 +93,7 @@ const App = () => (
                             <Route path="/install" element={<Install />} />
                             <Route path="/privacy" element={<PrivacyPolicy />} />
                             <Route path="/terms" element={<TermsOfService />} />
+                            <Route path="/manage-premium" element={<ManagePremium />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </QuotesProvider>
