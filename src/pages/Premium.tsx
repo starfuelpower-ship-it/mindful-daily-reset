@@ -55,7 +55,7 @@ const PRICING_PLANS = [
 export default function Premium() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isPremium, isFinalizing, refreshPremiumStatus, restorePurchases: restoreFromContext } = usePremium();
+  const { isPremium, isLoading: premiumLoading, isFinalizing, refreshPremiumStatus, restorePurchases: restoreFromContext } = usePremium();
   const { 
     purchaseSubscription, 
     restorePurchases, 
@@ -105,6 +105,16 @@ export default function Premium() {
     return fallback?.price || '';
   };
 
+  // Wait for premium status to load before deciding
+  if (premiumLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Redirect premium users to home
   if (isPremium) {
     navigate('/');
     return null;
