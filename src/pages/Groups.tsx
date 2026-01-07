@@ -28,7 +28,7 @@ import { differenceInDays } from 'date-fns';
 export default function Groups() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isPremium } = usePremium();
+  const { isPremium, isLoading: premiumLoading } = usePremium();
   const { 
     groups, 
     members, 
@@ -350,7 +350,7 @@ export default function Groups() {
             </p>
 
             {/* Actions */}
-            {isPremium ? (
+            {(isPremium || premiumLoading) ? (
               <div className="flex flex-col gap-3 w-full max-w-xs">
                 <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
                   <DialogTrigger asChild>
