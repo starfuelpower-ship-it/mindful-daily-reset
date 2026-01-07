@@ -69,7 +69,7 @@ const Rewards = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { balance, spendPoints } = usePoints();
-  const { isPremium } = usePremium();
+  const { isPremium, isLoading: premiumLoading } = usePremium();
   const { resolvedTheme } = useTheme();
   const { playSound, triggerHaptic } = useSoundEffects();
   const { checkAndAwardAchievements } = useAchievements();
@@ -78,6 +78,9 @@ const Rewards = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
+
+  // Treat as premium while loading to avoid flash of locked state
+  const effectivelyPremium = isPremium || premiumLoading;
 
   const isDark = resolvedTheme === 'dark';
 
@@ -125,7 +128,7 @@ const Rewards = () => {
     if (!user) return;
 
     // Client-side checks for UX only (server validates atomically)
-    if (costume.is_premium_only && !isPremium) {
+    if (costume.is_premium_only && !effectivelyPremium) {
       toast.error('This costume requires Premium!');
       navigate('/premium');
       return;
@@ -325,7 +328,7 @@ const Rewards = () => {
               {premiumCostumes.map((costume) => {
                 const owned = ownedCostumes.has(costume.id);
                 const canAfford = balance >= costume.price;
-                const canPurchase = isPremium && canAfford && !owned;
+                const canPurchase = effectivelyPremium && canAfford && !owned;
                 const costumeType = getCostumeTypeFromDB(costume.name);
 
                 return (
@@ -336,7 +339,7 @@ const Rewards = () => {
                       owned
                         ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 shadow-[0_0_15px_rgba(251,191,36,0.2)]'
                         : 'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 border-amber-200/50 dark:border-amber-800/50 shadow-[0_0_10px_rgba(251,191,36,0.15)]',
-                      !isPremium && 'opacity-80'
+                      !effectivelyPremium && 'opacity-80'
                     )}
                   >
                     {/* Gold crown badge */}
@@ -357,7 +360,7 @@ const Rewards = () => {
                         <Check className="w-4 h-4" />
                         <span className="text-sm font-medium">Owned</span>
                       </div>
-                    ) : !isPremium ? (
+                    ) : !effectivelyPremium ? (
                       <Button
                         size="sm"
                         variant="outline"

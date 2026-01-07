@@ -88,13 +88,16 @@ const THEME_PREVIEWS: Record<ColorThemeId, { bg: string; primary: string; accent
 
 export const ThemePicker = () => {
   const { colorTheme, setColorTheme, previewTheme, setPreviewTheme } = useTheme();
-  const { isPremium } = usePremium();
+  const { isPremium, isLoading: premiumLoading } = usePremium();
   const navigate = useNavigate();
   const [isPreviewing, setIsPreviewing] = useState(false);
 
+  // Treat as premium while loading to avoid flash of locked state
+  const effectivelyPremium = isPremium || premiumLoading;
+
   const handleThemeSelect = (themeId: ColorThemeId) => {
     const theme = ALL_THEMES.find(t => t.id === themeId);
-    if (theme?.isFree || isPremium) {
+    if (theme?.isFree || effectivelyPremium) {
       setColorTheme(themeId);
       setIsPreviewing(false);
     }
@@ -102,7 +105,7 @@ export const ThemePicker = () => {
 
   const handlePreview = (themeId: ColorThemeId) => {
     const theme = ALL_THEMES.find(t => t.id === themeId);
-    if (!isPremium && !theme?.isFree) {
+    if (!effectivelyPremium && !theme?.isFree) {
       setPreviewTheme(themeId);
       setIsPreviewing(true);
     }
@@ -208,16 +211,16 @@ export const ThemePicker = () => {
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="font-medium">Premium Themes</span>
-          {!isPremium && <Lock className="w-3 h-3" />}
+          {!effectivelyPremium && <Lock className="w-3 h-3" />}
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          {PREMIUM_THEMES.map((theme) => renderThemeCard(theme, !isPremium))}
+          {PREMIUM_THEMES.map((theme) => renderThemeCard(theme, !effectivelyPremium))}
         </div>
       </div>
 
       {/* Upgrade CTA */}
-      {!isPremium && (
+      {!effectivelyPremium && (
         <Button
           variant="outline"
           className="w-full mt-3 border-primary/30 text-primary hover:bg-primary/10"
@@ -228,7 +231,7 @@ export const ThemePicker = () => {
       )}
 
       {/* Preview Banner */}
-      {isPreviewing && previewTheme && (
+      {isPreviewing && previewTheme && !effectivelyPremium && (
         <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
           <p className="text-sm font-medium text-foreground mb-2">
             Previewing: {ALL_THEMES.find(t => t.id === previewTheme)?.name}
