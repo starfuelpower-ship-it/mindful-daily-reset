@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useTutorial } from '@/components/AppTutorial';
 import { supabase } from '@/integrations/supabase/client';
 import { useInAppReview } from '@/hooks/useInAppReview';
+import { useDataExport } from '@/hooks/useDataExport';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +32,7 @@ export default function Settings() {
   const { isPremium } = usePremium();
   const { resetTutorial } = useTutorial();
   const { handleRateApp } = useInAppReview();
+  const { exportAsJSON, exportAsCSV } = useDataExport();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -314,6 +316,33 @@ export default function Settings() {
               </button>
             </div>
           </div>
+
+          {/* Data Section */}
+          {user && (
+            <div className="space-y-2">
+              <h2 className="text-sm font-medium text-muted-foreground px-1">Your Data</h2>
+              <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+                <button
+                  onClick={exportAsJSON}
+                  className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-b border-border/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-foreground">Export Data (JSON)</span>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </button>
+                <button
+                  onClick={exportAsCSV}
+                  className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-foreground">Export Habits (CSV)</span>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Legal Section */}
           <div className="space-y-2">
