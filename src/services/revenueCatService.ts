@@ -258,6 +258,7 @@ class RevenueCatService {
 
   /**
    * Purchase a product by ID directly (fallback if no offerings)
+   * Requires productCategory: SUBSCRIPTION for subscriptions, NON_CONSUMABLE for lifetime
    */
   async purchaseProduct(productId: string): Promise<{
     success: boolean;
@@ -271,8 +272,18 @@ class RevenueCatService {
     }
 
     try {
+      // Determine product category based on product ID
+      // Lifetime is NON_CONSUMABLE, others are SUBSCRIPTION
+      const isLifetime = productId === REVENUECAT_PRODUCT_IDS.PREMIUM_LIFETIME;
+      const productCategory = isLifetime ? 'NON_CONSUMABLE' : 'SUBSCRIPTION';
+      
+      console.log('[RevenueCat] Purchasing product:', productId, 'category:', productCategory);
+      
       const result = await this.Purchases.purchaseStoreProduct({
-        product: { identifier: productId }
+        product: { 
+          identifier: productId,
+          productCategory: productCategory,
+        }
       });
       
       this.cachedCustomerInfo = result.customerInfo;
