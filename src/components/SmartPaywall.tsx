@@ -220,18 +220,18 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
             onClick={handleSkip}
             disabled={!canSkip || isProcessing}
             className={cn(
-              "p-2 rounded-full transition-all",
+              "min-w-[44px] min-h-[44px] rounded-full transition-all flex items-center justify-center",
               canSkip
-                ? "text-muted-foreground hover:text-foreground hover:bg-muted"
-                : "text-muted-foreground/30 cursor-not-allowed"
+                ? "text-foreground bg-muted hover:bg-muted/80"
+                : "text-muted-foreground bg-muted/50 cursor-not-allowed"
             )}
           >
             {canSkip ? (
               <X className="w-6 h-6" />
             ) : (
-              <div className="w-6 h-6 flex items-center justify-center text-sm font-medium">
+              <span className="text-base font-semibold">
                 {countdown}
-              </div>
+              </span>
             )}
           </button>
         </header>
