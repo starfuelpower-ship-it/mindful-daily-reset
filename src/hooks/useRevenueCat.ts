@@ -77,7 +77,7 @@ export function useRevenueCat() {
   /**
    * Get a package by plan ID from current offering
    */
-  const getPackageForPlan = useCallback((planId: 'monthly' | 'annual' | 'lifetime'): RevenueCatPackage | null => {
+  const getPackageForPlan = useCallback((planId: 'weekly' | 'monthly' | 'annual' | 'lifetime'): RevenueCatPackage | null => {
     if (!offering) return null;
 
     const productId = PLAN_TO_PRODUCT[planId];
@@ -98,7 +98,7 @@ export function useRevenueCat() {
   /**
    * Purchase a subscription by plan ID
    */
-  const purchaseSubscription = useCallback(async (planId: 'monthly' | 'annual' | 'lifetime'): Promise<boolean> => {
+  const purchaseSubscription = useCallback(async (planId: 'weekly' | 'monthly' | 'annual' | 'lifetime'): Promise<boolean> => {
     setIsLoading(true);
 
     try {
@@ -198,7 +198,7 @@ export function useRevenueCat() {
   /**
    * Get price string for a plan from offerings
    */
-  const getPriceForPlan = useCallback((planId: 'monthly' | 'annual' | 'lifetime'): string | null => {
+  const getPriceForPlan = useCallback((planId: 'weekly' | 'monthly' | 'annual' | 'lifetime'): string | null => {
     const pkg = getPackageForPlan(planId);
     return pkg?.product.priceString || null;
   }, [getPackageForPlan]);

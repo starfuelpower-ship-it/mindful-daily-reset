@@ -27,6 +27,14 @@ const PREMIUM_FEATURES = [
 
 const PRICING_PLANS = [
   {
+    id: 'weekly' as const,
+    name: 'Weekly',
+    price: '$2.99',
+    period: '/week',
+    description: '7-day free trial',
+    popular: true,
+  },
+  {
     id: 'monthly' as const,
     name: 'Monthly',
     price: '$7.99',
@@ -39,8 +47,8 @@ const PRICING_PLANS = [
     name: 'Annual',
     price: '$39.99',
     period: '/year',
-    description: 'Save 58% • 3-day free trial',
-    popular: true,
+    description: 'Save 58%',
+    popular: false,
   },
   {
     id: 'lifetime' as const,
@@ -63,7 +71,7 @@ export default function Premium() {
     isNativePlatform,
     getPriceForPlan,
   } = useRevenueCat();
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual' | 'lifetime'>('annual');
+  const [selectedPlan, setSelectedPlan] = useState<'weekly' | 'monthly' | 'annual' | 'lifetime'>('weekly');
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -96,7 +104,7 @@ export default function Premium() {
   };
 
   // Get dynamic price from RevenueCat or use fallback
-  const getDisplayPrice = (planId: 'monthly' | 'annual' | 'lifetime'): string => {
+  const getDisplayPrice = (planId: 'weekly' | 'monthly' | 'annual' | 'lifetime'): string => {
     const dynamicPrice = getPriceForPlan(planId);
     if (dynamicPrice) return dynamicPrice;
     
