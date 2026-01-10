@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 import { Button } from '@/components/ui/button';
 import { ThemePicker } from '@/components/ThemePicker';
 import { AmbientSettings } from '@/components/AmbientSettings';
@@ -10,7 +11,7 @@ import { MusicSettings } from '@/components/MusicSettings';
 import { NotificationSettings } from '@/components/NotificationSettings';
 import { AchievementsUI } from '@/components/AchievementsUI';
 import { CatCompanion } from '@/components/CatCompanion';
-import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music, Bell, Trophy, MessageCircle, Mail, HelpCircle, Trash2, AlertTriangle, Star } from 'lucide-react';
+import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music, Bell, Trophy, MessageCircle, Mail, HelpCircle, Trash2, AlertTriangle, Star, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTutorial } from '@/components/AppTutorial';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,6 +31,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isPremium, isLoading: premiumLoading } = usePremium();
+  const { resetOnboarding } = useOnboarding();
   const { resetTutorial } = useTutorial();
   const { handleRateApp } = useInAppReview();
   const { exportAsJSON, exportAsCSV } = useDataExport();
@@ -293,6 +295,20 @@ export default function Settings() {
                 <div className="flex items-center gap-3">
                   <Star className="w-5 h-5 text-primary" />
                   <span className="text-foreground">Rate Cozy Habits</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+              <button
+                onClick={() => {
+                  resetOnboarding();
+                  navigate('/');
+                  toast.success('Onboarding will restart!');
+                }}
+                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-b border-border/50"
+              >
+                <div className="flex items-center gap-3">
+                  <Play className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-foreground">View Onboarding</span>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </button>
