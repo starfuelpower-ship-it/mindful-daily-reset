@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCompanion } from '@/contexts/CompanionContext';
 import { usePoints, POINTS } from '@/contexts/PointsContext';
+import { useOnboarding } from '@/contexts/OnboardingContext';
+import { usePremium } from '@/contexts/PremiumContext';
 import { useCloudHabits, CloudHabit } from '@/hooks/useCloudHabits';
 import { useHabits } from '@/hooks/useHabits';
 import { useUserSettings } from '@/hooks/useUserSettings';
@@ -33,6 +35,8 @@ import { UserDisplay } from '@/components/UserDisplay';
 import { HabitCategoryFilter } from '@/components/HabitCategoryFilter';
 import { StreakFreezeButton } from '@/components/StreakFreezeButton';
 import { HabitListSkeleton, ProgressSkeleton } from '@/components/HabitSkeletons';
+import { GuidedOnboarding } from '@/components/GuidedOnboarding';
+import { SmartPaywall } from '@/components/SmartPaywall';
 import { Button } from '@/components/ui/button';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { RefreshCw, Settings, User, Cloud, Moon, Sun } from 'lucide-react';
@@ -46,6 +50,16 @@ const Index = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { settings } = useUserSettings();
+  const { isPremium } = usePremium();
+  const { 
+    isOnboardingComplete, 
+    shouldShowPaywall, 
+    paywallType, 
+    dismissPaywall, 
+    markHabitCompleted,
+    checkPaywallTriggers,
+    completeOnboarding 
+  } = useOnboarding();
   const [editingHabit, setEditingHabit] = useState<CloudHabit | null>(null);
   const [intentionCompleteHabit, setIntentionCompleteHabit] = useState<CloudHabit | null>(null);
   const [hasMigrated, setHasMigrated] = useState(false);
@@ -109,18 +123,21 @@ const Index = () => {
     return Math.max(...allHabits.map(h => (h as any).streak || 0), 0);
   }, [allHabits]);
 
-  // Check if new user needs onboarding (guests only - logged in users checked in Onboarding)
+  // Check if new user needs onboarding (V2 flow - only for logged-in users)
   useEffect(() => {
-    const hasCompletedOnboarding = localStorage.getItem(ONBOARDING_KEY) === 'true';
-    if (!hasCompletedOnboarding && !authLoading) {
-      // Give a tiny delay to prevent flash
+    // For legacy support, check old onboarding key
+    const hasCompletedLegacyOnboarding = localStorage.getItem(ONBOARDING_KEY) === 'true';
+    
+    // If logged in and hasn't completed new onboarding, they'll see GuidedOnboarding
+    // If guest, redirect to old onboarding (or show guided)
+    if (!hasCompletedLegacyOnboarding && !authLoading && !user) {
       const timer = setTimeout(() => {
         navigate('/onboarding', { replace: true });
       }, 100);
       return () => clearTimeout(timer);
     }
     setOnboardingChecked(true);
-  }, [authLoading, navigate]);
+  }, [authLoading, navigate, user]);
 
   // Migrate local habits to cloud after login
   useEffect(() => {
@@ -243,6 +260,7 @@ const Index = () => {
     // Track completion for in-app review and achievements (only when completing)
     if (isCompleting && isLoggedIn) {
       trackHabitCompletion();
+      markHabitCompleted(); // Track for paywall triggers
       
       // Check achievements with context
       checkAndAwardAchievements({
@@ -256,6 +274,13 @@ const Index = () => {
       
       // Try to request review after tracking (checks criteria internally)
       setTimeout(() => tryAutoRequestReview(), 1000);
+      
+      // Check paywall triggers after a delay
+      setTimeout(() => {
+        if (!isPremium) {
+          checkPaywallTriggers();
+        }
+      }, 2000);
     }
   };
 
@@ -312,6 +337,20 @@ const Index = () => {
 
   return (
     <>
+      {/* New Guided Onboarding (for logged-in users who haven't completed V2) */}
+      {user && !isOnboardingComplete && (
+        <GuidedOnboarding onComplete={completeOnboarding} />
+      )}
+      
+      {/* Smart Paywall */}
+      {!isPremium && shouldShowPaywall && paywallType && (
+        <SmartPaywall 
+          isVisible={shouldShowPaywall}
+          type={paywallType}
+          onDismiss={dismissPaywall}
+        />
+      )}
+      
       {/* Tutorial overlay */}
       {showTutorial && <AppTutorial onComplete={completeTutorial} />}
       

@@ -11,6 +11,7 @@ import { CompanionProvider } from "@/contexts/CompanionContext";
 import { MusicProvider } from "@/contexts/MusicContext";
 import { QuotesProvider } from "@/contexts/QuotesContext";
 import { PointsProvider } from "@/contexts/PointsContext";
+import { OnboardingProvider } from "@/contexts/OnboardingContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AmbientLayer } from "@/components/AmbientLayer";
 import { GlobalAmbientAudio } from "@/components/GlobalAmbientAudio";
@@ -64,43 +65,45 @@ const App = () => (
           <BrowserRouter>
             <AuthProvider>
               <PremiumProvider>
-                <PointsProvider>
-                  <AmbientProvider>
-                    <CompanionProvider>
-                      <MusicProvider>
-                        <QuotesProvider>
-                          <ThemePreviewReset />
-                          <OfflineIndicator />
-                          <AmbientLayer />
-                          <GlobalAmbientAudio />
-                          <CatCompanion />
-                          <Routes>
-                            <Route path="/" element={<Index />} />
-                            <Route path="/auth" element={<Auth />} />
-                            <Route path="/settings" element={<Settings />} />
-                            <Route path="/premium" element={<Premium />} />
-                            <Route path="/stats" element={<Stats />} />
-                            <Route path="/groups" element={<Groups />} />
-                            <Route path="/journal" element={<Journal />} />
-                            <Route path="/onboarding" element={<Onboarding />} />
-                            <Route path="/habit-manager" element={<HabitManager />} />
-                            <Route path="/widgets" element={<Widgets />} />
-                            <Route path="/rewards" element={<Rewards />} />
-                            <Route path="/cat" element={<CatCustomize />} />
-                            <Route path="/points-shop" element={<PointsShop />} />
-                            <Route path="/garden-shop" element={<GardenShop />} />
-                            <Route path="/achievements" element={<Achievements />} />
-                            <Route path="/install" element={<Install />} />
-                            <Route path="/privacy" element={<PrivacyPolicy />} />
-                            <Route path="/terms" element={<TermsOfService />} />
-                            <Route path="/manage-premium" element={<ManagePremium />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Routes>
-                        </QuotesProvider>
-                      </MusicProvider>
-                    </CompanionProvider>
-                  </AmbientProvider>
-                </PointsProvider>
+                <OnboardingProvider>
+                  <PointsProvider>
+                    <AmbientProvider>
+                      <CompanionProvider>
+                        <MusicProvider>
+                          <QuotesProvider>
+                            <ThemePreviewReset />
+                            <OfflineIndicator />
+                            <AmbientLayer />
+                            <GlobalAmbientAudio />
+                            <CatCompanion />
+                            <Routes>
+                              <Route path="/" element={<Index />} />
+                              <Route path="/auth" element={<Auth />} />
+                              <Route path="/settings" element={<Settings />} />
+                              <Route path="/premium" element={<Premium />} />
+                              <Route path="/stats" element={<Stats />} />
+                              <Route path="/groups" element={<Groups />} />
+                              <Route path="/journal" element={<Journal />} />
+                              <Route path="/onboarding" element={<Onboarding />} />
+                              <Route path="/habit-manager" element={<HabitManager />} />
+                              <Route path="/widgets" element={<Widgets />} />
+                              <Route path="/rewards" element={<Rewards />} />
+                              <Route path="/cat" element={<CatCustomize />} />
+                              <Route path="/points-shop" element={<PointsShop />} />
+                              <Route path="/garden-shop" element={<GardenShop />} />
+                              <Route path="/achievements" element={<Achievements />} />
+                              <Route path="/install" element={<Install />} />
+                              <Route path="/privacy" element={<PrivacyPolicy />} />
+                              <Route path="/terms" element={<TermsOfService />} />
+                              <Route path="/manage-premium" element={<ManagePremium />} />
+                              <Route path="*" element={<NotFound />} />
+                            </Routes>
+                          </QuotesProvider>
+                        </MusicProvider>
+                      </CompanionProvider>
+                    </AmbientProvider>
+                  </PointsProvider>
+                </OnboardingProvider>
               </PremiumProvider>
             </AuthProvider>
           </BrowserRouter>

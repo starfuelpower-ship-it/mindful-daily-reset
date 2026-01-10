@@ -19,6 +19,7 @@ export const PREMIUM_ENTITLEMENT = 'premium';
 
 // Google Play product IDs (must match RevenueCat dashboard)
 export const REVENUECAT_PRODUCT_IDS = {
+  PREMIUM_WEEKLY_TRIAL: 'weekly:trial',
   PREMIUM_MONTHLY: 'cozy_premium_monthly',
   PREMIUM_ANNUAL: 'cozy_premium_annual',
   PREMIUM_LIFETIME: 'lifetime',
@@ -26,6 +27,7 @@ export const REVENUECAT_PRODUCT_IDS = {
 
 // Map UI plan IDs to RevenueCat product IDs
 export const PLAN_TO_PRODUCT: Record<string, string> = {
+  'weekly': REVENUECAT_PRODUCT_IDS.PREMIUM_WEEKLY_TRIAL,
   'monthly': REVENUECAT_PRODUCT_IDS.PREMIUM_MONTHLY,
   'annual': REVENUECAT_PRODUCT_IDS.PREMIUM_ANNUAL,
   'lifetime': REVENUECAT_PRODUCT_IDS.PREMIUM_LIFETIME,
