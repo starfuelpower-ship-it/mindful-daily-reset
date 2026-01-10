@@ -102,19 +102,25 @@ export function useRevenueCat() {
     setIsLoading(true);
 
     try {
-      // Try to purchase via package from offering
+      const productId = PLAN_TO_PRODUCT[planId];
+      if (!productId) {
+        toast.error('Invalid subscription plan');
+        setIsLoading(false);
+        return false;
+      }
+
+      console.log('[useRevenueCat] Purchasing plan:', planId, 'productId:', productId);
+
+      // Try to find package from offerings first
       const pkg = getPackageForPlan(planId);
       
       let result;
       if (pkg) {
+        console.log('[useRevenueCat] Found package in offerings, purchasing via package');
         result = await revenueCatService.purchasePackage(pkg);
       } else {
         // Fallback: purchase by product ID directly
-        const productId = PLAN_TO_PRODUCT[planId];
-        if (!productId) {
-          toast.error('Invalid subscription plan');
-          return false;
-        }
+        console.log('[useRevenueCat] No package found, purchasing by product ID');
         result = await revenueCatService.purchaseProduct(productId);
       }
 
@@ -128,7 +134,6 @@ export function useRevenueCat() {
           setIsPremium(true);
         }
         
-        toast.success('Welcome to Premium! 🎉');
         return true;
       } else {
         if (result.error !== 'cancelled') {
