@@ -100,8 +100,8 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
 
     setIsProcessing(true);
     try {
-      // Purchase the weekly trial product
-      const success = await purchaseSubscription('weekly' as any);
+      // Purchase the weekly trial product (weekly:trial in RevenueCat)
+      const success = await purchaseSubscription('weekly');
       
       if (success) {
         await refreshPremiumStatus();
