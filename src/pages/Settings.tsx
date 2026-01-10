@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
@@ -11,12 +11,14 @@ import { MusicSettings } from '@/components/MusicSettings';
 import { NotificationSettings } from '@/components/NotificationSettings';
 import { AchievementsUI } from '@/components/AchievementsUI';
 import { CatCompanion } from '@/components/CatCompanion';
+import { SmartPaywall } from '@/components/SmartPaywall';
 import { ArrowLeft, Crown, LogOut, User, ChevronRight, Sparkles, BarChart3, LayoutGrid, Coffee, Cat, Music, Bell, Trophy, MessageCircle, Mail, HelpCircle, Trash2, AlertTriangle, Star, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTutorial } from '@/components/AppTutorial';
 import { supabase } from '@/integrations/supabase/client';
 import { useInAppReview } from '@/hooks/useInAppReview';
 import { useDataExport } from '@/hooks/useDataExport';
+import { usePaywallTrigger } from '@/hooks/usePaywallTrigger';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +29,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
 export default function Settings() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -35,8 +38,16 @@ export default function Settings() {
   const { resetTutorial } = useTutorial();
   const { handleRateApp } = useInAppReview();
   const { exportAsJSON, exportAsCSV } = useDataExport();
+  const { showPaywall, checkSettingsPaywall, dismissPaywall } = usePaywallTrigger();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Check if we should show paywall on every 3rd settings visit
+  useEffect(() => {
+    if (!isPremium && !premiumLoading) {
+      checkSettingsPaywall();
+    }
+  }, [isPremium, premiumLoading, checkSettingsPaywall]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -76,7 +87,15 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      {/* Weekly trial paywall - shows every 3rd settings visit */}
+      <SmartPaywall
+        isVisible={showPaywall}
+        type="followup"
+        onDismiss={dismissPaywall}
+      />
+
+      <div className="min-h-screen bg-background">
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -426,5 +445,6 @@ export default function Settings() {
       {/* Cat Companion - visible on settings too */}
       <CatCompanion />
     </div>
+    </>
   );
 }

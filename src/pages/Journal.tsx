@@ -9,6 +9,7 @@ import { useAchievements } from '@/hooks/useAchievements';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { PremiumLock } from '@/components/PremiumLock';
 import { GentleReflection } from '@/components/GentleReflection';
+import { SmartPaywall } from '@/components/SmartPaywall';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
@@ -16,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { MOOD_OPTIONS, FREE_TIER_LIMITS } from '@/types/habit';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { usePaywallTrigger } from '@/hooks/usePaywallTrigger';
 
 // Daily quotes
 const DAILY_QUOTES = [
@@ -38,6 +40,7 @@ export default function Journal() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isPremium } = usePremium();
+  const { showPaywall, checkPremiumPagePaywall, dismissPaywall } = usePaywallTrigger();
   const { habits, logs } = useHabitData();
   const { checkAndAwardAchievements } = useAchievements();
   
@@ -97,6 +100,13 @@ export default function Journal() {
     fetchEntry();
     fetchEntries();
   }, [fetchEntry, fetchEntries]);
+
+  // Show paywall for free users when visiting Journal
+  useEffect(() => {
+    if (!isPremium) {
+      checkPremiumPagePaywall();
+    }
+  }, [isPremium, checkPremiumPagePaywall]);
 
   // Save mood entry
   const handleSave = async () => {
@@ -162,7 +172,15 @@ export default function Journal() {
   }
 
   return (
-    <div className="min-h-screen pb-24 bg-background">
+    <>
+      {/* Weekly trial paywall for free users */}
+      <SmartPaywall
+        isVisible={showPaywall}
+        type="followup"
+        onDismiss={dismissPaywall}
+      />
+
+      <div className="min-h-screen pb-24 bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 py-4">
@@ -333,5 +351,6 @@ export default function Journal() {
 
       <BottomTabBar />
     </div>
+    </>
   );
 }

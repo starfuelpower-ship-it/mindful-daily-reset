@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomTabBar } from '@/components/BottomTabBar';
 import { PremiumLock } from '@/components/PremiumLock';
+import { SmartPaywall } from '@/components/SmartPaywall';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Flame, TrendingUp, Calendar, Trophy, Target, 
@@ -23,6 +24,7 @@ import {
   Cell,
 } from 'recharts';
 import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval, subWeeks, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { usePaywallTrigger } from '@/hooks/usePaywallTrigger';
 
 interface DayStats {
   date: string;
@@ -44,12 +46,20 @@ export default function Stats() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isPremium, isLoading: premiumLoading } = usePremium();
+  const { showPaywall, checkPremiumPagePaywall, dismissPaywall } = usePaywallTrigger();
   const [period, setPeriod] = useState<'week' | 'month'>('week');
   const [weekOffset, setWeekOffset] = useState(0);
   const [monthOffset, setMonthOffset] = useState(0);
   const [dailyStats, setDailyStats] = useState<DayStats[]>([]);
   const [habits, setHabits] = useState<HabitWithStreak[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Show paywall for free users when visiting Stats
+  useEffect(() => {
+    if (!isPremium && !premiumLoading) {
+      checkPremiumPagePaywall();
+    }
+  }, [isPremium, premiumLoading, checkPremiumPagePaywall]);
 
   // Calculate date ranges
   const dateRange = useMemo(() => {
@@ -170,9 +180,17 @@ export default function Stats() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-lg mx-auto px-4 py-6">
-        {/* Header */}
+    <>
+      {/* Weekly trial paywall for free users */}
+      <SmartPaywall
+        isVisible={showPaywall}
+        type="followup"
+        onDismiss={dismissPaywall}
+      />
+
+      <div className="min-h-screen bg-background pb-24">
+        <div className="max-w-lg mx-auto px-4 py-6">
+          {/* Header */}
         <header className="mb-6 animate-fade-in">
           <h1 className="text-2xl font-bold text-foreground">Statistics</h1>
           <p className="text-sm text-muted-foreground mt-1">Track your habit journey</p>
@@ -377,6 +395,7 @@ export default function Stats() {
 
       <BottomTabBar />
     </div>
+    </>
   );
 }
 
