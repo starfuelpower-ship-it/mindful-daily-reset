@@ -16,6 +16,7 @@ import { GroupBadges } from '@/components/GroupBadges';
 import { GroupChat } from '@/components/GroupChat';
 import { GroupAchievements } from '@/components/GroupAchievements';
 import { GroupMilestones } from '@/components/GroupMilestones';
+import { SmartPaywall } from '@/components/SmartPaywall';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -24,11 +25,13 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { triggerHaptic } from '@/hooks/useSoundEffects';
 import { differenceInDays } from 'date-fns';
+import { usePaywallTrigger } from '@/hooks/usePaywallTrigger';
 
 export default function Groups() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isPremium, isLoading: premiumLoading } = usePremium();
+  const { showPaywall, checkPremiumPagePaywall, dismissPaywall } = usePaywallTrigger();
   const { 
     groups, 
     members, 
@@ -171,8 +174,23 @@ export default function Groups() {
     }
   }, [currentGroup, members, activities, checkAndAwardMilestones]);
 
+  // Show paywall for free users when visiting Groups
+  useEffect(() => {
+    if (!isPremium && !premiumLoading) {
+      checkPremiumPagePaywall();
+    }
+  }, [isPremium, premiumLoading, checkPremiumPagePaywall]);
+
   return (
-    <div className="min-h-screen pb-24 bg-background">
+    <>
+      {/* Weekly trial paywall for free users */}
+      <SmartPaywall
+        isVisible={showPaywall}
+        type="followup"
+        onDismiss={dismissPaywall}
+      />
+
+      <div className="min-h-screen pb-24 bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 py-4">
@@ -431,5 +449,6 @@ export default function Groups() {
 
       <BottomTabBar />
     </div>
+    </>
   );
 }
