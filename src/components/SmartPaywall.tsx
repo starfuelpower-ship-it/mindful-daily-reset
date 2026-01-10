@@ -280,7 +280,7 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
               
               <Button
                 onClick={handleStartTrial}
-                disabled={isProcessing || !isNativePlatform}
+                disabled={isProcessing}
                 className="w-full h-16 text-lg font-semibold rounded-2xl bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/30 hover:shadow-xl transition-all"
               >
                 {isProcessing ? (
@@ -319,7 +319,7 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
                 {/* Monthly */}
                 <button
                   onClick={() => handleOtherPurchase('monthly')}
-                  disabled={isProcessing || !isNativePlatform}
+                  disabled={isProcessing}
                   className={cn(
                     "w-full p-4 rounded-xl border text-left transition-all",
                     "bg-card border-border/50 hover:border-primary/50"
@@ -337,7 +337,7 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
                 {/* Annual */}
                 <button
                   onClick={() => handleOtherPurchase('annual')}
-                  disabled={isProcessing || !isNativePlatform}
+                  disabled={isProcessing}
                   className={cn(
                     "w-full p-4 rounded-xl border text-left transition-all relative",
                     "bg-card border-border/50 hover:border-primary/50"
@@ -360,7 +360,7 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
                 {/* Lifetime */}
                 <button
                   onClick={() => handleOtherPurchase('lifetime')}
-                  disabled={isProcessing || !isNativePlatform}
+                  disabled={isProcessing}
                   className={cn(
                     "w-full p-4 rounded-xl border text-left transition-all",
                     "bg-card border-border/50 hover:border-primary/50"
