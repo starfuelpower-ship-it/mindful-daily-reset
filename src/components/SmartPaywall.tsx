@@ -98,8 +98,14 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
       return;
     }
 
+    if (!isNativePlatform) {
+      toast.info('In-app purchases are only available in the app');
+      return;
+    }
+
     setIsProcessing(true);
     try {
+      console.log('[SmartPaywall] Starting weekly trial purchase...');
       // Purchase the weekly trial product (weekly:trial in RevenueCat)
       const success = await purchaseSubscription('weekly');
       
@@ -115,7 +121,7 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
     } finally {
       setIsProcessing(false);
     }
-  }, [user, navigate, purchaseSubscription, refreshPremiumStatus, onSubscribed, onDismiss]);
+  }, [user, navigate, purchaseSubscription, refreshPremiumStatus, onSubscribed, onDismiss, isNativePlatform]);
 
   // Handle other plan purchases
   const handleOtherPurchase = useCallback(async (plan: 'monthly' | 'annual' | 'lifetime') => {
@@ -125,12 +131,19 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
       return;
     }
 
+    if (!isNativePlatform) {
+      toast.info('In-app purchases are only available in the app');
+      return;
+    }
+
     setIsProcessing(true);
     try {
+      console.log('[SmartPaywall] Purchasing plan:', plan);
       const success = await purchaseSubscription(plan);
       
       if (success) {
         await refreshPremiumStatus();
+        toast.success('Welcome to Premium! 🎉');
         onSubscribed?.();
         onDismiss();
       }
@@ -139,7 +152,7 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
     } finally {
       setIsProcessing(false);
     }
-  }, [user, navigate, purchaseSubscription, refreshPremiumStatus, onSubscribed, onDismiss]);
+  }, [user, navigate, purchaseSubscription, refreshPremiumStatus, onSubscribed, onDismiss, isNativePlatform]);
 
   // Handle restore
   const handleRestore = async () => {
