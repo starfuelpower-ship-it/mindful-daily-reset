@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Plus, UserPlus, LogOut, Copy, Crown, Sparkles, Share2 } from 'lucide-react';
+import { Users, Plus, UserPlus, LogOut, Copy, Crown, Sparkles, Share2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useGroups } from '@/hooks/useGroups';
@@ -194,11 +194,23 @@ export default function Groups() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 py-4">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-foreground">Groups</h1>
-            <Sparkles className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/')}
+              className="shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-foreground">Groups</h1>
+                <Sparkles className="w-5 h-5 text-primary" />
+              </div>
+              <p className="text-sm text-muted-foreground">Build habits together</p>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">Build habits together</p>
         </div>
       </header>
 
