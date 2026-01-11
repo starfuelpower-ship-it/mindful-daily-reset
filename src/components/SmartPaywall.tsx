@@ -55,17 +55,25 @@ export function SmartPaywall({ isVisible, type, onDismiss, onSubscribed }: Smart
   const { purchaseSubscription, isLoading, getPriceForPlan, restorePurchases, isNativePlatform } = useRevenueCat();
   const { markFirstPaywallShown } = useOnboarding();
   
-  // State
-  const [countdown, setCountdown] = useState(type === 'first' ? 4 : 0);
-  const [canSkip, setCanSkip] = useState(type !== 'first');
+  // State - always start with 4 second countdown
+  const [countdown, setCountdown] = useState(4);
+  const [canSkip, setCanSkip] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'weekly' | 'monthly' | 'annual' | 'lifetime'>('weekly');
 
-  // Countdown timer for first paywall
+  // Reset countdown when paywall becomes visible
   useEffect(() => {
-    if (type !== 'first' || countdown === 0) {
-      setCanSkip(true);
+    if (isVisible) {
+      setCountdown(4);
+      setCanSkip(false);
+    }
+  }, [isVisible]);
+
+  // Countdown timer - applies to ALL paywall types
+  useEffect(() => {
+    if (!isVisible || countdown === 0) {
+      if (countdown === 0) setCanSkip(true);
       return;
     }
 
